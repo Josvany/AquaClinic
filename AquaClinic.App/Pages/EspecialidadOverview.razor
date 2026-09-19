@@ -1,0 +1,59 @@
+﻿@page "/especialidadoverview"
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<h3>Especialidades</h3>
+
+<br />
+
+<p><input class="custom-checkbox" type="checkbox" id="incluirHistorial" @onchange="OnIncluirHistorialChanged"/>   ¿Incluir citas pasadas?</p>
+
+@if (Especialidades == null)
+{
+    <p><em>Cargando...</em></p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th>Especialidad</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var cat in Especialidades)
+            {
+                <tr>
+                    <td>@cat.Nombre </td>
+
+                </tr>
+                <tr>
+                    <td>
+                        <table class="nested-table ms-auto me-auto">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th class="category-event-header">Fecha</th>
+                                    <th class="category-event-header">Doctor</th>
+                                    <th class="category-event-header">Precio</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var ev in cat.Citas)
+                                {
+                                    <tr>
+                                        <td class="event-name">@ev.Nombre </td>
+                                        <td class="event-date">@ev.Fecha.ToShortDateString() </td>
+                                        <td class="event-artist">@ev.Doctor</td>
+                                        <td class="event-price">@ev.Precio</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+

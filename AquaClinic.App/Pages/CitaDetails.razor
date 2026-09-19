@@ -1,0 +1,83 @@
+﻿@page "/citadetails"
+@page "/citadetails/{citaid}"
+@rendermode InteractiveServer
+
+<h1 class="page-title">Detalles de @CitaDetailViewModel.Nombre</h1>
+
+@Message
+
+<EditForm Model="@CitaDetailViewModel" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary></ValidationSummary>
+
+    <div class="row mb-3">
+        <label for="nombre" class="col-sm-3 form-label">Nombre: </label>
+        <div class="col-sm-8">
+            <InputText id="nombre" class="form-control" @bind-Value="@CitaDetailViewModel.Nombre" placeholder="Ingrese el nombre"></InputText>
+            <ValidationMessage For="@(() => CitaDetailViewModel.Nombre)" />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <label for="precio" class="col-sm-3 form-label">Precio: </label>
+        <div class="col-sm-8">
+            <InputNumber id="precio" class="form-control" @bind-Value="@CitaDetailViewModel.Precio" placeholder="Ingrese el precio"></InputNumber>
+            <ValidationMessage For="@(() => CitaDetailViewModel.Precio)" />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <label for="doctor" class="col-sm-3 form-label">Doctor: </label>
+        <div class="col-sm-8">
+            <InputText id="doctor" class="form-control" @bind-Value="@CitaDetailViewModel.Doctor" placeholder="Ingrese el doctor"></InputText>
+            <ValidationMessage For="@(() => CitaDetailViewModel.Doctor)" />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <label for="date" class="col-sm-3 form-label">Fecha: </label>
+        <div class="col-sm-8">
+            <InputDate id="date" class="form-control" @bind-Value="@CitaDetailViewModel.Fecha"></InputDate>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <label for="descripcion" class="col-sm-3 form-label">Descripción: </label>
+        <div class="col-sm-8">
+            <InputTextArea id="descripcion" class="form-control" @bind-Value="@CitaDetailViewModel.Descripcion" placeholder="Ingrese la descripción"></InputTextArea>
+            <ValidationMessage For="@(() => CitaDetailViewModel.Descripcion)" />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <label for="imageurl" class="col-sm-3 form-label">Imagen: </label>
+        <div class="col-sm-8">
+            <InputText id="imageurl" class="form-control" @bind-Value="@CitaDetailViewModel.ImagenUrl" placeholder="Ingrese la URL de la imagen"></InputText>
+            <ValidationMessage For="@(() => CitaDetailViewModel.ImagenUrl)" />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <label for="especialidad" class="col-sm-3 form-label">Especialidad: </label>
+        <div class="col-sm-8">
+            <InputSelect id="especialidad" class="form-control" @bind-Value="@SelectedEspecialidadId">
+                @foreach (var category in Especialidades)
+                {
+                    <option value="@category.EspecialidadId">@category.Nombre</option>
+                }
+            </InputSelect>
+        </div>
+    </div>
+
+    <button type="submit" class="submit-button">Guardar cita</button>
+
+</EditForm>
+
+@if (SelectedCitaId != Guid.Empty)
+{
+    <p>
+        <button @onclick="DeleteCita" class="delete-button mt-3">Eliminar cita</button>
+    </p>
+}
+<br />
+<p class="back-to-catalog mt-3"><img src="img/back-arrow.svg" /><a @onclick="@NavigateToOverview">Volver al listado</a></p>

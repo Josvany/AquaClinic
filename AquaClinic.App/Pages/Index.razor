@@ -1,0 +1,24 @@
+﻿@page "/"
+@rendermode InteractiveServer
+
+<PageTitle>AquaClinic</PageTitle>
+
+<h1 class="page-title">&#161;Bienvenido al sistema de gesti&#243;n de AquaClinic!</h1>
+<br />
+<h4>Con esta aplicaci&#243;n tiene acceso a todas las funcionalidades de AquaClinic.</h4>
+
+<br />
+
+<AuthorizeView>
+    <Authorized>
+        <form method="post" action="logout">
+            <AntiforgeryToken />
+            <button type="submit">Cerrar sesi&#243;n</button>
+        </form>
+    </Authorized>
+    <NotAuthorized>
+        <button @onclick="NavigateToLogin">Haga clic aqu&#237; para iniciar sesi&#243;n</button>
+        <br />
+        <button @onclick="NavigateToRegister">Haga clic aqu&#237; para registrarse</button>
+    </NotAuthorized>
+</AuthorizeView>

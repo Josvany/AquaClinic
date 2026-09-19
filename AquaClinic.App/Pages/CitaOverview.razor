@@ -1,0 +1,45 @@
+﻿@page "/citaoverview"
+@rendermode InteractiveServer
+
+<h3>Citas</h3>
+
+<div class="m-2 d-flex justify-content-end">
+    <button @onclick="AddNewCita" class="me-1">Nueva cita</button>
+    <button @onclick="ExportCitas">Exportar citas</button>
+</div>
+
+
+
+@if (Citas == null)
+{
+    <p><em>Cargando...</em></p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th></th>
+                <th>Nombre</th>
+                <th>Fecha</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var ev in Citas)
+            {
+                <tr>
+                    <td><img src="@(ev.ImagenUrl)" class="event-image" /></td>
+                    <td class="event-name">@ev.Nombre </td>
+                    <td class="event-date">@ev.Fecha.ToShortDateString() </td>
+                    <td>
+                        <a href="@($"citadetails/{ev.CitaId}")" class="event-purchase-button btn">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+

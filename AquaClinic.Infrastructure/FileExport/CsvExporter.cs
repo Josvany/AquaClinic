@@ -1,0 +1,24 @@
+﻿using System.Globalization;
+using CsvHelper;
+using CsvHelper.Configuration;
+using AquaClinic.Application.Contracts.Infrastructure;
+using AquaClinic.Application.Features.Citas.Queries.GetCitasExport;
+
+namespace AquaClinic.Infrastructure.FileExport
+{
+    public class CsvExporter : ICsvExporter
+    {
+        public byte[] ExportCitasToCsv(List<CitaExportDto> citaExportDtos)
+        {
+            using var memoryStream = new MemoryStream();
+            using (var streamWriter = new StreamWriter(memoryStream))
+            {
+                var csvConfig = new CsvConfiguration(CultureInfo.InvariantCulture);
+                using var csvWriter = new CsvWriter(streamWriter, csvConfig);
+                csvWriter.WriteRecords(citaExportDtos);
+            }
+
+            return memoryStream.ToArray();
+        }
+    }
+}

@@ -1,0 +1,22 @@
+﻿@page "/addespecialidad"
+@rendermode InteractiveServer
+
+<h3 class="mb-5">Nueva especialidad</h3>
+
+@Message
+
+<EditForm Model="@EspecialidadViewModel" OnValidSubmit="@HandleValidSubmit">
+
+    <DataAnnotationsValidator />
+    <ValidationSummary></ValidationSummary>
+    
+    <div class="row mb-3 ms-2">
+        <label for="nombre" class="col-sm-3 form-label">Nombre:</label>
+        <div class="col-sm-5">
+            <InputText id="nombre" class="form-control" @bind-Value="@EspecialidadViewModel.Nombre" placeholder="Ingrese el nombre"></InputText>
+            <ValidationMessage For="@(() => EspecialidadViewModel.Nombre)" />
+        </div>
+    </div>
+
+    <button type="submit" class="submit-button mt-3">Guardar especialidad</button>
+</EditForm>
