@@ -1,4 +1,4 @@
-# Mapa de comunicación — Login en AquaClinic
+﻿# Mapa de comunicación — Login en AquaClinic
 
 ## Actores y componentes
 
@@ -7,14 +7,14 @@
 | Navegador | Cliente | Envía/recibe cookies, renderiza |
 | `Login.razor` / `Register.razor` | AquaClinic.App | Páginas con **SSR estático** (form POST real) |
 | `UserManager` / `SignInManager` | AquaClinic.App (Identidad local) | Validar credenciales y emitir cookie LOCAL |
-| `AquaClinicIdentityDbContext` | App **y** API | Ambos apuntan a la misma BD `AquaClinicIdentityDb` |
+| `AquaClinicDbContext` | App **y** API | Ambos apuntan a la misma BD única `AquaClinicDb` (Identity + negocio) |
 | Cliente `"Authentication"` | AquaClinic.App | HttpClient hacia la API para "acuñar" la cookie de la API |
 | `UserCookieStore` | AquaClinic.App (singleton en memoria) | Guarda `userId → cookie de la API` |
 | `ApiCookieHandler` | AquaClinic.App (por circuito) | Adjunta esa cookie en las llamadas salientes a la API |
 | `IdentityRevalidatingAuthenticationStateProvider` | AquaClinic.App | Estado de autenticación en circuitos interactivos (revalida cada 30 min) |
 | `MapIdentityApi<ApplicationUser>()` | AquaClinic.Api | `POST /login?useCookies=true`, `/register`, `/manage/info` |
 | Endpoints `[Authorize]` | AquaClinic.Api | `/api/especialidades/all` y `/api/especialidades/allwithcitas` |
-| SQL LocalDB | Servidor | `AquaClinicIdentityDb` (usuarios) y `AquaClinicDb` (citas/especialidades/consultas) |
+| SQL LocalDB | Servidor | `AquaClinicDb` (única: usuarios AspNet* + citas/especialidades/servicios) |
 
 ## Las dos cookies
 
@@ -23,7 +23,7 @@
 | `.AspNetCore.Identity.Application` (App) | `SignInManager` de la App | **Navegador** (HttpOnly) | Autenticar las páginas de la App |
 | `.AspNetCore.Identity.Application` (API) | `MapIdentityApi` de la API | **Memoria del servidor App** (`UserCookieStore`) | Reenviarla a los endpoints protegidos de la API |
 
-> La App y la API comparten la misma `AquaClinicIdentityDb`, por eso las mismas credenciales funcionan en los dos lados **sin necesidad de compartir claves de Data Protection**.
+> La App y la API comparten la misma BD única (`AquaClinicDb`), por eso las mismas credenciales funcionan en los dos lados **sin necesidad de compartir claves de Data Protection**.
 
 ## 1. Secuencia de login
 
@@ -32,7 +32,7 @@ sequenceDiagram
     participant U as Navegador
     participant L as Login.razor (SSR estatico)
     participant SG as SignInManager (App)
-    participant DB as AquaClinicIdentityDb
+    participant DB as AquaClinicDb (única: Identity + negocio)
     participant API as AquaClinic.Api
     participant ST as UserCookieStore (memoria)
 
@@ -65,17 +65,17 @@ flowchart LR
         NSC["Cliente NSwag IClient<br/>(HttpClient por circuito)"]
         ACH["ApiCookieHandler"]
         ST["UserCookieStore<br/>(singleton en memoria)"]
-        ID1["AquaClinicIdentityDbContext"]
+        ID1["AquaClinicDbContext (App)"]
     end
 
     subgraph API["AquaClinic.Api :7081"]
         MIA["POST /login?useCookies=true<br/>(MapIdentityApi)"]
         EP1["Endpoints protegidos (Authorize)<br/>/api/especialidades/*"]
         EP2["Endpoints anonimos<br/>/api/citas, /api/consultas"]
-        ID2["AquaClinicIdentityDbContext"]
+        ID2["AquaClinicDbContext (API)"]
     end
 
-    DBI[("AquaClinicIdentityDb")]
+    DBI[("AquaClinicDb (única)")]
     DBC[("AquaClinicDb")]
 
     U -- "cookie LOCAL (HttpOnly)" --> APP
@@ -142,7 +142,7 @@ sequenceDiagram
 
 Idéntico al login, con un paso previo:
 
-1. `UserManager.CreateAsync(user, password)` → crea el usuario en `AquaClinicIdentityDb`
+1. `UserManager.CreateAsync(user, password)` → crea el usuario en `AquaClinicDb` (tabla AspNetUsers)
 2. `SignInManager.SignInAsync(...)` → cookie LOCAL en el navegador
 3. `GuardarCookieDeLaApiAsync(...)` → acuña y guarda la cookie de la API
 4. Redirect a `/`

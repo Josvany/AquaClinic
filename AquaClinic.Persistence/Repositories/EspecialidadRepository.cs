@@ -10,14 +10,11 @@ namespace AquaClinic.Persistence.Repositories
         {
         }
 
-        public async Task<List<Especialidad>> GetEspecialidadesWithCitas(bool incluirCitasPasadas)
+        public async Task<List<Especialidad>> GetEspecialidadesWithServicios()
         {
-            var allEspecialidades = await _dbContext.Especialidades.Include(x => x.Citas).ToListAsync();
-            if (!incluirCitasPasadas)
-            {
-                allEspecialidades.ForEach(p => p.Citas.ToList().RemoveAll(c => c.Fecha < DateTime.Today));
-            }
-            return allEspecialidades;
+            return await _dbContext.Especialidades
+                .Include(e => e.Servicios)
+                .ToListAsync();
         }
     }
 }

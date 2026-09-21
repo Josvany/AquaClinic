@@ -15,9 +15,8 @@ namespace AquaClinic.Persistence
 
             services.AddScoped(typeof(IAsyncRepository<>), typeof(BaseRepository<>));
 
+            services.AddScoped<IServicioRepository, ServicioRepository>();
             services.AddScoped<IEspecialidadRepository, EspecialidadRepository>();
-            services.AddScoped<ICitaRepository, CitaRepository>();
-            services.AddScoped<IConsultaRepository, ConsultaRepository>();
 
             return services;
         }

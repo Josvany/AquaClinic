@@ -1,0 +1,70 @@
+﻿@page "/perfil"
+@rendermode InteractiveServer
+
+<PageTitle>Mi perfil</PageTitle>
+
+<h1 class="page-title">Mi perfil</h1>
+
+@if (Cargando)
+{
+    <p><em>Cargando...</em></p>
+}
+else if (Usuario == null)
+{
+    <div class="alert alert-warning">No se pudo cargar el perfil. Verifica que la API est&#233; corriendo.</div>
+}
+else
+{
+    @if (!string.IsNullOrEmpty(MensajeExito))
+    {
+        <div class="alert alert-success">@MensajeExito</div>
+    }
+    @if (!string.IsNullOrEmpty(MensajeError))
+    {
+        <div class="alert alert-danger">@MensajeError</div>
+    }
+
+    <EditForm Model="Usuario" OnValidSubmit="HandleGuardar">
+        <DataAnnotationsValidator />
+
+        <div class="row mb-3">
+            <label class="col-sm-3 col-form-label">Correo:</label>
+            <div class="col-sm-8">
+                <input class="form-control" value="@Usuario.Email" readonly />
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <label class="col-sm-3 col-form-label">Nombre:</label>
+            <div class="col-sm-8">
+                <InputText class="form-control" @bind-Value="Usuario.Nombre" />
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <label class="col-sm-3 col-form-label">Apellidos:</label>
+            <div class="col-sm-8">
+                <InputText class="form-control" @bind-Value="Usuario.Apellidos" />
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <label class="col-sm-3 col-form-label">Tel&#233;fono:</label>
+            <div class="col-sm-8">
+                <InputText class="form-control" @bind-Value="Usuario.Telefono" />
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <label class="col-sm-3 col-form-label">Roles:</label>
+            <div class="col-sm-8">
+                <span class="badge bg-info">@string.Join(", ", Usuario.Roles)</span>
+            </div>
+        </div>
+
+        <button type="submit" class="submit-button">Guardar cambios</button>
+    </EditForm>
+
+    <br />
+    <p class="mt-3"><a href="/cambiarpassword">Cambiar contrase&#241;a</a></p>
+}

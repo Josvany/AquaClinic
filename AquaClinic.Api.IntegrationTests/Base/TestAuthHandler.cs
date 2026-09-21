@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 namespace AquaClinic.Api.IntegrationTests.Base
 {
     /// <summary>
-    /// Handler de autenticaci&#243;n simulada: autentica cualquier petici&#243;n con un
+    /// Handler de autenticacion simulada: autentica cualquier peticion con un
     /// principal de prueba, para poder probar los endpoints protegidos con [Authorize].
     /// </summary>
     public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
@@ -20,7 +20,21 @@ namespace AquaClinic.Api.IntegrationTests.Base
 
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            var claims = new[] { new Claim(ClaimTypes.Name, "UsuarioDePrueba") };
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.Name, "UsuarioDePrueba"),
+                // Rol Administrador para que los endpoints con [HasPermission] pasen la autorizacion
+                new(ClaimTypes.Role, "Administrador")
+            };
+
+            // Permite simular el usuario autenticado actual en los endpoints [Authorize]
+            // que dependen del NameIdentifier (por ejemplo, /api/usuarios/actual)
+            var usuarioId = Request.Headers["X-Test-UserId"].FirstOrDefault();
+            if (!string.IsNullOrEmpty(usuarioId))
+            {
+                claims.Add(new Claim(ClaimTypes.NameIdentifier, usuarioId));
+            }
+
             var identity = new ClaimsIdentity(claims, "TestScheme");
             var principal = new ClaimsPrincipal(identity);
             var ticket = new AuthenticationTicket(principal, "TestScheme");

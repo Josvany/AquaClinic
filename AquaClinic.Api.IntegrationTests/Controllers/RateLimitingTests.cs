@@ -1,4 +1,4 @@
-using AquaClinic.Api.IntegrationTests.Base;
+﻿using AquaClinic.Api.IntegrationTests.Base;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -6,14 +6,17 @@ using System.Text.Json;
 namespace AquaClinic.Api.IntegrationTests.Controllers
 {
     /// <summary>
-    /// Verifica que el rate limiter aplica el l&#237;mite estricto de autenticaci&#243;n
+    /// Verifica que el rate limiter aplica el limite estricto de autenticacion
     /// (10 peticiones por ventana de 60s, por usuario/IP) sobre /login.
+    /// Coleccion propia (factory separado): agota la particion de rate limiting
+    /// y no debe contaminar a los demas tests de integracion.
     /// </summary>
-    public class RateLimitingTests : IClassFixture<CustomWebApplicationFactory<Program>>
+    [Collection("RateLimiting")]
+    public class RateLimitingTests : IClassFixture<RateLimitTestWebApplicationFactory<Program>>
     {
-        private readonly CustomWebApplicationFactory<Program> _factory;
+        private readonly RateLimitTestWebApplicationFactory<Program> _factory;
 
-        public RateLimitingTests(CustomWebApplicationFactory<Program> factory)
+        public RateLimitingTests(RateLimitTestWebApplicationFactory<Program> factory)
         {
             _factory = factory;
         }

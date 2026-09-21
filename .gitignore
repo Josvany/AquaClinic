@@ -26,6 +26,7 @@ x86/
 bld/
 [Bb]uild/
 *.binlog
+/graphify-out
 
 # Rider
 .idea/

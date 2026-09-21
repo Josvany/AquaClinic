@@ -5,7 +5,8 @@ using System.Text.Json;
 namespace AquaClinic.Api.IntegrationTests.Controllers
 {
 
-    public class EspecialidadesControllerTests : IClassFixture<CustomWebApplicationFactory<Program>>
+[Collection("ApiIntegration")]
+    public class EspecialidadesControllerTests
     {
         private readonly CustomWebApplicationFactory<Program> _factory;
 

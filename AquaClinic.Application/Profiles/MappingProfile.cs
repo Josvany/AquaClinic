@@ -1,13 +1,13 @@
 ﻿using AutoMapper;
 using AquaClinic.Application.Features.Especialidades.Commands.CreateEspecialidad;
 using AquaClinic.Application.Features.Especialidades.Queries.GetEspecialidadesList;
-using AquaClinic.Application.Features.Especialidades.Queries.GetEspecialidadesListWithCitas;
-using AquaClinic.Application.Features.Citas.Commands.CreateCita;
-using AquaClinic.Application.Features.Citas.Commands.UpdateCita;
-using AquaClinic.Application.Features.Citas.Queries.GetCitaDetail;
-using AquaClinic.Application.Features.Citas.Queries.GetCitasExport;
-using AquaClinic.Application.Features.Citas.Queries.GetCitasList;
-using AquaClinic.Application.Features.Consultas.Queries.GetConsultasForMonth;
+using AquaClinic.Application.Features.Especialidades.Queries.GetEspecialidadesListWithServicios;
+using AquaClinic.Application.Features.Servicios.Commands.CreateServicio;
+using AquaClinic.Application.Features.Servicios.Commands.UpdateServicio;
+using AquaClinic.Application.Features.Servicios.Queries.GetServicioDetail;
+using AquaClinic.Application.Features.Servicios.Queries.GetServiciosExport;
+using AquaClinic.Application.Features.Servicios.Queries.GetServiciosList;
+using AquaClinic.Application.Features.Usuarios;
 using AquaClinic.Domain.Entities;
 
 namespace AquaClinic.Application.Profiles
@@ -16,21 +16,21 @@ namespace AquaClinic.Application.Profiles
     {
         public MappingProfile()
         {
-            CreateMap<Cita, CitaListVm>().ReverseMap();
-            CreateMap<Cita, CitaDetailVm>().ReverseMap();
+            CreateMap<Servicio, ServicioListVm>().ReverseMap();
+            CreateMap<Servicio, ServicioDetailVm>().ReverseMap();
             CreateMap<Especialidad, EspecialidadDto>().ReverseMap();
             CreateMap<Especialidad, EspecialidadListVm>().ReverseMap();
-            CreateMap<Especialidad, EspecialidadCitaListVm>().ReverseMap();
+            CreateMap<Especialidad, EspecialidadServicioListVm>().ReverseMap();
             CreateMap<Especialidad, CreateEspecialidadCommand>().ReverseMap();
             CreateMap<Especialidad, CreateEspecialidadDto>().ReverseMap();
-            CreateMap<Cita, EspecialidadCitaDto>().ReverseMap();
-            CreateMap<Cita, CitaExportDto>().ReverseMap();
+            CreateMap<Servicio, EspecialidadServicioDto>().ReverseMap();
+            CreateMap<Servicio, ServicioExportDto>().ReverseMap();
 
-            CreateMap<Cita, CreateCitaCommand>().ReverseMap();
-            CreateMap<Cita, UpdateCitaCommand>().ReverseMap();
-            CreateMap<Cita, EspecialidadCitaDto>().ReverseMap();
+            CreateMap<Servicio, CreateServicioCommand>().ReverseMap();
+            CreateMap<Servicio, UpdateServicioCommand>().ReverseMap();
 
-            CreateMap<Consulta, ConsultasForMonthDto>();
+            // Usuarios (perfil del cliente)
+            CreateMap<Usuario, UsuarioVm>();
         }
     }
 }

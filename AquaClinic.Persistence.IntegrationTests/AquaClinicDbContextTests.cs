@@ -26,12 +26,12 @@ namespace AquaClinic.Persistence.IntegrationTests
         [Fact]
         public async Task Save_SetCreatedByProperty()
         {
-            var ev = new Cita() {CitaId = Guid.NewGuid(), Nombre = "Cita de prueba" };
+            var servicio = new Servicio() { ServicioId = Guid.NewGuid(), Nombre = "Servicio de prueba" };
 
-            _aquaClinicDbContext.Citas.Add(ev);
+            _aquaClinicDbContext.Servicios.Add(servicio);
             await _aquaClinicDbContext.SaveChangesAsync();
 
-            ev.CreatedBy.ShouldBe(_loggedInUserId);
+            servicio.CreatedBy.ShouldBe(_loggedInUserId);
         }
     }
 }

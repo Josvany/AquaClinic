@@ -4,8 +4,8 @@ using Serilog.Context;
 namespace AquaClinic.Api.Middleware
 {
     /// <summary>
-    /// Propaga el identificador de correlaci&#243;n de la petici&#243;n al LogContext de Serilog,
-    /// de modo que todos los logs de una misma petici&#243;n compartan el CorrelationId.
+    /// Propaga el identificador de correlacion de la peticion al LogContext de Serilog,
+    /// de modo que todos los logs de una misma peticion compartan el CorrelationId.
     /// </summary>
     public class RequestContextLoggingMiddleware(RequestDelegate next)
     {

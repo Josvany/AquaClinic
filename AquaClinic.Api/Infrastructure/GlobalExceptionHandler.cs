@@ -5,7 +5,7 @@ namespace AquaClinic.Api.Infrastructure
 {
     /// <summary>
     /// Manejador global de excepciones no controladas: registra el error y devuelve un
-    /// ProblemDetails gen&#233;rico (RFC 7231) sin exponer detalles internos de la excepci&#243;n.
+    /// ProblemDetails gen&#233;rico (RFC 7231) sin exponer detalles internos de la excepcion.
     /// </summary>
     internal sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger)
         : IExceptionHandler

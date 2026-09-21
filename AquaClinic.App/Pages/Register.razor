@@ -6,19 +6,27 @@
     <div class="card col-12 col-lg-6 me-auto ms-auto p-3">
         <h3 class="card-title">Registrarse</h3>
         <div class="card-body">
-            <EditForm Model="Input" method="post" FormName="register" OnValidSubmit="HandleRegister" class="card-body">
-                <DataAnnotationsValidator />
-                <ValidationSummary></ValidationSummary>
+
+            @if (!string.IsNullOrEmpty(ErrorMessage))
+            {
+                <div class="alert alert-danger">@ErrorMessage</div>
+            }
+
+            <!-- Formulario HTML estandar: POST a /auth/register (minimal API). -->
+            <form method="post" action="/auth/register" class="card-body">
+                <AntiforgeryToken />
                 <div class="row mt-2">
                     <label class="col-12 col-md-4 p-0 form-label" for="email">Correo:</label>
                     <div class="col-12 col-md-8">
-                        <InputText id="email" class="form-control login-field" @bind-Value="Input.Email"></InputText>
+                        <input type="email" id="email" name="email" class="form-control login-field"
+                               required placeholder="tu@correo.com" />
                     </div>
                 </div>
                 <div class="row mt-2">
                     <label class="col-12 col-md-4 p-0 form-label" for="password">Contrase&#241;a:</label>
                     <div class="col-12 col-md-8">
-                        <InputText type="password" id="password" class="form-control login-field" @bind-Value="Input.Password"></InputText>
+                        <input type="password" id="password" name="password" class="form-control login-field"
+                               required minlength="8" placeholder="M&#237;nimo 8 caracteres" />
                     </div>
                 </div>
                 <div class="row mt-2">
@@ -26,9 +34,11 @@
                         <button class="m-2 ms-0 p-2" type="submit">Registrarse</button>
                     </div>
                 </div>
-            </EditForm>
+            </form>
+
+            <p class="mt-3">
+                <a href="/login">&#191;Ya tienes cuenta? Inicia sesi&#243;n</a>
+            </p>
         </div>
     </div>
 </div>
-
-<span class="label label-error">@Message</span>

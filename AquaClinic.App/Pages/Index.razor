@@ -11,14 +11,48 @@
 
 <AuthorizeView>
     <Authorized>
-        <form method="post" action="logout">
-            <AntiforgeryToken />
-            <button type="submit">Cerrar sesi&#243;n</button>
-        </form>
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <span class="oi oi-person" aria-hidden="true"></span>
+                    Hola, @context.User.Identity?.Name
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-2">
+                    <div class="col-md-3 fw-bold">Correo:</div>
+                    <div class="col-md-9">@context.User.Identity?.Name</div>
+                </div>
+                @if (context.User.Claims.FirstOrDefault(c => c.Type == "nombre")?.Value is string nombre && !string.IsNullOrEmpty(nombre))
+                {
+                    <div class="row mb-2">
+                        <div class="col-md-3 fw-bold">Nombre:</div>
+                        <div class="col-md-9">@nombre</div>
+                    </div>
+                }
+                <div class="row mb-2">
+                    <div class="col-md-3 fw-bold">Roles:</div>
+                    <div class="col-md-9">
+                        @foreach (var rol in context.User.FindAll(System.Security.Claims.ClaimTypes.Role))
+                        {
+                            <span class="badge bg-info me-1">@rol.Value</span>
+                        }
+                    </div>
+                </div>
+                <br />
+                <a href="/perfil" class="btn btn-outline-primary btn-sm me-2">
+                    <span class="oi oi-person" aria-hidden="true"></span> Ver perfil completo
+                </a>
+                <form method="post" action="logout" class="d-inline">
+                    <AntiforgeryToken />
+                    <button type="submit" class="btn btn-outline-danger btn-sm">Cerrar sesi&#243;n</button>
+                </form>
+            </div>
+        </div>
     </Authorized>
     <NotAuthorized>
-        <button @onclick="NavigateToLogin">Haga clic aqu&#237; para iniciar sesi&#243;n</button>
-        <br />
-        <button @onclick="NavigateToRegister">Haga clic aqu&#237; para registrarse</button>
+        <p>Para acceder a todas las funcionalidades, inicia sesi&#243;n o reg&#237;strate:</p>
+        <button @onclick="NavigateToLogin" class="btn btn-primary me-2">Iniciar sesi&#243;n</button>
+        <button @onclick="NavigateToRegister" class="btn btn-outline-primary">Registrarse</button>
     </NotAuthorized>
 </AuthorizeView>

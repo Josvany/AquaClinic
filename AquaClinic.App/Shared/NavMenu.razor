@@ -1,25 +1,44 @@
-﻿
-<div class="sidebar">
+﻿<div class="sidebar">
     <div class="menu list-group list-group-flush">
         <AuthorizeView>
             <Authorized>
+                <div class="px-3 py-2 text-muted small">
+                    @context.User.Identity?.Name
+                </div>
                 <NavLink class="list-group-item list-group-item-action" href="/" Match="NavLinkMatch.All">
                     <span class="oi oi-home" aria-hidden="true"></span> Inicio
                 </NavLink>
-                <NavLink class="list-group-item list-group-item-action" href="/citaoverview">
-                    <span class="oi oi-list-rich" aria-hidden="true"></span> Citas
+                <NavLink class="list-group-item list-group-item-action" href="/serviciosoverview">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> Servicios
                 </NavLink>
-                <NavLink class="list-group-item list-group-item-action" href="/especialidadoverview">
-                    <span class="oi oi-list-rich" aria-hidden="true"></span> Especialidades
+                @if (context.User.IsInRole("Administrador"))
+                {
+                    <NavLink class="list-group-item list-group-item-action" href="/especialidadoverview">
+                        <span class="oi oi-list-rich" aria-hidden="true"></span> Especialidades
+                    </NavLink>
+                    <NavLink class="list-group-item list-group-item-action" href="/nuevaespecialidad">
+                        <span class="oi oi-plus" aria-hidden="true"></span> Nueva especialidad
+                    </NavLink>
+                }
+                <NavLink class="list-group-item list-group-item-action" href="/perfil">
+                    <span class="oi oi-person" aria-hidden="true"></span> Mi perfil
                 </NavLink>
-                <NavLink class="list-group-item list-group-item-action" href="/addespecialidad">
-                    <span class="oi oi-list-rich" aria-hidden="true"></span> Nueva especialidad
+                <NavLink class="list-group-item list-group-item-action" href="/cambiarpassword">
+                    <span class="oi oi-lock-locked" aria-hidden="true"></span> Cambiar contrase&#241;a
                 </NavLink>
-                <NavLink class="list-group-item list-group-item-action" href="/consultas">
-                    <span class="oi oi-list-rich" aria-hidden="true"></span> Consultas
-                </NavLink>
+                <form action="logout" method="post" class="mt-2 px-3">
+                    <AntiforgeryToken />
+                    <button type="submit" class="btn btn-outline-danger btn-sm w-100">Cerrar sesion</button>
+                </form>
             </Authorized>
+            <NotAuthorized>
+                <NavLink class="list-group-item list-group-item-action" href="/login">
+                    <span class="oi oi-account-login" aria-hidden="true"></span> Iniciar sesion
+                </NavLink>
+                <NavLink class="list-group-item list-group-item-action" href="/register">
+                    <span class="oi oi-account-login" aria-hidden="true"></span> Registrarse
+                </NavLink>
+            </NotAuthorized>
         </AuthorizeView>
     </div>
 </div>
-

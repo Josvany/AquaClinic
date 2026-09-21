@@ -13,15 +13,15 @@
         {
             if (ex.StatusCode == 400)
             {
-                return new ApiResponse<Guid>() { Message = "Ocurrieron errores de validaci&#243;n.", ValidationErrors = ex.Response, Success = false };
+                return new ApiResponse<Guid>() { Message = "Ocurrieron errores de validacion.", ValidationErrors = ex.Response, Success = false };
             }
             else if (ex.StatusCode == 404)
             {
-                return new ApiResponse<Guid>() { Message = "No se encontr&#243; el elemento solicitado.", Success = false };
+                return new ApiResponse<Guid>() { Message = "No se encontro el elemento solicitado.", Success = false };
             }
             else
             {
-                return new ApiResponse<Guid>() { Message = "Ocurri&#243; un error, intente nuevamente.", Success = false };
+                return new ApiResponse<Guid>() { Message = "Ocurrio un error, intente nuevamente.", Success = false };
             }
         }
     }

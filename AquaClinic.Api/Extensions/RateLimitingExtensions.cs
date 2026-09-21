@@ -5,8 +5,8 @@ namespace AquaClinic.Api.Extensions
 {
     internal static class RateLimitingExtensions
     {
-        // Rutas de autenticaci&#243;n de MapIdentityApi (y logout propio) que reciben un
-        // l&#237;mite m&#225;s estricto para frenar intentos de fuerza bruta.
+        // Rutas de autenticacion de MapIdentityApi (y logout propio) que reciben un
+        // limite m&#225;s estricto para frenar intentos de fuerza bruta.
         private static readonly string[] RutasDeAutenticacion =
         [
             "/login",
@@ -29,7 +29,7 @@ namespace AquaClinic.Api.Extensions
                 options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
                 // Limite global de ventana fija, particionado por usuario autenticado o IP del cliente.
-                // Las rutas de autenticaci&#243;n reciben la ventana estricta (adaptaci&#243;n necesaria porque
+                // Las rutas de autenticacion reciben la ventana estricta (adaptacion necesaria porque
                 // los endpoints de MapIdentityApi no admiten RequireRateLimiting).
                 options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
                 {
@@ -54,7 +54,7 @@ namespace AquaClinic.Api.Extensions
                             });
                 });
 
-                // Pol&#237;tica nombrada para decorar endpoints propios (por ejemplo, un futuro AuthController JWT).
+                // Politica nombrada para decorar endpoints propios (por ejemplo, un futuro AuthController JWT).
                 options.AddPolicy(RateLimitingPolicies.Authentication, httpContext =>
                     RateLimitPartition.GetFixedWindowLimiter(
                         partitionKey: GetPartitionKey(httpContext),
