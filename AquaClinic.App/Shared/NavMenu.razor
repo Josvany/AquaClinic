@@ -9,7 +9,10 @@
 
             <AuthorizeView>
                 <Authorized>
-                    <li><NavLink href="/citaoverview">Mis citas</NavLink></li>
+                    @if (context.User.IsInRole("Administrador") || context.User.IsInRole("Recepcion") || context.User.IsInRole("Esteticista"))
+                    {
+                        <li><NavLink href="/citaoverview">Citas</NavLink></li>
+                    }
                     <li><NavLink href="/perfil">Mi perfil</NavLink></li>
                     @if (context.User.IsInRole("Administrador"))
                     {

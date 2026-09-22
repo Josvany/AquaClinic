@@ -17,6 +17,7 @@ namespace AquaClinic.Persistence
 
             services.AddScoped<IServicioRepository, ServicioRepository>();
             services.AddScoped<IEspecialidadRepository, EspecialidadRepository>();
+            services.AddScoped<ICitaRepository, CitaRepository>();
 
             return services;
         }

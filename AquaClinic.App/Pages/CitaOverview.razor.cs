@@ -1,4 +1,5 @@
 ﻿using AquaClinic.App.Contracts;
+using AquaClinic.App.Services;
 using AquaClinic.App.ViewModels;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -26,11 +27,24 @@ namespace AquaClinic.App.Pages
 
         private DateTime _fecha = DateTime.Today;
         private IList<AppointmentData> _eventos = new List<AppointmentData>();
+        private string? _errorCarga;
+        private string? _errorExport;
 
         protected async override Task OnInitializedAsync()
         {
-            Citas = await CitaDataService.GetAllCitas();
-            _eventos = Citas?.Select(ACitaAEvento).ToList() ?? new List<AppointmentData>();
+            try
+            {
+                Citas = await CitaDataService.GetAllCitas();
+                _eventos = Citas?.Select(ACitaAEvento).ToList() ?? new List<AppointmentData>();
+            }
+            catch (ApiException)
+            {
+                _errorCarga = "No se pudieron cargar las citas. Verifica que tengas permiso para verlas y que la API esté corriendo.";
+            }
+            catch (HttpRequestException)
+            {
+                _errorCarga = "No se pudo conectar con la API. Verifica que esté corriendo.";
+            }
         }
 
         private static AppointmentData ACitaAEvento(CitaListViewModel cita) => new()
@@ -52,11 +66,18 @@ namespace AquaClinic.App.Pages
         {
             if (await JSRuntime.InvokeAsync<bool>("confirm", $"¿Desea exportar esta lista a Excel?"))
             {
-                var response = await HttpClient.GetAsync("api/citas/export");
-                response.EnsureSuccessStatusCode();
-                var fileBytes = await response.Content.ReadAsByteArrayAsync();
-                var fileName = $"ReporteCitas{DateTime.Now.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)}.csv";
-                await JSRuntime.InvokeAsync<object>("saveAsFile", fileName, Convert.ToBase64String(fileBytes));
+                try
+                {
+                    var response = await HttpClient.GetAsync("api/citas/export");
+                    response.EnsureSuccessStatusCode();
+                    var fileBytes = await response.Content.ReadAsByteArrayAsync();
+                    var fileName = $"ReporteCitas{DateTime.Now.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)}.csv";
+                    await JSRuntime.InvokeAsync<object>("saveAsFile", fileName, Convert.ToBase64String(fileBytes));
+                }
+                catch (HttpRequestException)
+                {
+                    _errorExport = "No se pudo exportar la lista de citas. Inténtalo de nuevo más tarde.";
+                }
             }
         }
     }

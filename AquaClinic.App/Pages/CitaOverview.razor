@@ -8,7 +8,11 @@
     <button @onclick="ExportCitas">Exportar citas</button>
 </div>
 
-@if (Citas == null)
+@if (_errorCarga != null)
+{
+    <div class="alert alert-danger mt-3">@_errorCarga</div>
+}
+else if (Citas == null)
 {
     <p><em>Cargando...</em></p>
 }
@@ -23,6 +27,11 @@ else
         <RadzenDayView />
     </RadzenScheduler>
 
+    @if (Citas.Count == 0)
+    {
+        <p class="mt-3"><em>No hay citas agendadas todav&iacute;a.</em></p>
+    }
+
     <table>
         <thead>
             <tr>
@@ -36,7 +45,12 @@ else
             @foreach (var ev in Citas)
             {
                 <tr>
-                    <td><img src="@(ev.ImagenUrl)" class="event-image" /></td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(ev.ImagenUrl))
+                        {
+                            <img src="@(ev.ImagenUrl)" class="event-image" />
+                        }
+                    </td>
                     <td class="event-name">@ev.Nombre </td>
                     <td class="event-date">@ev.Fecha.ToShortDateString() </td>
                     <td>
@@ -48,4 +62,9 @@ else
             }
         </tbody>
     </table>
+}
+
+@if (_errorExport != null)
+{
+    <div class="alert alert-warning mt-3">@_errorExport</div>
 }

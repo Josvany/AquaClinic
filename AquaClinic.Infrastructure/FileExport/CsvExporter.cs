@@ -2,6 +2,7 @@
 using CsvHelper;
 using CsvHelper.Configuration;
 using AquaClinic.Application.Contracts.Infrastructure;
+using AquaClinic.Application.Features.Citas.Queries.GetCitasExport;
 using AquaClinic.Application.Features.Servicios.Queries.GetServiciosExport;
 
 namespace AquaClinic.Infrastructure.FileExport
@@ -16,6 +17,19 @@ namespace AquaClinic.Infrastructure.FileExport
                 var csvConfig = new CsvConfiguration(CultureInfo.InvariantCulture);
                 using var csvWriter = new CsvWriter(streamWriter, csvConfig);
                 csvWriter.WriteRecords(servicioExportDtos);
+            }
+
+            return memoryStream.ToArray();
+        }
+
+        public byte[] ExportCitasToCsv(List<CitaExportDto> citaExportDtos)
+        {
+            using var memoryStream = new MemoryStream();
+            using (var streamWriter = new StreamWriter(memoryStream))
+            {
+                var csvConfig = new CsvConfiguration(CultureInfo.InvariantCulture);
+                using var csvWriter = new CsvWriter(streamWriter, csvConfig);
+                csvWriter.WriteRecords(citaExportDtos);
             }
 
             return memoryStream.ToArray();
