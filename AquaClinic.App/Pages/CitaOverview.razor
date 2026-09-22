@@ -8,14 +8,21 @@
     <button @onclick="ExportCitas">Exportar citas</button>
 </div>
 
-
-
 @if (Citas == null)
 {
     <p><em>Cargando...</em></p>
 }
 else
 {
+    <h4 class="mt-4">Calendario de citas</h4>
+    <RadzenScheduler TItem="AppointmentData" Data="_eventos"
+                     TextProperty="Text" StartProperty="Start" EndProperty="End"
+                     Date="_fecha" Style="height: 620px;">
+        <RadzenMonthView />
+        <RadzenWeekView />
+        <RadzenDayView />
+    </RadzenScheduler>
+
     <table>
         <thead>
             <tr>
@@ -42,4 +49,3 @@ else
         </tbody>
     </table>
 }
-

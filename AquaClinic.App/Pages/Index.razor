@@ -1,58 +1,109 @@
 ﻿@page "/"
-@rendermode InteractiveServer
 
-<PageTitle>AquaClinic</PageTitle>
+<PageTitle>Aqua Skin & Glow Clinic</PageTitle>
 
-<h1 class="page-title">&#161;Bienvenido al sistema de gesti&#243;n de AquaClinic!</h1>
-<br />
-<h4>Con esta aplicaci&#243;n tiene acceso a todas las funcionalidades de AquaClinic.</h4>
-
-<br />
-
-<AuthorizeView>
-    <Authorized>
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <span class="oi oi-person" aria-hidden="true"></span>
-                    Hola, @context.User.Identity?.Name
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="row mb-2">
-                    <div class="col-md-3 fw-bold">Correo:</div>
-                    <div class="col-md-9">@context.User.Identity?.Name</div>
-                </div>
-                @if (context.User.Claims.FirstOrDefault(c => c.Type == "nombre")?.Value is string nombre && !string.IsNullOrEmpty(nombre))
-                {
-                    <div class="row mb-2">
-                        <div class="col-md-3 fw-bold">Nombre:</div>
-                        <div class="col-md-9">@nombre</div>
-                    </div>
-                }
-                <div class="row mb-2">
-                    <div class="col-md-3 fw-bold">Roles:</div>
-                    <div class="col-md-9">
-                        @foreach (var rol in context.User.FindAll(System.Security.Claims.ClaimTypes.Role))
-                        {
-                            <span class="badge bg-info me-1">@rol.Value</span>
-                        }
-                    </div>
-                </div>
-                <br />
-                <a href="/perfil" class="btn btn-outline-primary btn-sm me-2">
-                    <span class="oi oi-person" aria-hidden="true"></span> Ver perfil completo
-                </a>
-                <form method="post" action="logout" class="d-inline">
-                    <AntiforgeryToken />
-                    <button type="submit" class="btn btn-outline-danger btn-sm">Cerrar sesi&#243;n</button>
-                </form>
+<section class="ag-hero">
+    <div class="ag-hero-grid">
+        <div>
+            <h1>Tu piel, le&iacute;da con ciencia y tratada con <em>calma</em></h1>
+            <p class="ag-hero-lead">
+                Diagn&oacute;stico facial con an&aacute;lisis digital, tratamientos aplicados por profesionales
+                certificados y un plan de cuidado que se adapta a tu piel, no al rev&eacute;s.
+            </p>
+            <div class="ag-acciones">
+                <a class="ag-btn" href="/reservar">Agenda tu an&aacute;lisis de piel</a>
+                <a class="ag-btn ag-btn-contorno" href="#servicios">Ver tratamientos</a>
             </div>
         </div>
-    </Authorized>
-    <NotAuthorized>
-        <p>Para acceder a todas las funcionalidades, inicia sesi&#243;n o reg&#237;strate:</p>
-        <button @onclick="NavigateToLogin" class="btn btn-primary me-2">Iniciar sesi&#243;n</button>
-        <button @onclick="NavigateToRegister" class="btn btn-outline-primary">Registrarse</button>
-    </NotAuthorized>
-</AuthorizeView>
+        <div class="ag-hero-media" aria-hidden="true">Fotograf&iacute;a del consultorio</div>
+    </div>
+    <div class="ag-ola" aria-hidden="true"></div>
+</section>
+
+<section id="servicios" class="ag-section">
+    <div class="ag-contenedor">
+        <div class="ag-seccion-intro">
+            <h2 class="ag-seccion-titulo">Cuatro tratamientos, una misma piel</h2>
+            <p>Cada plan comienza con el an&aacute;lisis digital de tu piel. A partir de ah&iacute; elegimos juntos el
+               tratamiento correcto, en el orden correcto.</p>
+        </div>
+
+        <div class="ag-servicios-lista">
+            <a class="ag-servicio" href="/reservar">
+                <span class="ag-servicio-num">r&eacute;flex</span>
+                <div>
+                    <h3>Tratamientos faciales</h3>
+                    <p>Limpieza profunda e hidrataci&oacute;n intensiva precedidas de un diagn&oacute;stico digital
+                       por imagen: poros, hidrataci&oacute;n y luminosidad medidos antes de tocar tu rostro.</p>
+                </div>
+                <span class="ag-servicio-tarifa">desde $120 CAD</span>
+            </a>
+            <a class="ag-servicio" href="/reservar">
+                <span class="ag-servicio-num">regenera</span>
+                <div>
+                    <h3>Cuidado avanzado de la piel</h3>
+                    <p>Microneedling con PDRN de salm&oacute;n y peelings que estimulan col&aacute;geno para una
+                       reparaci&oacute;n celular profunda, con protocolo m&eacute;dico supervisado.</p>
+                </div>
+                <span class="ag-servicio-tarifa">desde $260 CAD</span>
+            </a>
+            <a class="ag-servicio" href="/reservar">
+                <span class="ag-servicio-num">toxina</span>
+                <div>
+                    <h3>Inyectables</h3>
+                    <p>Toxina botul&iacute;nica aplicada para suavizar l&iacute;neas de expresi&oacute;n conservando
+                       naturalidad. Valoraci&oacute;n previa sin costo y seguimiento a los 14 d&iacute;as incluido.</p>
+                </div>
+                <span class="ag-servicio-tarifa">$7.99 CAD la unidad</span>
+            </a>
+            <a class="ag-servicio" href="/reservar">
+                <span class="ag-servicio-num">marco</span>
+                <div>
+                    <h3>Cejas</h3>
+                    <p>Laminado y tinte de cejas con dise&ntilde;o personalizado seg&uacute;n la forma de tu rostro,
+                       no seg&uacute;n la tendencia del momento.</p>
+                </div>
+                <span class="ag-servicio-tarifa">desde $65 CAD</span>
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="ag-banda">
+    <div class="ag-banda-grid">
+        <div><strong data-cuenta="2400">2400</strong><span>an&aacute;lisis de piel realizados</span></div>
+        <div><strong data-cuenta="97">97</strong><span>% de pacientes que repiten</span></div>
+        <div><strong data-cuenta="14">14</strong><span>a&ntilde;os de experiencia</span></div>
+    </div>
+</section>
+
+<section class="ag-section">
+    <div class="ag-contenedor">
+        <h2 class="ag-seccion-titulo" style="margin-bottom: 48px;">Lo que dicen quienes ya vinieron</h2>
+        <div class="ag-testimonios-grid">
+            <figure class="ag-testimonio">
+                <p>&ldquo;El an&aacute;lisis me mostr&oacute; cosas que ning&uacute;n espejo me hab&iacute;a
+                   ense&ntilde;ado. El tratamiento facial fue distinto a todo lo que hab&iacute;a probado.&rdquo;</p>
+                <footer>Mariana R. &mdash; tratamiento facial mensual</footer>
+            </figure>
+            <figure class="ag-testimonio">
+                <p>&ldquo;Me daba miedo la toxina botul&iacute;nica. Aplicaron tan poco y tan bien que nadie not&oacute;
+                   nada&hellip; excepto que me ve&iacute;a descansada.&rdquo;</p>
+                <footer>Carla V. &mdash; inyectables</footer>
+            </figure>
+            <figure class="ag-testimonio">
+                <p>&ldquo;Reserv&eacute; desde el celular en dos minutos, me recordaron por WhatsApp y llegu&eacute;
+                   sin esperar. As&iacute; deber&iacute;a ser siempre.&rdquo;</p>
+                <footer>Luc&iacute;a M. &mdash; cuidado avanzado de la piel</footer>
+            </figure>
+        </div>
+    </div>
+</section>
+
+<section class="ag-cta-final">
+    <div class="ag-contenedor">
+        <h2>Empieza por conocer tu piel</h2>
+        <a class="ag-btn" href="/reservar">Reservar cita ahora</a>
+        <p>O escr&iacute;benos por WhatsApp si prefieres hablar con una persona.</p>
+    </div>
+</section>

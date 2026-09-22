@@ -27,6 +27,7 @@ bld/
 [Bb]uild/
 *.binlog
 /graphify-out
+/.playwright-cli
 
 # Rider
 .idea/

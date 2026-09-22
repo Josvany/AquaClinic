@@ -2,8 +2,10 @@
 using AquaClinic.App.ViewModels;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using Radzen.Blazor;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -22,10 +24,21 @@ namespace AquaClinic.App.Pages
         [Inject]
         public IJSRuntime JSRuntime { get; set; }
 
+        private DateTime _fecha = DateTime.Today;
+        private IList<AppointmentData> _eventos = new List<AppointmentData>();
+
         protected async override Task OnInitializedAsync()
         {
             Citas = await CitaDataService.GetAllCitas();
+            _eventos = Citas?.Select(ACitaAEvento).ToList() ?? new List<AppointmentData>();
         }
+
+        private static AppointmentData ACitaAEvento(CitaListViewModel cita) => new()
+        {
+            Text = cita.Nombre,
+            Start = cita.Fecha,
+            End = cita.Fecha.AddHours(1)
+        };
 
         protected void AddNewCita()
         {

@@ -1,18 +1,18 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="container-fluid">
+<NavMenu />
+<RadzenComponents @rendermode="InteractiveServer" />
+<main class="content ag-main">
+    @Body
+</main>
 
-    <header>
-        <h1><img src="img/aquaclinic.png"></h1>
-        <h3 class="title">AquaClinic · Gestión Clínica </h3>
-
-    </header>
-
-    <div class="d-flex">
-        <NavMenu></NavMenu>
-        <RadzenComponents @rendermode="InteractiveServer" />
-        <div class="content">
-            @Body
-        </div>
+<footer class="ag-footer">
+    <div class="ag-footer-grid">
+        <div><strong>Aqua Skin & Glow Clinic</strong><br />Langley, BC, Canad&aacute;</div>
+        <div>Lun &ndash; Vie 9:00 a 19:00<br />S&aacute;bado 9:00 a 15:00</div>
+        <div>hola@aquaskinlangley.ca<br />+1 604 000 0000</div>
+        <div><a href="/login">Acceso administraci&oacute;n</a></div>
     </div>
-</div>
+</footer>
+
+<a class="ag-whatsapp" href="https://wa.me/16040000000" aria-label="Escr&iacute;benos por WhatsApp" target="_blank" rel="noopener">&#10038;</a>

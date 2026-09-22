@@ -1,0 +1,1004 @@
+/* ============================================================
+   Aqua Skin & Glow Clinic — skin público
+   Lenguaje de diseño: DemoSkin (editorial, Fraunces + Manrope)
+   Paleta: guía de estilo Vacio (teal / dorado / marfil)
+   ============================================================ */
+
+:root {
+    --ag-porcelana: #f7f4ee;
+    --ag-tinta: #144845;
+    --ag-mar: #1e5f5c;
+    --ag-mar-claro: #2a6b66;
+    --ag-mar-profundo: #144845;
+    --ag-bruma: #dce9eb;
+    --ag-nude: #e9cfc0;
+    --ag-dorado: #c5a05a;
+    --ag-dorado-profundo: #9a7b3a;
+    --ag-bronze: #a67c52;
+    --ag-perla: #ffffff;
+    --ag-texto-suave: #3f5a5e;
+    --ag-texto-mudo: #557174;
+    --ag-radio: 14px;
+    --ag-serif: 'Fraunces', Georgia, serif;
+    --ag-sans: 'Manrope', 'Segoe UI', sans-serif;
+}
+
+html, body {
+    font-family: var(--ag-sans);
+    background: var(--ag-porcelana);
+    color: var(--ag-tinta);
+    line-height: 1.65;
+    font-size: 16px;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+h1, h2, h3, h4 {
+    font-family: var(--ag-serif);
+    font-weight: 600;
+    line-height: 1.15;
+    color: var(--ag-tinta);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+    outline: 2px solid var(--ag-mar);
+    outline-offset: 2px;
+}
+
+.ag-main {
+    flex: 1 0 auto;
+    width: 100%;
+}
+
+/* ============================================================
+   Botones
+   ============================================================ */
+
+.ag-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5em;
+    padding: 12px 26px;
+    border-radius: 999px;
+    background: var(--ag-mar);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border: none;
+    cursor: pointer;
+    width: auto;
+    height: auto;
+    text-transform: none;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.ag-btn:hover, .ag-btn:focus-visible {
+    background: var(--ag-mar-profundo);
+    color: #fff;
+}
+
+.ag-btn-contorno {
+    background: transparent;
+    color: var(--ag-mar);
+    border: 1.5px solid var(--ag-mar);
+}
+
+.ag-btn-contorno:hover, .ag-btn-contorno:focus-visible {
+    background: var(--ag-mar);
+    color: #fff;
+}
+
+/* ============================================================
+   Navegación
+   ============================================================ */
+
+.ag-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(247, 244, 238, 0.92);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--ag-bruma);
+}
+
+.ag-nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 14px 24px;
+    max-width: 1160px;
+    margin: 0 auto;
+}
+
+.ag-logo {
+    font-family: var(--ag-serif);
+    font-size: 1.35rem;
+    font-weight: 500;
+    color: var(--ag-tinta);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.ag-logo span {
+    color: var(--ag-mar);
+    font-style: italic;
+}
+
+.ag-nav-links {
+    display: flex;
+    gap: 22px;
+    align-items: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex-wrap: wrap;
+}
+
+.ag-nav-links li {
+    display: flex;
+    align-items: center;
+}
+
+.ag-nav-links a {
+    color: var(--ag-tinta);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.ag-nav-links a:hover {
+    color: var(--ag-mar);
+}
+
+.ag-nav-links a.active {
+    color: var(--ag-mar);
+    box-shadow: inset 0 -2px 0 var(--ag-dorado);
+}
+
+.ag-nav-links a.ag-nav-cta {
+    padding: 10px 22px;
+    border-radius: 999px;
+    background: var(--ag-mar);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: none;
+}
+
+.ag-nav-links a.ag-nav-cta:hover,
+.ag-nav-links a.ag-nav-cta.active {
+    background: var(--ag-mar-profundo);
+    color: #fff;
+    border-radius: 999px;
+    box-shadow: none;
+}
+
+/* Usuario autenticado (isla interactiva NavAuth) */
+.ag-nav-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.92rem;
+}
+
+.ag-nav-user .ag-nav-correo {
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--ag-texto-mudo);
+}
+
+.ag-nav-logout {
+    border: none;
+    background: transparent;
+    color: var(--ag-texto-mudo);
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 0;
+    width: auto;
+    height: auto;
+    text-transform: none;
+    font-family: inherit;
+}
+
+.ag-nav-logout:hover {
+    color: var(--ag-tinta);
+}
+
+/* Botón que abre el modal de login */
+.ag-nav-login {
+    padding: 10px 22px;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--ag-mar);
+    border: 1.5px solid var(--ag-mar);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    width: auto;
+    height: auto;
+    text-transform: none;
+    font-family: inherit;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.ag-nav-login:hover {
+    background: var(--ag-mar);
+    color: #fff;
+}
+
+/* ============================================================
+   Contenedores y secciones
+   ============================================================ */
+
+.ag-contenedor {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.ag-section {
+    padding: clamp(48px, 8vw, 96px) 0;
+}
+
+.ag-seccion-intro {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 32px;
+    margin-bottom: 48px;
+    flex-wrap: wrap;
+}
+
+.ag-seccion-intro p {
+    max-width: 44ch;
+    color: var(--ag-texto-mudo);
+    margin: 0;
+}
+
+.ag-seccion-titulo {
+    font-size: clamp(1.9rem, 3.4vw, 2.6rem);
+    max-width: 24ch;
+    margin: 0;
+}
+
+/* ============================================================
+   Hero
+   ============================================================ */
+
+.ag-hero {
+    position: relative;
+    overflow: hidden;
+    padding: clamp(56px, 9vw, 110px) 24px clamp(100px, 13vw, 150px);
+    background:
+        radial-gradient(60% 80% at 85% 15%, rgba(30, 95, 92, 0.16), transparent 60%),
+        radial-gradient(50% 60% at 10% 90%, rgba(197, 160, 90, 0.10), transparent 60%),
+        var(--ag-porcelana);
+}
+
+.ag-hero-grid {
+    max-width: 1160px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 48px;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+.ag-hero h1 {
+    font-size: clamp(2.6rem, 5vw, 4rem);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.08;
+    margin: 0;
+}
+
+.ag-hero h1 em {
+    font-style: italic;
+    color: var(--ag-mar);
+}
+
+.ag-hero-lead {
+    margin: 22px 0 32px;
+    max-width: 52ch;
+    font-size: 1.08rem;
+    color: var(--ag-texto-suave);
+}
+
+.ag-acciones {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.ag-hero-media {
+    aspect-ratio: 4 / 5;
+    border-radius: var(--ag-radio);
+    background:
+        radial-gradient(70% 60% at 80% 15%, rgba(233, 207, 192, 0.5), transparent 62%),
+        linear-gradient(160deg, #eef5f6 0%, var(--ag-bruma) 45%, #b8d4d1 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+    font-family: var(--ag-serif);
+    font-style: italic;
+    font-size: 1.2rem;
+    color: var(--ag-mar-profundo);
+    box-shadow: 0 24px 60px -24px rgba(20, 72, 69, 0.35);
+}
+
+.ag-ola {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 200%;
+    height: 120px;
+    pointer-events: none;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120'%3E%3Cpath d='M0 60 C 300 120 600 0 900 60 C 1050 90 1200 60 1200 60 L1200 120 L0 120 Z' fill='%231e5f5c' fill-opacity='.12'/%3E%3C/svg%3E") repeat-x;
+    animation: ag-marear 16s linear infinite;
+}
+
+@keyframes ag-marear {
+    to { transform: translateX(-50%); }
+}
+
+/* ============================================================
+   Servicios (lista editorial)
+   ============================================================ */
+
+.ag-servicios-lista {
+    border-top: 1px solid var(--ag-bruma);
+}
+
+.ag-servicio {
+    display: grid;
+    grid-template-columns: 84px 1.2fr 1.4fr auto;
+    gap: 24px;
+    align-items: center;
+    padding: 30px 0;
+    border-bottom: 1px solid var(--ag-bruma);
+    text-decoration: none;
+    color: inherit;
+}
+
+.ag-servicio-num {
+    font-family: var(--ag-serif);
+    font-style: italic;
+    font-size: 1.4rem;
+    color: var(--ag-mar);
+}
+
+.ag-servicio h3 {
+    font-size: 1.45rem;
+    margin: 0 0 6px;
+    transition: color 0.2s ease;
+}
+
+.ag-servicio p {
+    font-size: 0.96rem;
+    color: #466063;
+    margin: 0;
+}
+
+.ag-servicio-tarifa {
+    font-family: var(--ag-serif);
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--ag-dorado-profundo);
+    white-space: nowrap;
+}
+
+.ag-servicio:hover h3 {
+    color: var(--ag-mar);
+}
+
+/* ============================================================
+   Banda de confianza
+   ============================================================ */
+
+.ag-banda {
+    background: linear-gradient(135deg, #1e5f5c 0%, #144845 100%);
+    color: #eaf4f2;
+    padding: clamp(48px, 7vw, 72px) 24px;
+    border-radius: var(--ag-radio);
+}
+
+.ag-banda-grid {
+    max-width: 1160px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    text-align: center;
+}
+
+.ag-banda-grid strong {
+    font-family: var(--ag-serif);
+    font-size: 2.6rem;
+    font-weight: 600;
+    display: block;
+    line-height: 1.1;
+}
+
+.ag-banda-grid span {
+    font-size: 0.95rem;
+    opacity: 0.8;
+}
+
+/* ============================================================
+   Testimonios
+   ============================================================ */
+
+.ag-testimonios-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+.ag-testimonio {
+    background: var(--ag-perla);
+    border: 1px solid var(--ag-bruma);
+    border-radius: var(--ag-radio);
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.ag-testimonio p {
+    font-style: italic;
+    font-family: var(--ag-serif);
+    font-size: 1.06rem;
+    color: var(--ag-tinta);
+    margin: 0;
+}
+
+.ag-testimonio footer {
+    font-size: 0.9rem;
+    color: var(--ag-texto-mudo);
+    margin-top: auto;
+}
+
+/* ============================================================
+   CTA final
+   ============================================================ */
+
+.ag-cta-final {
+    text-align: center;
+    padding: clamp(72px, 10vw, 110px) 24px;
+}
+
+.ag-cta-final h2 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 500;
+    max-width: 20ch;
+    margin: 0 auto 28px;
+}
+
+.ag-cta-final p {
+    margin-top: 18px;
+    color: var(--ag-texto-mudo);
+    font-size: 0.92rem;
+}
+
+/* ============================================================
+   Reservar cita
+   ============================================================ */
+
+.ag-booking {
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    gap: 48px;
+    align-items: start;
+}
+
+.ag-booking-aside h3 {
+    font-size: 1.5rem;
+    margin: 0 0 12px;
+}
+
+.ag-booking-aside p {
+    color: var(--ag-texto-suave);
+    max-width: 52ch;
+    margin: 0 0 16px;
+}
+
+.ag-booking-card {
+    background: var(--ag-perla);
+    border: 1px solid var(--ag-bruma);
+    border-radius: var(--ag-radio);
+    padding: clamp(1.5rem, 4vw, 2.25rem);
+    box-shadow: 0 24px 60px -24px rgba(20, 72, 69, 0.25);
+}
+
+.ag-booking-card .rz-button.rz-primary {
+    width: 100%;
+}
+
+.ag-booking-confirmacion {
+    text-align: center;
+    padding: clamp(1rem, 3vw, 2rem) 0;
+}
+
+.ag-booking-confirmacion h3 {
+    font-size: 1.8rem;
+    margin: 0 0 10px;
+}
+
+.ag-booking-confirmacion p {
+    color: var(--ag-texto-suave);
+    margin: 0 0 22px;
+}
+
+.ag-booking-confirmacion .ag-btn {
+    margin-top: 8px;
+}
+
+/* ============================================================
+   Acerca de
+   ============================================================ */
+
+.ag-sobre-grid {
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: 56px;
+    align-items: center;
+}
+
+.ag-sobre-texto p {
+    margin: 22px 0;
+    max-width: 56ch;
+    color: var(--ag-texto-suave);
+}
+
+.ag-valores-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-top: 40px;
+}
+
+.ag-valor {
+    background: var(--ag-perla);
+    border: 1px solid var(--ag-bruma);
+    border-radius: var(--ag-radio);
+    padding: 26px;
+}
+
+.ag-valor h3 {
+    font-size: 1.2rem;
+    margin: 0 0 10px;
+    color: var(--ag-mar-profundo);
+}
+
+.ag-valor p {
+    font-size: 0.95rem;
+    color: #466063;
+    margin: 0;
+}
+
+/* ============================================================
+   Login y registro (páginas)
+   ============================================================ */
+
+.ag-auth {
+    min-height: calc(100vh - 140px);
+    display: grid;
+    place-items: center;
+    padding: clamp(1.5rem, 4vw, 3rem);
+}
+
+.ag-auth-card {
+    width: 100%;
+    max-width: 520px;
+    background: var(--ag-perla);
+    border: 1px solid var(--ag-bruma);
+    border-radius: var(--ag-radio);
+    box-shadow: 0 24px 60px -24px rgba(20, 72, 69, 0.25);
+    padding: clamp(1.75rem, 4vw, 2.75rem);
+}
+
+.ag-auth-card h1 {
+    font-size: clamp(1.7rem, 3vw, 2.2rem);
+    font-weight: 600;
+    margin: 0 0 1.25rem;
+}
+
+.ag-auth-card .ag-saludo {
+    display: block;
+    color: var(--ag-texto-mudo);
+    font-size: 0.92rem;
+    margin-bottom: 4px;
+}
+
+.ag-auth-card a {
+    color: var(--ag-mar);
+}
+
+.ag-auth-card .login-field {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+}
+
+.ag-auth-submit {
+    width: 100%;
+    margin-top: 1rem;
+}
+
+/* Campos de los formularios */
+.ag-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 1.1rem;
+}
+
+.ag-field > label {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--ag-tinta);
+}
+
+.ag-auth-card .form-control,
+.ag-login-dialog .form-control {
+    border: 1px solid var(--ag-bruma);
+    border-radius: 10px;
+    padding: 0.65rem 0.8rem;
+    font-family: var(--ag-sans);
+    color: var(--ag-tinta);
+    background: var(--ag-perla);
+}
+
+.ag-auth-card .form-control:focus {
+    border-color: var(--ag-mar);
+    box-shadow: 0 0 0 3px rgba(30, 95, 92, 0.15);
+}
+
+/* ============================================================
+   Modal de login (Radzen Dialog)
+   ============================================================ */
+
+.rz-dialog {
+    border-radius: var(--ag-radio) !important;
+    border: 1px solid var(--ag-bruma) !important;
+    box-shadow: 0 30px 70px -20px rgba(20, 72, 69, 0.45) !important;
+}
+
+.rz-dialog-titlebar .rz-dialog-title,
+.rz-dialog-title {
+    font-family: var(--ag-serif) !important;
+    font-weight: 600 !important;
+    color: var(--ag-tinta) !important;
+}
+
+.ag-login-dialog {
+    padding-top: 6px;
+}
+
+.ag-login-dialog .ag-saludo {
+    display: block;
+    color: var(--ag-texto-mudo);
+    font-size: 0.85rem;
+    margin-bottom: 2px;
+}
+
+.ag-login-dialog h2 {
+    font-family: var(--ag-serif);
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin: 0 0 18px;
+    color: var(--ag-tinta);
+}
+
+.ag-login-dialog button[type="submit"] {
+    width: 100%;
+    margin-top: 0.4rem;
+    padding: 12px 26px;
+    border-radius: 999px;
+    background: var(--ag-mar);
+    color: #fff;
+    font-family: var(--ag-sans);
+    font-weight: 600;
+    font-size: 0.95rem;
+    border: none;
+    cursor: pointer;
+    height: auto;
+    text-transform: none;
+}
+
+.ag-login-dialog button[type="submit"]:hover {
+    background: var(--ag-mar-profundo);
+}
+
+.ag-login-dialog input {
+    width: 100%;
+    padding: 0.65rem 0.8rem;
+    border: 1px solid var(--ag-bruma);
+    border-radius: 10px;
+    font-family: var(--ag-sans);
+    color: var(--ag-tinta);
+    background: var(--ag-perla);
+}
+
+.ag-login-dialog input:focus {
+    outline: none;
+    border-color: var(--ag-mar);
+    box-shadow: 0 0 0 3px rgba(30, 95, 92, 0.15);
+}
+
+.ag-link {
+    border: none;
+    background: transparent;
+    color: var(--ag-mar);
+    text-decoration: underline;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.88rem;
+    padding: 0;
+    width: auto;
+    height: auto;
+    text-transform: none;
+}
+
+.ag-link:hover {
+    color: var(--ag-mar-profundo);
+}
+
+.ag-login-dialog .ag-login-alt {
+    text-align: center;
+    margin: 16px 0 0;
+}
+
+/* ============================================================
+   Footer y WhatsApp
+   ============================================================ */
+
+.ag-footer {
+    border-top: 1px solid var(--ag-bruma);
+    padding: 48px 24px;
+}
+
+.ag-footer-grid {
+    max-width: 1160px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    gap: 32px;
+    flex-wrap: wrap;
+    font-size: 0.92rem;
+    color: var(--ag-texto-mudo);
+}
+
+.ag-footer-grid strong {
+    color: var(--ag-tinta);
+    font-weight: 600;
+}
+
+.ag-footer-grid a {
+    color: var(--ag-texto-mudo);
+}
+
+.ag-footer-grid a:hover {
+    color: var(--ag-mar);
+}
+
+.ag-whatsapp {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    z-index: 60;
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: #25d366;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    text-decoration: none;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
+}
+
+.ag-whatsapp:hover {
+    color: #fff;
+}
+
+/* ============================================================
+   Radzen: variables del tema Material ajustadas a la paleta
+   ============================================================ */
+
+:root:not(.rz-theme-external) {
+    --rz-primary: var(--ag-mar);
+    --rz-primary-light: var(--ag-mar-claro);
+    --rz-primary-dark: var(--ag-mar-profundo);
+    --rz-secondary: var(--ag-dorado);
+    --rz-secondary-light: var(--ag-dorado);
+    --rz-secondary-dark: var(--ag-dorado-profundo);
+    --rz-success: var(--ag-mar-claro);
+    --rz-info: var(--ag-mar-claro);
+    --rz-warning: var(--ag-bronze);
+    --rz-danger: #b4232c;
+    --rz-base-100: var(--ag-perla);
+    --rz-base-200: var(--ag-porcelana);
+    --rz-base-300: var(--ag-bruma);
+    --rz-base-400: var(--ag-nude);
+    --rz-base-500: var(--ag-bronze);
+    --rz-text-color: var(--ag-tinta);
+    --rz-text-secondary-color: var(--ag-texto-mudo);
+    --rz-font-family: var(--ag-sans);
+    --rz-border-radius: 10px;
+}
+
+.rz-button.rz-primary {
+    background-color: var(--ag-mar) !important;
+    border-radius: 999px !important;
+    font-family: var(--ag-sans) !important;
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    height: auto !important;
+    padding: 12px 26px !important;
+    box-shadow: none !important;
+}
+
+.rz-button.rz-primary:hover {
+    background-color: var(--ag-mar-profundo) !important;
+}
+
+.rz-textbox,
+.rz-dropdown,
+.rz-datepicker input {
+    border: 1px solid var(--ag-bruma) !important;
+    border-radius: 10px !important;
+    background-color: var(--ag-perla) !important;
+    color: var(--ag-tinta) !important;
+    font-family: var(--ag-sans) !important;
+    box-shadow: none !important;
+}
+
+.rz-textbox:focus,
+.rz-dropdown.rz-state-focus {
+    border-color: var(--ag-mar) !important;
+}
+
+.rz-dropdown-panel {
+    border: 1px solid var(--ag-bruma);
+    border-radius: var(--ag-radio);
+    box-shadow: 0 24px 60px -24px rgba(20, 72, 69, 0.35) !important;
+}
+
+.rz-dropdown-panel .rz-dropdown-item.rz-state-highlight {
+    background-color: var(--ag-bruma) !important;
+    color: var(--ag-tinta) !important;
+}
+
+.rz-messages-error {
+    color: #b4232c !important;
+    font-size: 0.78rem;
+}
+
+/* Scheduler (calendario de citas) */
+.rz-scheduler {
+    border: 1px solid var(--ag-bruma);
+    border-radius: var(--ag-radio);
+    background: var(--ag-perla);
+}
+
+.rz-scheduler .rz-event {
+    background-color: var(--ag-mar);
+    border-radius: 6px;
+    font-family: var(--ag-sans);
+    font-size: 0.8rem;
+}
+
+.rz-scheduler .rz-today {
+    background-color: rgba(197, 160, 90, 0.18);
+    border-radius: 8px;
+}
+
+.rz-scheduler .rz-slot.rz-slot-highlight,
+.rz-scheduler .rz-slot:hover {
+    background-color: rgba(30, 95, 92, 0.08);
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+
+@media (max-width: 880px) {
+    .ag-hero-grid,
+    .ag-sobre-grid,
+    .ag-booking {
+        grid-template-columns: 1fr;
+    }
+
+    .ag-banda-grid,
+    .ag-testimonios-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ag-valores-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ag-servicio {
+        grid-template-columns: 48px 1fr;
+        grid-template-rows: auto auto auto;
+        row-gap: 8px;
+    }
+
+    .ag-servicio h3,
+    .ag-servicio p,
+    .ag-servicio-tarifa {
+        grid-column: 2;
+    }
+
+    .ag-hero-media {
+        aspect-ratio: 16 / 10;
+    }
+}
+
+@media (max-width: 640px) {
+    .ag-nav-inner {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 12px 16px;
+    }
+
+    .ag-logo {
+        text-align: center;
+    }
+
+    .ag-nav-links {
+        justify-content: center;
+        gap: 16px;
+    }
+
+    .ag-nav-links a.ag-nav-cta {
+        order: -1;
+    }
+
+    .ag-nav-user,
+    .ag-nav-login {
+        justify-self: center;
+        align-self: center;
+    }
+
+    .ag-nav-user {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+
+    .rz-datepicker input {
+        font-size: 0.85rem !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ag-ola {
+        animation: none;
+    }
+
+    .ag-btn,
+    .ag-servicio h3 {
+        transition: none;
+    }
+}

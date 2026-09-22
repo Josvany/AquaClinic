@@ -2,45 +2,36 @@
 
 <PageTitle>Iniciar sesi&#243;n</PageTitle>
 
-<div class="mt-5 row">
-    <div class="card col-12 col-lg-6 me-auto ms-auto p-3">
-        <h3 class="card-title">Iniciar sesi&#243;n en AquaClinic</h3>
-        <div class="card-body">
+<div class="ag-auth">
+    <div class="ag-auth-card">
+        <span class="ag-saludo">Bienvenido de nuevo</span>
+        <h1>Iniciar sesi&#243;n</h1>
 
-            @if (!string.IsNullOrEmpty(ErrorMessage))
-            {
-                <div class="alert alert-danger">@ErrorMessage</div>
-            }
+        @if (!string.IsNullOrEmpty(ErrorMessage))
+        {
+            <div class="alert alert-danger mt-3">@ErrorMessage</div>
+        }
 
-            <!-- Formulario HTML estandar: POST a /auth/login (minimal API).
-                 Evita el pipeline de Blazor (enhanced forms/NavigationException)
-                 y garantiza que la cookie de la API se copie al navegador. -->
-            <form method="post" action="/auth/login" class="card-body">
-                <AntiforgeryToken />
-                <div class="row mt-2">
-                    <label class="col-12 col-md-4 p-0 form-label" for="userName">Correo:</label>
-                    <div class="col-12 col-md-8">
-                        <input type="email" id="userName" name="email" class="form-control login-field"
-                               required placeholder="tu@correo.com" />
-                    </div>
-                </div>
-                <div class="row mt-2">
-                    <label class="col-12 col-md-4 p-0 form-label" for="password">Contrase&#241;a:</label>
-                    <div class="col-12 col-md-8">
-                        <input type="password" id="password" name="password" class="form-control login-field"
-                               required minlength="8" />
-                    </div>
-                </div>
-                <div class="row mt-2">
-                    <div class="offset-md-4">
-                        <button class="m-2 p-2 ms-0" type="submit">Iniciar sesi&#243;n</button>
-                    </div>
-                </div>
-            </form>
+        <!-- Formulario HTML estandar: POST a /auth/login (minimal API).
+             Evita el pipeline de Blazor (enhanced forms/NavigationException)
+             y garantiza que la cookie de la API se copie al navegador. -->
+        <form method="post" action="/auth/login" class="mt-3">
+            <AntiforgeryToken />
+            <div class="ag-field">
+                <label for="userName">Correo</label>
+                <input type="email" id="userName" name="email" class="form-control login-field"
+                       required placeholder="tu@correo.com" />
+            </div>
+            <div class="ag-field">
+                <label for="password">Contrase&#241;a</label>
+                <input type="password" id="password" name="password" class="form-control login-field"
+                       required minlength="8" />
+            </div>
+            <button class="ag-btn ag-auth-submit" type="submit">Iniciar sesi&#243;n</button>
+        </form>
 
-            <p class="mt-3">
-                <a href="/register">&#191;No tienes cuenta? Reg&#237;strate</a>
-            </p>
-        </div>
+        <p class="mt-3 mb-0">
+            <a href="/register">&#191;No tienes cuenta? Reg&#237;strate</a>
+        </p>
     </div>
 </div>

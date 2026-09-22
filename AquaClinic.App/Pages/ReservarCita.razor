@@ -1,0 +1,116 @@
+﻿@page "/reservar"
+@rendermode InteractiveServer
+
+<PageTitle>Reservar cita — Aqua Skin & Glow</PageTitle>
+
+<section class="ag-section">
+    <div class="ag-contenedor">
+        <div class="ag-seccion-intro">
+            <h2 class="ag-seccion-titulo">Reserva tu cita</h2>
+            <p>Elige el tratamiento, el d&iacute;a y la hora que te convengan. Te confirmamos por correo.</p>
+        </div>
+
+        <div class="ag-booking">
+            <div class="ag-booking-aside">
+                <h3>Antes de tu visita</h3>
+                <p>
+                    No necesitas crear una cuenta: con tu nombre y correo basta para agendar. Si el tratamiento
+                    lo requiere, la valoraci&oacute;n previa va incluida en tu primera cita.
+                </p>
+                <p>
+                    Si prefieres gestionar tus citas en un solo lugar, inicia sesi&oacute;n desde el men&uacute;
+                    y tus datos quedar&aacute;n guardados para la pr&oacute;xima visita.
+                </p>
+            </div>
+
+            <div class="ag-booking-card">
+                @if (_enviada)
+                {
+                    <div class="ag-booking-confirmacion">
+                        <h3>&#161;Cita recibida!</h3>
+                        <p>Te enviaremos la confirmaci&oacute;n por correo muy pronto.</p>
+                        <p style="font-size:0.92rem; color:var(--ag-tinta); margin-top:4px;">
+                            @_nombre &#183; @_servicio &#183; @_fecha &#183; @_hora
+                        </p>
+                        <button class="ag-btn ag-btn-contorno" @onclick="NuevaReserva">Reservar otra cita</button>
+                    </div>
+                }
+                else
+                {
+                    <RadzenTemplateForm TItem="object" Data="@_modelo" Submit="@Enviar">
+                        <div class="ag-field">
+                            <label>Nombre completo</label>
+                            <RadzenTextBox @bind-Value="_nombre" Name="nombre" Placeholder="Tu nombre" />
+                            <RadzenRequiredValidator Component="nombre" Text="Escribe tu nombre" Popup="false" />
+                        </div>
+
+                        <div class="ag-field">
+                            <label>Correo</label>
+                            <RadzenTextBox @bind-Value="_correo" Name="correo" Placeholder="tu@correo.com" />
+                            <RadzenRequiredValidator Component="correo" Text="Escribe tu correo" Popup="false" />
+                            <RadzenEmailValidator Component="correo" Text="Revisa el formato del correo" Popup="false" />
+                        </div>
+
+                        <div class="ag-field">
+                            <label>Servicio</label>
+                            <RadzenDropDown @bind-Value="_servicio" AllowFiltering="true" Data="@_servicios"
+                                            Placeholder="Elige un servicio" Style="width:100%;" />
+                        </div>
+
+                        <div class="ag-field">
+                            <label>Fecha</label>
+                            <RadzenDatePicker @bind-Value="_fecha" DateFormat="dddd, d 'de' MMMM 'de' yyyy"
+                                              Min="@DateTime.Today" Style="width:100%;" />
+                        </div>
+
+                        <div class="ag-field">
+                            <label>Hora</label>
+                            <RadzenDropDown @bind-Value="_hora" Data="@_horas" Style="width:100%;" />
+                        </div>
+
+                        <RadzenButton ButtonType="ButtonType.Submit" Text="Reservar cita"
+                                      ButtonStyle="ButtonStyle.Primary" Style="width:100%;" />
+                    </RadzenTemplateForm>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    private object _modelo = new();
+    private string _nombre = string.Empty;
+    private string _correo = string.Empty;
+    private string _servicio = string.Empty;
+    private DateTime _fecha = DateTime.Today.AddDays(1);
+    private string _hora = "10:00";
+    private bool _enviada;
+
+    private readonly string[] _servicios =
+    [
+        "Tratamiento facial",
+        "Cuidado avanzado de la piel",
+        "Inyectables",
+        "Diseño de cejas",
+        "Valoración gratuita"
+    ];
+
+    private readonly string[] _horas =
+        ["9:00", "10:00", "11:00", "12:00", "14:00", "15:00", "16:00", "17:00", "18:00"];
+
+    private void Enviar(object _)
+    {
+        // TODO (pendiente backend): enviar la reserva a la API.
+        _enviada = true;
+    }
+
+    private void NuevaReserva()
+    {
+        _enviada = false;
+        _nombre = string.Empty;
+        _correo = string.Empty;
+        _servicio = string.Empty;
+        _fecha = DateTime.Today.AddDays(1);
+        _hora = "10:00";
+    }
+}
