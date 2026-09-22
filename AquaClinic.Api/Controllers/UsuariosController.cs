@@ -81,14 +81,24 @@ namespace AquaClinic.Api.Controllers
             return Ok(usuario);
         }
 
-        /// <summary>Perfil del usuario autenticado actual.</summary>
+        /// <summary>Perfil del usuario autenticado actual. 401 si el cookie referencia un usuario que ya no existe.</summary>
         [HttpGet("actual", Name = "GetUsuarioActual")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesDefaultResponseType]
         [Authorize]
         public async Task<ActionResult<UsuarioVm>> GetUsuarioActual()
         {
             var usuario = await _mediator.Send(new GetUsuarioActualQuery());
+
+            if (usuario is null)
+            {
+                // El cookie es valido criptograficamente pero el usuario ya no existe
+                // en la BD (ej. se recreo tras reinicio). Responde 401 para que
+                // el cliente sepa que debe re-autenticar.
+                return Unauthorized();
+            }
+
             return Ok(usuario);
         }
 

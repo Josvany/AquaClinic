@@ -134,7 +134,11 @@ namespace AquaClinic.Api
             return app;
         }
 
-        public static async Task ResetDatabaseAsync(this WebApplication app)
+        /// <summary>
+        /// Aplica las migraciones pendientes (sin borrar la BD) y siembra
+        /// roles + usuarios demo. Solo hace Migrate, NUNCA EnsureDeleted.
+        /// </summary>
+        public static async Task MigrateAndSeedAsync(this WebApplication app)
         {
             using var scope = app.Services.CreateScope();
             try
@@ -142,7 +146,6 @@ namespace AquaClinic.Api
                 var context = scope.ServiceProvider.GetService<AquaClinicDbContext>();
                 if (context != null)
                 {
-                    await context.Database.EnsureDeletedAsync();
                     await context.Database.MigrateAsync();
                 }
 
@@ -150,7 +153,7 @@ namespace AquaClinic.Api
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Error al reiniciar/sembrar la base de datos de la API (AquaClinicDbContext)");
+                Log.Error(ex, "Error al migrar/sembrar la base de datos de la API (AquaClinicDbContext)");
             }
         }
 

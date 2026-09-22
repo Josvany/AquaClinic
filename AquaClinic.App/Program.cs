@@ -3,6 +3,7 @@ using AquaClinic.App.Auth;
 using AquaClinic.App.Contracts;
 using AquaClinic.App.Services;
 using Microsoft.AspNetCore.Components.Authorization;
+using Radzen;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,9 @@ builder.Services.AddAutoMapper(cfg => { }, AppDomain.CurrentDomain.GetAssemblies
 
 // Necesario para que CookieForwardingHandler lea las cookies del request entrante
 builder.Services.AddHttpContextAccessor();
+
+//Agregando radzen
+builder.Services.AddRadzenComponents();
 
 // HttpClient hacia la API con CookieForwardingHandler:
 // - SSR/prerender: reenvia la cookie del navegador del request entrante

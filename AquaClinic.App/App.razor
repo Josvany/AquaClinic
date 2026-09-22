@@ -14,12 +14,14 @@
     <link href="css/main.css" rel="stylesheet" />
     <link href="AquaClinic.App.styles.css" rel="stylesheet" />
     <HeadOutlet @rendermode="InteractiveServer" />
+    <RadzenTheme Theme="material" />
 </head>
 
 <body>
     <Routes />
     <script src="_framework/blazor.web.js"></script>
     <script src="scripts/download.js"></script>
+    <script src="_content/Radzen.Blazor/Radzen.Blazor.js?v=@(typeof(Radzen.Colors).Assembly.GetName().Version)"></script>
 </body>
 
 </html>

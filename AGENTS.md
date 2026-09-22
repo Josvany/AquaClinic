@@ -19,8 +19,8 @@ dotnet test AquaClinic.sln
 dotnet run --project AquaClinic.Api
 #   http  -> http://localhost:5224   (perfil "http", primero en launchSettings)
 #   https -> https://localhost:7081  (perfil "https")
-#   Al iniciar recrea AquaClinicDb (EnsureDeleted + Migrate, UNICO contexto con
-#   Identity + negocio), siembra roles y, en Development, el admin demo.
+#   Al iniciar aplica migraciones pendientes y siembra roles/usuarios demo (MigrateAndSeedAsync,
+#   NO borra la BD).
 
 # Arrancar la App Blazor (requiere la API corriendo)
 dotnet run --project AquaClinic.App      # https://localhost:7080
@@ -75,7 +75,7 @@ Prohibido usar los nombres del template original (Event, Category, Order, Artist
 ## Reglas y advertencias criticas
 
 1. **NUNCA uses `DateTime.Now` en `HasData`** (seed). EF Core 9/10 lanza `PendingModelChangesWarning` en `MigrateAsync` y el arranque de la API falla silenciosamente. Usa fechas `new DateTime(...)` / `new DateTimeOffset(...)` literales (ver seed de `AquaClinicDbContext`).
-2. **No elimines el guard de entorno `Testing`** en `AquaClinic.Api/Program.cs`: los tests de integración dependen de que `ResetDatabaseAsync` no se ejecute en el host de pruebas.
+ 2. **No elimines el guard de entorno `Testing`** en `AquaClinic.Api/Program.cs`: los tests de integración dependen de que `MigrateAndSeedAsync` no se ejecute en el host de pruebas.
 3. **Los Ids son UUID v7** generados en el constructor de cada entidad (`Guid.CreateVersion7()`); no uses `Guid.NewGuid()` para entidades nuevas. `ApplicationUser` usa el v7 en string. Los FKs a AspNetUsers son `string` (no Guid) porque IdentityUser.Id es string.
 4. **Fechas de citas y bloqueos en UTC** (`DateTimeOffset` → `datetimeoffset`). La clínica opera en America/Vancouver (PST/PDT); la conversión es responsabilidad de la capa de aplicación, nunca cambies el storage.
 5. **Una sola BD / un solo contexto**: no crees contextos adicionales ni consultes `AquaClinicIdentityDb` (ya no existe). El registro de identity es `AddIdentityServices<AquaClinicDbContext>()` (genérico, en Identity).

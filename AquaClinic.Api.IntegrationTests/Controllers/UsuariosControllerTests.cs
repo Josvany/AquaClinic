@@ -19,7 +19,7 @@ namespace AquaClinic.Api.IntegrationTests.Controllers
         public UsuariosControllerTests(CustomWebApplicationFactory<Program> factory)
         {
             _factory = factory;
-            // Asegura roles de Identity (el ResetDatabaseAsync del arranque no corre en Testing)
+            // Asegura roles de Identity (el MigrateAndSeedAsync del arranque no corre en Testing)
             _factory.SeedDatabase();
         }
 
@@ -129,14 +129,14 @@ namespace AquaClinic.Api.IntegrationTests.Controllers
         }
 
         [Fact]
-        public async Task GetUsuarioActual_ConUsuarioInexistente_Devuelve404()
+        public async Task GetUsuarioActual_ConUsuarioInexistente_Devuelve401()
         {
-            // El TestAuthHandler autentica siempre, pero sin un usuario real en la BD
-            // el handler lanza NotFoundException -> 404
+            // El TestAuthHandler autentica con un Id que no existe en la BD,
+            // el handler retorna null y el controller responde 401 (re-login)
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.Add("X-Test-UserId", Guid.NewGuid().ToString());
             var respuesta = await client.GetAsync("/api/usuarios/actual");
-            Assert.Equal(HttpStatusCode.NotFound, respuesta.StatusCode);
+            Assert.Equal(HttpStatusCode.Unauthorized, respuesta.StatusCode);
         }
     }
 }

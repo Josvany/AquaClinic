@@ -26,10 +26,10 @@ var app = builder
 app.UseSerilogRequestLogging();
 
 // En el entorno de pruebas de integracion la base de datos la prepara el
-// propio proyecto de tests (InMemory), asi que no se reinicia aqui.
+// propio proyecto de tests (InMemory), asi que no se migra aqui.
 if (!app.Environment.IsEnvironment("Testing"))
 {
-    await app.ResetDatabaseAsync();
+    await app.MigrateAndSeedAsync();
 }
 
 app.Run();
