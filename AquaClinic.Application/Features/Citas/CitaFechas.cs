@@ -21,5 +21,29 @@ namespace AquaClinic.Application.Features.Citas
                 return fechaUtc.DateTime;
             }
         }
+
+        /// <summary>Offset (PST/PDT) vigente en la fecha local dada.</summary>
+        public static TimeSpan OffsetLocal(DateTime fechaLocal)
+        {
+            try
+            {
+                var tz = TimeZoneInfo.FindSystemTimeZoneById("America/Vancouver");
+                return tz.GetUtcOffset(fechaLocal);
+            }
+            catch (TimeZoneNotFoundException)
+            {
+                return TimeSpan.Zero;
+            }
+            catch (InvalidTimeZoneException)
+            {
+                return TimeSpan.Zero;
+            }
+        }
+
+        /// <summary>Convierte una fecha/hora local de la clinica a DateTimeOffset UTC.</summary>
+        public static DateTimeOffset AUtc(DateTime fechaLocal)
+        {
+            return new DateTimeOffset(fechaLocal, OffsetLocal(fechaLocal)).ToUniversalTime();
+        }
     }
 }

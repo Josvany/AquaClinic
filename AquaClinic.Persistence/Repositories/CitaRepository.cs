@@ -18,5 +18,21 @@ namespace AquaClinic.Persistence.Repositories
                 .AsNoTracking()
                 .ToListAsync();
         }
+
+        public async Task AsignarServicioAsync(Guid citaId, Guid servicioId)
+        {
+            var existe = await _dbContext.CitasServicios
+                .AnyAsync(cs => cs.CitaId == citaId && cs.ServicioId == servicioId);
+
+            if (!existe)
+            {
+                _dbContext.CitasServicios.Add(new CitaServicio
+                {
+                    CitaId = citaId,
+                    ServicioId = servicioId
+                });
+                await _dbContext.SaveChangesAsync();
+            }
+        }
     }
 }

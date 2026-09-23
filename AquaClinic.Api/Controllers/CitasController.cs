@@ -1,5 +1,7 @@
 using AquaClinic.Api.Authorization;
 using AquaClinic.Api.Utility;
+using AquaClinic.Application.Features.Citas.Commands.CreateCita;
+using AquaClinic.Application.Features.Citas.Queries.GetAgendaSemana;
 using AquaClinic.Application.Features.Citas.Queries.GetCitasExport;
 using AquaClinic.Application.Features.Citas.Queries.GetCitasList;
 using MediatR;
@@ -8,8 +10,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace AquaClinic.Api.Controllers
 {
     /// <summary>
-    /// Agenda de citas de la clinica. La consulta y la exportacion exigen el
-    /// permiso citas:ver (Administrador, Recepcion y Esteticista).
+    /// Agenda de citas de la clinica. La consulta de agenda semanal y la creacion
+    /// de citas son publicas (el visitante reserva desde /reservar); el listado
+    /// interno y la exportacion exigen el permiso citas:ver.
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
@@ -20,6 +23,51 @@ namespace AquaClinic.Api.Controllers
         public CitasController(IMediator mediator)
         {
             _mediator = mediator;
+        }
+
+        /// <summary>
+        /// Agenda publica de una semana para el scheduler de reservas: bloques
+        /// "Ocupado" (citas activas) y "Reservando" (reserva suave en curso).
+        /// No expone datos de clientes.
+        /// </summary>
+        [HttpGet("agenda", Name = "GetAgendaSemana")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesDefaultResponseType]
+        public async Task<ActionResult<AgendaSemanaVm>> GetAgendaSemana(
+            [FromQuery] DateTime semanaInicio,
+            [FromQuery] DateTime semanaFin)
+        {
+            var result = await _mediator.Send(new GetAgendaSemanaQuery
+            {
+                SemanaInicioLocal = semanaInicio,
+                SemanaFinLocal = semanaFin
+            });
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Crea una cita desde el scheduler publico. Devuelve 409 si el horario
+        /// no esta disponible (horario, bloqueo u otra cita); el handler notifica
+        /// en tiempo real via SignalR cuando la cita se confirma.
+        /// </summary>
+        [HttpPost(Name = "CreateCita")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesDefaultResponseType]
+        public async Task<ActionResult<Guid>> CreateCita([FromBody] CreateCitaCommand command)
+        {
+            try
+            {
+                var citaId = await _mediator.Send(command);
+                return Ok(citaId);
+            }
+            catch (Application.Exceptions.BadRequestException ex)
+            {
+                // Horario tomado o clinica cerrada: conflicto para el scheduler
+                return Conflict(new { error = ex.Message });
+            }
         }
 
         [HttpGet(Name = "GetAllCitas")]

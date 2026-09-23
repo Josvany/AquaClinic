@@ -1,101 +1,64 @@
-using System.Net.Http.Json;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
 
 namespace AquaClinic.App.Auth
 {
     /// <summary>
-    /// Proveedor de estado de autenticacion que consulta el perfil del usuario
-    /// contra la API (GET /api/usuarios/actual). El CookieForwardingHandler
-    /// reenvia la cookie del navegador durante SSR/prerender; el perfil se
-    /// cachea por la duracion del circuito para evitar llamadas repetidas.
-    /// No requiere Identity local ni acceso directo a la base de datos.
+    /// Proveedor de estado de autenticacion basado en el JWT guardado en el
+    /// TokenStore. Los claims (incluidos los roles) se leen directamente del
+    /// access token ya validado por la API; no hay consulta al perfil ni cookies.
     /// </summary>
-    public class ApiAuthenticationStateProvider(HttpClient httpClient) : AuthenticationStateProvider
+    public class ApiAuthenticationStateProvider(TokenStore tokenStore) : AuthenticationStateProvider
     {
-        private UsuarioPerfil? _perfil;
-        private bool _yaConsultado = false;
+        private ClaimsPrincipal? _principal;
+        private bool _yaConsultado;
 
-        public override async Task<AuthenticationState> GetAuthenticationStateAsync()
+        public override Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            // Solo consulta la API la primera vez (o despues de invalidar cache)
-            if (_yaConsultado)
+            if (!_yaConsultado)
             {
-                return _perfil is not null ? ConstruirEstado(_perfil) : Anonimo();
+                _principal = ConstruirPrincipal();
+                _yaConsultado = true;
+            }
+
+            return Task.FromResult(new AuthenticationState(_principal ?? Anonimo()));
+        }
+
+        /// <summary>
+        /// Reconstruye el principal desde el TokenStore (tras login, refresh o logout).
+        /// </summary>
+        public void InvalidarCache()
+        {
+            _principal = ConstruirPrincipal();
+            _yaConsultado = true;
+            NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+        }
+
+        private ClaimsPrincipal? ConstruirPrincipal()
+        {
+            if (string.IsNullOrEmpty(tokenStore.AccessToken))
+            {
+                return null;
             }
 
             try
             {
-                var perfil = await httpClient.GetFromJsonAsync<UsuarioPerfil>(
-                    "api/usuarios/actual", CancellationToken.None);
-
-                if (perfil is not null && !string.IsNullOrEmpty(perfil.Email))
-                {
-                    _perfil = perfil;
-                    _yaConsultado = true;
-                    return ConstruirEstado(perfil);
-                }
+                var jwt = new JwtSecurityTokenHandler().ReadJwtToken(tokenStore.AccessToken);
+                var identidad = new ClaimsIdentity(jwt.Claims, "Jwt", ClaimTypes.Name, ClaimTypes.Role);
+                return new ClaimsPrincipal(identidad);
             }
             catch
             {
-                // API no disponible o 401: usuario no autenticado
+                // Token corrupto: tratar como sesion terminada
+                tokenStore.Limpiar();
+                return null;
             }
-
-            _perfil = null;
-            _yaConsultado = true;
-            return Anonimo();
         }
 
-        /// <summary>
-        /// Limpia la cache despues de login/logout para forzar una nueva consulta.
-        /// </summary>
-        public void InvalidarCache()
+        private static ClaimsPrincipal Anonimo()
         {
-            _perfil = null;
-            _yaConsultado = false;
-            NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+            return new ClaimsPrincipal(new ClaimsIdentity());
         }
-
-        private static AuthenticationState Anonimo()
-        {
-            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
-        }
-
-        private static AuthenticationState ConstruirEstado(UsuarioPerfil perfil)
-        {
-            var claims = new List<Claim>
-            {
-                new(ClaimTypes.NameIdentifier, perfil.UsuarioId),
-                new(ClaimTypes.Name, perfil.Email),
-                new(ClaimTypes.Email, perfil.Email)
-            };
-
-            if (!string.IsNullOrEmpty(perfil.Nombre))
-            {
-                claims.Add(new Claim("nombre", perfil.Nombre));
-            }
-
-            if (!string.IsNullOrEmpty(perfil.Apellidos))
-            {
-                claims.Add(new Claim("apellidos", perfil.Apellidos));
-            }
-
-            foreach (var rol in perfil.Roles)
-            {
-                claims.Add(new Claim(ClaimTypes.Role, rol));
-            }
-
-            var identity = new ClaimsIdentity(claims, "ApiCookie");
-            return new AuthenticationState(new ClaimsPrincipal(identity));
-        }
-
-        // DTO interno para deserializar la respuesta de /api/usuarios/actual
-        private record UsuarioPerfil(
-            string UsuarioId,
-            string Email,
-            string? Nombre,
-            string? Apellidos,
-            string? Telefono,
-            List<string> Roles);
     }
 }

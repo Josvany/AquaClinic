@@ -1,7 +1,9 @@
 ﻿using AquaClinic.Api.Authorization;
+using AquaClinic.Application.Contracts.Citas;
 using AquaClinic.Api.Extensions;
 using AquaClinic.Api.Infrastructure;
 using AquaClinic.Api.Middleware;
+using AquaClinic.Api.Realtime;
 using AquaClinic.Api.Services;
 using AquaClinic.Application;
 using AquaClinic.Application.Contracts;
@@ -27,9 +29,14 @@ namespace AquaClinic.Api
             builder.Services.AddApplicationServices();
             builder.Services.AddInfrastructureServices(builder.Configuration);
             builder.Services.AddPersistenceServices(builder.Configuration);
-            builder.Services.AddIdentityServices<AquaClinicDbContext>();
+            builder.Services.AddIdentityServices<AquaClinicDbContext>(builder.Configuration);
 
             builder.Services.AddScoped<ILoggedInUserService, LoggedInUserService>();
+
+            // ---- Agenda en tiempo real (SignalR) ----
+            builder.Services.AddSignalR();
+            builder.Services.AddSingleton<IReservasSuavesStore, ReservasSuavesStore>();
+            builder.Services.AddSingleton<IAgregadorAgenda, AgendaNotificador>();
 
             builder.Services.AddHttpContextAccessor();
 
@@ -86,13 +93,8 @@ namespace AquaClinic.Api
 
         public static WebApplication ConfigurePipeline(this WebApplication app)
         {
-            app.MapIdentityApi<ApplicationUser>();
-
-            app.MapPost("/Logout", async (ClaimsPrincipal user, SignInManager<ApplicationUser> signInManager) =>
-            {
-                await signInManager.SignOutAsync();
-                return TypedResults.Ok();
-            });
+            // Autenticacion JWT (sin MapIdentityApi: el login es POST api/usuarios/login,
+            // que emite access + refresh tokens; el logout revoca via api/usuarios/logout).
 
             app.UseCors("open");
 
@@ -125,6 +127,9 @@ namespace AquaClinic.Api
             app.UseRateLimiter();
 
             app.MapControllers();
+
+            // Hub de la agenda de reservas (SignalR; permite conexiones anonimas)
+            app.MapHub<AgendaHub>("/hubs/agenda");
 
             app.MapHealthChecks("/health", new HealthCheckOptions
             {

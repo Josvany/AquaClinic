@@ -13,6 +13,9 @@
     [Inject]
     private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = default!;
 
+    [Inject]
+    private Auth.TokenStoreInitializer TokenStoreInitializer { get; set; } = default!;
+
     private string _nombre = "";
     private string _correo = "";
     private bool _cargado;
@@ -20,6 +23,10 @@
     protected override async Task OnInitializedAsync()
     {
         SaludoCache.NombreActualizado += OnNombreActualizado;
+
+        // Primera pieza interactiva del circuito: transfiere la sesion JWT
+        // pendiente del login HTTP al TokenStore antes de consultar la API
+        await TokenStoreInitializer.InicializarAsync();
 
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         _correo = authState.User.Identity?.Name ?? "";

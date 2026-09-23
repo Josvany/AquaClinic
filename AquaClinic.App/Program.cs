@@ -16,7 +16,7 @@ builder.Services.AddCascadingAuthenticationState();
 // AutoMapper (perfiles de mapeo de la App)
 builder.Services.AddAutoMapper(cfg => { }, AppDomain.CurrentDomain.GetAssemblies());
 
-// Necesario para que CookieForwardingHandler lea las cookies del request entrante
+// Necesario para que servicios como el saludo accedan al HttpContext del request
 builder.Services.AddHttpContextAccessor();
 
 // Cache del saludo del nav (nombre real o derivado del correo), compartido
@@ -26,15 +26,18 @@ builder.Services.AddSingleton<UsuarioSaludoCache>();
 //Agregando radzen
 builder.Services.AddRadzenComponents();
 
-// HttpClient hacia la API con CookieForwardingHandler:
-// - SSR/prerender: reenvia la cookie del navegador del request entrante
-// - Circuito interactivo: la cookie ya fue capturada en el prerender
+// HttpClient hacia la API con AuthHeaderHandler:
+// inyecta Authorization: Bearer con el JWT de la sesion (TokenStore) y
+// renueva el token automaticamente ante un 401 (api/usuarios/refresh).
 var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7081/";
 
-builder.Services.AddScoped<CookieForwardingHandler>();
+// Almacen del JWT/refresh token por circuito (scoped)
+builder.Services.AddScoped<TokenStore>();
+builder.Services.AddScoped<AuthHeaderHandler>();
+builder.Services.AddScoped<TokenStoreInitializer>();
 builder.Services.AddScoped(sp =>
 {
-    var handler = sp.GetRequiredService<CookieForwardingHandler>();
+    var handler = sp.GetRequiredService<AuthHeaderHandler>();
     handler.InnerHandler = new HttpClientHandler();
     return new HttpClient(handler) { BaseAddress = new Uri(apiBaseUrl) };
 });
@@ -45,12 +48,17 @@ builder.Services.AddScoped<IUsuarioDataService, UsuarioDataService>();
 builder.Services.AddScoped<ICitaDataService, CitaDataService>();
 builder.Services.AddScoped<IEspecialidadDataService, EspecialidadDataService>();
 
-// Autenticacion via API: consulta /api/usuarios/actual con la cookie del navegador
+// Agenda en tiempo real (SignalR hacia la API)
+builder.Services.AddScoped<AgendaRealtimeService>();
+builder.Services.AddScoped<IReservasDataService, ReservasDataService>();
+builder.Services.AddScoped<IServiciosPublicosDataService, ReservasDataService>();
+
+// Autenticacion via JWT: el principal se construye desde el access token del TokenStore
 builder.Services.AddScoped<ApiAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<ApiAuthenticationStateProvider>());
 
 // Cliente nombrado para los endpoints de autenticacion minimal API
-// (sin CookieForwardingHandler porque las cookies se manejan manualmente)
+// (sin AuthHeaderHandler: login/refresh no llevan Authorization)
 builder.Services.AddHttpClient("ApiAuth", client => client.BaseAddress = new Uri(apiBaseUrl));
 
 var app = builder.Build();
@@ -61,12 +69,13 @@ app.UseAuthorization();
 app.UseAntiforgery();
 
 // ============================================================
-// Endpoints minimal API para el flujo de autenticacion.
-// Copian la Set-Cookie de la API directamente al navegador (response)
-// y hacen redirect HTTP estandar — sin pasar por el pipeline de Blazor.
+// Endpoints minimal API para el flujo de autenticacion JWT.
+// Reciben el form POST del navegador, piden el JWT a la API y GUARDAN los
+// tokens en el TokenStore del circuito. No hay cookies de sesion: el
+// principal se construye desde el JWT (ApiAuthenticationStateProvider).
 // ============================================================
 
-app.MapPost("/auth/login", async (HttpContext ctx, IHttpClientFactory httpClientFactory) =>
+app.MapPost("/auth/login", async (HttpContext ctx, IHttpClientFactory httpClientFactory, TokenStore tokens) =>
 {
     var form = await ctx.Request.ReadFormAsync();
     var email = form["email"].ToString();
@@ -74,7 +83,7 @@ app.MapPost("/auth/login", async (HttpContext ctx, IHttpClientFactory httpClient
 
     using var client = httpClientFactory.CreateClient("ApiAuth");
     var response = await client.PostAsJsonAsync(
-        "api/usuarios/login?useCookies=true",
+        "api/usuarios/login",
         new { email, password });
 
     if (!response.IsSuccessStatusCode)
@@ -88,32 +97,30 @@ app.MapPost("/auth/login", async (HttpContext ctx, IHttpClientFactory httpClient
         return Results.Redirect($"/login?error={error}");
     }
 
-    // Copia la Set-Cookie de la API a la respuesta del navegador
-    CopiarCookies(response, ctx);
+    var sesion = await response.Content.ReadFromJsonAsync<SesionJwt>();
 
-    // El personal (Admin/Recepcion/Esteticista) aterriza directo en Citas tras
-    // iniciar sesion; clientes y el resto van a la home normal.
-    // La respuesta de login de Identity incluye roles como claim "role".
-    var destino = "/";
-    try
+    if (sesion is null || string.IsNullOrEmpty(sesion.AccessToken))
     {
-        var payload = await response.Content.ReadFromJsonAsync<Dictionary<string, object>>();
-        if (payload is not null
-            && payload.TryGetValue("roles", out var rolesValue)
-            && rolesValue is System.Text.Json.JsonElement { ValueKind: System.Text.Json.JsonValueKind.Array } roles
-            && roles.EnumerateArray().Any(r =>
-                r.ValueKind == System.Text.Json.JsonValueKind.String
-                && (r.GetString() == "Administrador" || r.GetString() == "Recepcion" || r.GetString() == "Esteticista")))
-        {
-            destino = "/citaoverview";
-        }
-    }
-    catch (System.Text.Json.JsonException)
-    {
-        // Respuesta sin cuerpo JSON utilizable: se usa el destino por defecto
+        return Results.Redirect("/login?error=api");
     }
 
-    return Results.Redirect(destino);
+    // La sesion (tokens) vive en el SERVIDOR; al navegador solo se le entrega
+    // un ticket opaco en una cookie httpOnly. Cada circuito nuevo la recupera
+    // con ese ticket (TokenStoreInitializer), sobreviviendo a recargas.
+    var ticket = SesionPendiente.Registrar(sesion);
+    ctx.Response.Cookies.Append(SesionPendiente.NombreCookie, ticket, new CookieOptions
+    {
+        HttpOnly = true,
+        SameSite = SameSiteMode.Lax,
+        Secure = true,
+        MaxAge = TimeSpan.FromDays(7)
+    });
+
+    // El personal aterriza directo en Citas; clientes y resto van a la home
+    var esPersonal = sesion.Usuario.Roles.Any(r =>
+        r is "Administrador" or "Recepcion" or "Esteticista");
+
+    return Results.Redirect(esPersonal ? "/citaoverview" : "/");
 });
 
 app.MapPost("/auth/register", async (HttpContext ctx, IHttpClientFactory httpClientFactory) =>
@@ -140,14 +147,13 @@ app.MapPost("/auth/register", async (HttpContext ctx, IHttpClientFactory httpCli
         return Results.Redirect($"/register?error={error}");
     }
 
-    // 2) Login automatico: la API emite la cookie
+    // 2) Login automatico (el login guarda los tokens en /auth/login)
     var login = await client.PostAsJsonAsync(
-        "api/usuarios/login?useCookies=true",
+        "api/usuarios/login",
         new { email, password });
 
     if (login.IsSuccessStatusCode)
     {
-        CopiarCookies(login, ctx);
         return Results.Redirect("/");
     }
 
@@ -155,23 +161,30 @@ app.MapPost("/auth/register", async (HttpContext ctx, IHttpClientFactory httpCli
     return Results.Redirect("/login");
 });
 
-app.MapPost("/logout", async (HttpContext ctx, IHttpClientFactory httpClientFactory) =>
+app.MapPost("/logout", async (HttpContext ctx, IHttpClientFactory httpClientFactory, TokenStore tokens) =>
 {
-    using var client = httpClientFactory.CreateClient("ApiAuth");
-
-    // Reenvia la cookie del navegador para que la API la limpie
-    var cookieHeader = ctx.Request.Headers.Cookie.ToString();
-    if (!string.IsNullOrEmpty(cookieHeader))
+    // 1) Revocar el refresh token en la API (best-effort, con el access token)
+    if (tokens.TieneToken)
     {
-        client.DefaultRequestHeaders.Add("Cookie", cookieHeader);
+        try
+        {
+            using var client = httpClientFactory.CreateClient("ApiAuth");
+            using var peticion = new HttpRequestMessage(HttpMethod.Post, "api/usuarios/logout");
+            peticion.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
+                "Bearer", tokens.AccessToken);
+            await client.SendAsync(peticion);
+        }
+        catch
+        {
+            // La sesion local se cierra aunque la API no este disponible
+        }
     }
 
-    var response = await client.PostAsync("logout", null);
-
-    // Copia el Set-Cookie EXPIRADO de la API al navegador para que
-    // la cookie de autenticacion se borre realmente (sin esto el
-    // navegador conserva la cookie valida y el usuario sigue logueado)
-    CopiarCookies(response, ctx);
+    // 2) Cerrar la sesion del servidor y borrar el ticket del navegador
+    var ticket = ctx.Request.Cookies[SesionPendiente.NombreCookie];
+    SesionPendiente.Eliminar(ticket);
+    tokens.Limpiar();
+    ctx.Response.Cookies.Delete(SesionPendiente.NombreCookie);
 
     return Results.LocalRedirect("/");
 });
@@ -180,19 +193,3 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
-
-/// <summary>
-/// Copia los headers Set-Cookie de la respuesta de la API a la respuesta del navegador.
-/// Sin esto, la cookie de autenticacion queda en el HttpClient del servidor
-/// y nunca llega al navegador.
-/// </summary>
-static void CopiarCookies(HttpResponseMessage apiResponse, HttpContext browserContext)
-{
-    if (apiResponse.Headers.TryGetValues("Set-Cookie", out var cookies))
-    {
-        foreach (var cookie in cookies)
-        {
-            browserContext.Response.Headers.Append("Set-Cookie", cookie);
-        }
-    }
-}

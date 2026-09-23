@@ -7,12 +7,13 @@ using AquaClinic.Application.Features.Usuarios.IniciarSesion;
 using AquaClinic.Application.Features.Usuarios.OlvidePassword;
 using AquaClinic.Application.Features.Usuarios.Registrarse;
 using AquaClinic.Application.Features.Usuarios.RestablecerPassword;
-using AquaClinic.Identity.Models;
+using AquaClinic.Application.Contracts.Authentication;
+using AquaClinic.Identity;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using System.Security.Claims;
 
 namespace AquaClinic.Api.Controllers
 {
@@ -27,10 +28,14 @@ namespace AquaClinic.Api.Controllers
     public class UsuariosController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly TokenService _tokenService;
+        private readonly IIdentityService _identityService;
 
-        public UsuariosController(IMediator mediator)
+        public UsuariosController(IMediator mediator, TokenService tokenService, IIdentityService identityService)
         {
             _mediator = mediator;
+            _tokenService = tokenService;
+            _identityService = identityService;
         }
 
         /// <summary>Registra un cliente nuevo (rol Cliente).</summary>
@@ -45,40 +50,93 @@ namespace AquaClinic.Api.Controllers
         }
 
         /// <summary>
-        /// Valida credenciales y devuelve el perfil con roles. Con useCookies=true
-        /// (predeterminado) emite la cookie de Identity en la respuesta.
+        /// Valida credenciales y devuelve un access token JWT (con los roles como
+        /// claims) mas un refresh token rotable, junto con el perfil del usuario.
         /// </summary>
         [HttpPost("login", Name = "IniciarSesion")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesDefaultResponseType]
         [EnableRateLimiting(RateLimitingPolicies.Authentication)]
-        public async Task<ActionResult<UsuarioVm>> IniciarSesion(
-            [FromBody] IniciarSesionCommand command,
-            [FromQuery] bool? useCookies,
-            SignInManager<ApplicationUser> signInManager)
+        public async Task<ActionResult<RespuestaLoginVm>> IniciarSesion([FromBody] IniciarSesionCommand command)
         {
-            bool conCookie = useCookies ?? true;
+            var usuarioVm = await _mediator.Send(command);
 
-            if (conCookie)
+            if (usuarioVm is null)
             {
-                var resultado = await signInManager.PasswordSignInAsync(
-                    command.Email, command.Password, isPersistent: false, lockoutOnFailure: true);
-
-                if (!resultado.Succeeded)
-                {
-                    return Unauthorized();
-                }
+                return Unauthorized();
             }
 
-            var usuario = await _mediator.Send(command);
+            return Ok(EmitirSesion(usuarioVm));
+        }
+
+        /// <summary>
+        /// Renueva la sesion: valida el refresh token (un solo uso), rota el token
+        /// y emite un nuevo access token JWT con los roles actuales del usuario.
+        /// </summary>
+        [HttpPost("refresh", Name = "RefrescarSesion")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesDefaultResponseType]
+        [EnableRateLimiting(RateLimitingPolicies.Authentication)]
+        public async Task<ActionResult<RespuestaLoginVm>> Refrescar([FromBody] PeticionRefresh peticion)
+        {
+            var usuarioId = _tokenService.ValidarYRotarRefreshToken(peticion.RefreshToken);
+
+            if (usuarioId is null)
+            {
+                return Unauthorized();
+            }
+
+            var usuario = await _identityService.ObtenerPorIdAsync(usuarioId);
 
             if (usuario is null)
             {
                 return Unauthorized();
             }
 
-            return Ok(usuario);
+            return Ok(EmitirSesion(new Application.Features.Usuarios.UsuarioVm
+            {
+                UsuarioId = usuario.UsuarioId,
+                Email = usuario.Email,
+                Nombre = usuario.Nombre,
+                Apellidos = usuario.Apellidos,
+                Telefono = usuario.Telefono,
+                Roles = usuario.Roles.ToList()
+            }));
+        }
+
+        /// <summary>Revoca los refresh tokens del usuario autenticado (logout).</summary>
+        [HttpPost("logout", Name = "CerrarSesion")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesDefaultResponseType]
+        [Authorize]
+        public ActionResult CerrarSesion()
+        {
+            var usuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!string.IsNullOrEmpty(usuarioId))
+            {
+                _tokenService.RevocarRefreshTokens(usuarioId);
+            }
+
+            return NoContent();
+        }
+
+        private RespuestaLoginVm EmitirSesion(Application.Features.Usuarios.UsuarioVm usuario)
+        {
+            var (token, expira) = _tokenService
+                .EmitirAccessTokenAsync(
+                    usuario.UsuarioId, usuario.Email, usuario.Roles, usuario.Nombre)
+                .GetAwaiter().GetResult();
+
+            var refreshToken = _tokenService.EmitirRefreshToken(usuario.UsuarioId);
+
+            return new RespuestaLoginVm(
+                token,
+                refreshToken,
+                expira,
+                usuario);
         }
 
         /// <summary>Perfil del usuario autenticado actual. 401 si el cookie referencia un usuario que ya no existe.</summary>
@@ -158,4 +216,14 @@ namespace AquaClinic.Api.Controllers
             return NoContent();
         }
     }
+
+    /// <summary>Respuesta de login/refresh con JWT y refresh token rotable.</summary>
+    public record RespuestaLoginVm(
+        string AccessToken,
+        string RefreshToken,
+        DateTime ExpiraUtc,
+        UsuarioVm Usuario);
+
+    /// <summary>Peticion de renovacion de sesion.</summary>
+    public record PeticionRefresh(string RefreshToken);
 }

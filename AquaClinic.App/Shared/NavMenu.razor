@@ -63,6 +63,21 @@
             </AuthorizeView>
         </ul>
         
-        <NavAuth @rendermode="InteractiveServer" />
+        <div class="ag-nav-auth">
+            <NavAuth @rendermode="InteractiveServer" />
+        </div>
     </nav>
 </header>
+
+@code {
+    [Inject]
+    private Auth.TokenStoreInitializer TokenStoreInitializer { get; set; } = default!;
+
+    // Durante el SSR estatico el TokenStore esta vacio; restaurar la sesion
+    // desde la cookie ticket permite que el AuthorizeView de este request
+    // renderice las opciones de personal y el saludo (y no "Iniciar sesion").
+    protected override async Task OnInitializedAsync()
+    {
+        await TokenStoreInitializer.InicializarAsync();
+    }
+}

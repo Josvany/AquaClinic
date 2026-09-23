@@ -49,21 +49,35 @@ namespace AquaClinic.Api.IntegrationTests.Controllers
             Assert.NotEmpty(usuarioId);
             Assert.Equal(36, usuarioId.Trim('"').Length); // formato GUID v7
 
-            // 2) Login: devuelve el perfil con rol Cliente
+            // 2) Login: devuelve access token JWT + refresh token + perfil con rol Cliente
             var login = new { email, password };
-            var respuestaLogin = await client.PostAsJsonAsync("/api/usuarios/login?useCookies=false", login);
+            var respuestaLogin = await client.PostAsJsonAsync("/api/usuarios/login", login);
             Assert.Equal(HttpStatusCode.OK, respuestaLogin.StatusCode);
 
             var contenidoLogin = await respuestaLogin.Content.ReadAsStringAsync();
             using var documento = JsonDocument.Parse(contenidoLogin);
-            Assert.Equal(email, documento.RootElement.GetProperty("email").GetString());
-            Assert.Contains("Cliente", documento.RootElement.GetProperty("roles").EnumerateArray()
+            Assert.False(string.IsNullOrWhiteSpace(documento.RootElement.GetProperty("accessToken").GetString()));
+            Assert.False(string.IsNullOrWhiteSpace(documento.RootElement.GetProperty("refreshToken").GetString()));
+            Assert.Equal(email, documento.RootElement.GetProperty("usuario").GetProperty("email").GetString());
+            Assert.Contains("Cliente", documento.RootElement.GetProperty("usuario").GetProperty("roles").EnumerateArray()
                 .Select(r => r.GetString()));
 
             // 3) Login con password incorrecto -> 401
             var loginMalo = new { email, password = "Incorrecta#123" };
-            var respuestaLoginMalo = await client.PostAsJsonAsync("/api/usuarios/login?useCookies=false", loginMalo);
+            var respuestaLoginMalo = await client.PostAsJsonAsync("/api/usuarios/login", loginMalo);
             Assert.Equal(HttpStatusCode.Unauthorized, respuestaLoginMalo.StatusCode);
+
+            // 3b) Refresh: rota el refresh token y emite un nuevo access token
+            var refreshToken = documento.RootElement.GetProperty("refreshToken").GetString();
+            var respuestaRefresh = await client.PostAsJsonAsync("/api/usuarios/refresh", new { refreshToken });
+            Assert.Equal(HttpStatusCode.OK, respuestaRefresh.StatusCode);
+
+            var refreshDoc = JsonDocument.Parse(await respuestaRefresh.Content.ReadAsStringAsync());
+            Assert.False(string.IsNullOrWhiteSpace(refreshDoc.RootElement.GetProperty("accessToken").GetString()));
+
+            // El refresh token usado es de un solo uso: reusarlo -> 401
+            var respuestaRefreshReusado = await client.PostAsJsonAsync("/api/usuarios/refresh", new { refreshToken });
+            Assert.Equal(HttpStatusCode.Unauthorized, respuestaRefreshReusado.StatusCode);
 
             // 4) Perfil del usuario autenticado (via header X-Test-UserId)
             client.DefaultRequestHeaders.Add("X-Test-UserId", usuarioId.Trim('"'));
@@ -88,7 +102,7 @@ namespace AquaClinic.Api.IntegrationTests.Controllers
             Assert.Equal(HttpStatusCode.NoContent, respuestaCambio.StatusCode);
 
             // 7) Login con la contrase&#241;a nueva funciona
-            var loginNuevo = await client.PostAsJsonAsync("/api/usuarios/login?useCookies=false", new { email, password = "NuevaClave#2026" });
+            var loginNuevo = await client.PostAsJsonAsync("/api/usuarios/login", new { email, password = "NuevaClave#2026" });
             Assert.Equal(HttpStatusCode.OK, loginNuevo.StatusCode);
 
             // 8) Cambio con contrase&#241;a actual incorrecta -> 400
@@ -110,7 +124,7 @@ namespace AquaClinic.Api.IntegrationTests.Controllers
             var respuestaRestablecer = await client.PostAsJsonAsync("/api/usuarios/restablecer-password", restablecer);
             Assert.Equal(HttpStatusCode.NoContent, respuestaRestablecer.StatusCode);
 
-            var loginFinal = await client.PostAsJsonAsync("/api/usuarios/login?useCookies=false", new { email, password = "Restablecida#2026" });
+            var loginFinal = await client.PostAsJsonAsync("/api/usuarios/login", new { email, password = "Restablecida#2026" });
             Assert.Equal(HttpStatusCode.OK, loginFinal.StatusCode);
         }
 

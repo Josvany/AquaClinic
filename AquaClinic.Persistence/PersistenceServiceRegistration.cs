@@ -1,4 +1,4 @@
-﻿using AquaClinic.Application.Contracts.Persistence;
+using AquaClinic.Application.Contracts.Persistence;
 using AquaClinic.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -18,6 +18,7 @@ namespace AquaClinic.Persistence
             services.AddScoped<IServicioRepository, ServicioRepository>();
             services.AddScoped<IEspecialidadRepository, EspecialidadRepository>();
             services.AddScoped<ICitaRepository, CitaRepository>();
+            services.AddScoped<IAgendaRepository, AgendaRepository>();
 
             return services;
         }

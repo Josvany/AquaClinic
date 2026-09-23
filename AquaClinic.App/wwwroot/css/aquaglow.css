@@ -199,11 +199,17 @@ input:focus-visible {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: clamp(2rem, 5vw, 4.5rem);
-    flex-wrap: wrap;
+    gap: clamp(1rem, 2.5vw, 2.5rem);
+    flex-wrap: nowrap;
     padding: 16px 28px;
     max-width: 1200px;
     margin: 0 auto;
+}
+
+/* El contenedor de login/registro nunca baja a una segunda linea */
+.ag-nav-auth {
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 /* El logo ocupa su propio bloque y empuja los links hacia el centro-derecha,
@@ -750,6 +756,164 @@ input:focus-visible {
     width: 100%;
 }
 
+/* Scheduler semanal de reservas */
+.ag-booking-scheduler .rz-scheduler {
+    border: none;
+}
+
+/* ============================================================
+   Reserva de cita: layout a pantalla amplia
+   ============================================================ */
+
+/* Contenedor mas ancho que el estandar: el calendario respira */
+.ag-reserva-contenedor {
+    width: 92%;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.ag-reserva-seccion {
+    padding-top: clamp(32px, 5vw, 56px);
+}
+
+.ag-reserva-intro-derecha {
+    text-align: right;
+}
+
+.ag-reserva-intro-derecha p {
+    color: var(--ag-texto-suave);
+    margin: 0;
+}
+
+.ag-reserva-leyenda {
+    margin-top: 8px !important;
+    font-size: 0.9rem;
+}
+
+/* La tarjeta del calendario ocupa todo el ancho del contenedor */
+.ag-reserva-contenedor .ag-booking-scheduler {
+    width: 100%;
+}
+
+.ag-reserva-contenedor .ag-booking-scheduler .rz-scheduler {
+    width: 100%;
+}
+
+/* Nota informativa bajo el calendario */
+.ag-reserva-nota {
+    margin-top: 24px;
+    text-align: center;
+    color: var(--ag-texto-suave);
+}
+
+.ag-reserva-nota h3 {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    color: var(--color-teal-900);
+    margin: 0 0 6px;
+}
+
+.ag-reserva-nota p {
+    max-width: 72ch;
+    margin: 0 auto;
+    font-size: 0.95rem;
+}
+
+@media (max-width: 640px) {
+    .ag-reserva-intro-derecha {
+        text-align: left;
+    }
+
+    .ag-reserva-contenedor {
+        width: 100%;
+    }
+}
+
+/* Leyenda de ocupacion (aside) */
+.ag-leyenda {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    vertical-align: middle;
+}
+
+.ag-leyenda-ocupado {
+    background: var(--color-teal-900);
+}
+
+.ag-leyenda-reservando {
+    background: var(--color-gold-500);
+}
+
+/* Bloques del scheduler por estado (la App pinta via clase del evento) */
+.ag-booking-scheduler .rzi-calendar,
+.ag-booking-scheduler .rz-scheduler-content {
+}
+
+/* Modal de reserva */
+.ag-reserva-modal-fecha {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: var(--color-teal-900);
+    margin: 0 0 16px;
+}
+
+.ag-reserva-modal .ag-field {
+    margin-bottom: 14px;
+}
+
+/* Acciones del modal: botones alineados y con la paleta del tema */
+.ag-reserva-acciones {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.ag-reserva-acciones .rz-button {
+    flex: 1;
+    height: 50px;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+    padding: 0 18px !important;
+    border-radius: var(--radius-pill) !important;
+    font-family: var(--font-serif) !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    letter-spacing: var(--tracking-wide) !important;
+    box-shadow: none !important;
+    line-height: 1;
+}
+
+.ag-reserva-acciones .rz-primary {
+    background-image: var(--gradient-teal) !important;
+    background-color: var(--color-teal-700) !important;
+    color: #fff !important;
+    border: none !important;
+    box-shadow: var(--shadow-cta) !important;
+}
+
+.ag-reserva-acciones .rz-primary:hover {
+    background-color: var(--color-teal-900) !important;
+    transform: translateY(-1px);
+}
+
+.ag-reserva-acciones .rz-secondary {
+    background: transparent !important;
+    background-image: none !important;
+    color: var(--color-teal-700) !important;
+    border: 1.5px solid var(--color-gold-500) !important;
+}
+
+.ag-reserva-acciones .rz-secondary:hover {
+    background: rgba(197, 160, 90, 0.1) !important;
+    color: var(--color-gold-700) !important;
+    border-color: var(--color-gold-700) !important;
+}
+
 .ag-booking-confirmacion {
     text-align: center;
     padding: clamp(1rem, 3vw, 2rem) 0;
@@ -1149,6 +1313,47 @@ input:focus-visible {
     border-radius: var(--radius-lg);
     background: var(--color-white);
 }
+
+/* Bloques de ocupacion: Ocupado (teal suave) / Reservando (dorado suave) */
+.ag-booking-scheduler .rz-scheduler .rz-event.ag-cita-ocupado {
+    background-color: var(--color-teal-500) !important;
+    background-image: none !important;
+    color: #fff !important;
+    border-radius: 6px;
+}
+
+.ag-booking-scheduler .rz-scheduler .rz-event.ag-cita-reservando {
+    background-color: var(--color-gold-500) !important;
+    background-image: none !important;
+    color: #fff !important;
+    border: 1.5px dashed rgba(255, 255, 255, 0.65) !important;
+    border-radius: 6px;
+    font-style: italic;
+}
+
+
+/* Botones del scheduler (hoy, flechas, vistas) en tono suave */
+.ag-booking-scheduler .rz-scheduler .rz-button {
+    background-image: none !important;
+    background-color: #eaf3f2 !important;
+    color: var(--color-teal-900) !important;
+    border: 1px solid var(--color-mist) !important;
+    border-radius: var(--radius-pill) !important;
+    font-family: var(--font-sans) !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    box-shadow: none !important;
+    height: auto !important;
+    padding: 7px 16px !important;
+}
+
+.ag-booking-scheduler .rz-scheduler .rz-button:hover,
+.ag-booking-scheduler .rz-scheduler .rz-button.rz-state-active {
+    background-color: #d8e9e7 !important;
+    border-color: rgba(42, 107, 102, 0.35) !important;
+    color: var(--color-teal-900) !important;
+}
+
 
 .rz-scheduler .rz-event {
     background-color: var(--color-teal-700);

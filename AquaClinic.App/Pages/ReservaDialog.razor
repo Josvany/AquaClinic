@@ -1,0 +1,170 @@
+@rendermode InteractiveServer
+@inject IServiciosPublicosDataService Servicios
+@inject IReservasDataService Reservas
+@inject IUsuarioDataService Usuarios
+@inject DialogService Dialogs
+
+<div class="ag-reserva-modal">
+    @if (_enviada)
+    {
+        <div class="ag-booking-confirmacion">
+            <h3>&#161;Cita recibida!</h3>
+            <p>Te esperamos el <strong>@_fechaInicioLocal.ToString("dddd, d 'de' MMMM 'de' yyyy")</strong>
+               a las <strong>@_fechaInicioLocal.ToString("hh\\:mm tt")</strong>.</p>
+            <p style="font-size:0.92rem; color:var(--ag-tinta);">@_servicioNombre</p>
+            <RadzenButton Text="Listo" Click="@(async () => await OnConfirmarAsync(true))" ButtonStyle="ButtonStyle.Primary" Style="width:100%;" />
+        </div>
+    }
+    else
+    {
+        <p class="ag-reserva-modal-fecha">
+            <i class="fa-regular fa-calendar-check" aria-hidden="true"></i>
+            @_fechaInicioLocal.ToString("dddd, d 'de' MMMM 'de' yyyy &#183; hh\\:mm tt")
+        </p>
+
+        <RadzenTemplateForm TItem="object" Data="@_modelo" Submit="@Enviar">
+            <div class="ag-field">
+                <label>Servicio</label>
+                <RadzenDropDown @bind-Value="_servicioId" AllowFiltering="true" TextProperty="Nombre" ValueProperty="ServicioId"
+                                Data="@_servicios" TValue="System.Guid" Placeholder="Elige un servicio" Style="width:100%;" />
+                <RadzenRequiredValidator Component="servicio" Text="Elige un servicio" Popup="false" />
+            </div>
+
+            @if (_esInvitado)
+            {
+                <div class="ag-field">
+                    <label>Nombre completo</label>
+                    <RadzenTextBox @bind-Value="_nombre" Name="nombre" Placeholder="Tu nombre" />
+                    <RadzenRequiredValidator Component="nombre" Text="Escribe tu nombre" Popup="false" />
+                </div>
+
+                <div class="ag-field">
+                    <label>Correo</label>
+                    <RadzenTextBox @bind-Value="_correo" Name="correo" Placeholder="tu@correo.com" />
+                    <RadzenRequiredValidator Component="correo" Text="Escribe tu correo" Popup="false" />
+                    <RadzenEmailValidator Component="correo" Text="Revisa el formato del correo" Popup="false" />
+                </div>
+
+                <div class="ag-field">
+                    <label>Tel&eacute;fono (opcional)</label>
+                    <RadzenTextBox @bind-Value="_telefono" Name="telefono" Placeholder="+1 604 ..." />
+                </div>
+            }
+
+            <div class="ag-field">
+                <label>Notas (opcional)</label>
+                <RadzenTextArea @bind-Value="_notas" Name="notas" Rows="2" Placeholder="Alergias, preferencias, ..." />
+            </div>
+
+            @if (_error is not null)
+            {
+                <div class="alert alert-danger" style="font-size:0.88rem;">@_error</div>
+            }
+
+            <div class="ag-reserva-acciones">
+                <RadzenButton ButtonType="ButtonType.Submit" Text="Confirmar cita"
+                              ButtonStyle="ButtonStyle.Primary" Disabled="@_enviando" />
+                <RadzenButton Text="Cancelar" Click="@OnCancelarAsync"
+                              ButtonStyle="ButtonStyle.Secondary" Disabled="@_enviando" />
+            </div>
+        </RadzenTemplateForm>
+    }
+</div>
+
+@code {
+    [Parameter] public DateTime FechaInicioLocal { get; set; }
+    [Parameter] public DateTime FechaFinLocal { get; set; }
+    [Parameter] public EventCallback<(bool Exito, DateTime FechaLocal)> ReservaConfirmada { get; set; }
+    [Parameter] public EventCallback ReservaCancelada { get; set; }
+
+    private object _modelo = new();
+    private List<ServicioPublicoVm> _servicios = [];
+    private Guid _servicioId;
+    private string _servicioNombre = string.Empty;
+    private string _nombre = string.Empty;
+    private string _correo = string.Empty;
+    private string _telefono = string.Empty;
+    private string _notas = string.Empty;
+    private bool _esInvitado = true;
+    private bool _enviada;
+    private bool _enviando;
+    private string? _error;
+
+    private DateTime _fechaInicioLocal => FechaInicioLocal;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _servicios = (await Servicios.ObtenerServiciosAsync()).ToList();
+
+            // Si hay sesion, precargar datos y no pedir contacto
+            var usuario = await Usuarios.GetUsuarioActualAsync();
+            if (usuario is not null)
+            {
+                _esInvitado = false;
+                _nombre = usuario.Nombre is null ? "" : $"{usuario.Nombre} {usuario.Apellidos}".Trim();
+                _correo = usuario.Email;
+                _telefono = usuario.Telefono ?? string.Empty;
+            }
+        }
+        catch (Exception)
+        {
+            _error = "No se pudo cargar el catálogo de servicios. Intenta de nuevo.";
+        }
+    }
+
+    private async Task Enviar(object _)
+    {
+        _enviando = true;
+        _error = null;
+
+        try
+        {
+            var usuario = _esInvitado ? null : await Usuarios.GetUsuarioActualAsync();
+
+            var resultado = await Reservas.CrearCitaAsync(new ReservaCitaVm
+            {
+                ServicioId = _servicioId,
+                FechaInicioLocal = FechaInicioLocal,
+                DuracionMinutos = null,
+                UsuarioId = usuario?.UsuarioId,
+                NombreInvitado = _esInvitado ? _nombre : null,
+                EmailInvitado = _esInvitado ? _correo : null,
+                TelefonoInvitado = _esInvitado ? _telefono : null,
+                Notas = string.IsNullOrWhiteSpace(_notas) ? null : _notas
+            });
+
+            if (resultado.Success)
+            {
+                _servicioNombre = _servicios.FirstOrDefault(s => s.ServicioId == _servicioId)?.Nombre ?? "Servicio";
+                _enviada = true;
+                StateHasChanged();
+                return;
+            }
+
+            _error = resultado.Message ?? "No se pudo crear la cita.";
+        }
+        catch (HttpRequestException)
+        {
+            _error = "No se pudo conectar con la API. Verifica tu conexión.";
+        }
+        finally
+        {
+            _enviando = false;
+        }
+    }
+
+    private async Task OnConfirmarAsync(bool _)
+    {
+        await ReservaConfirmada.InvokeAsync((true, FechaInicioLocal));
+        Dialogs.Close();
+    }
+
+    private async Task OnCancelarAsync()
+    {
+        // La pagina libera la reserva suave en su callback
+        await ReservaCancelada.InvokeAsync();
+        Dialogs.Close();
+    }
+}
