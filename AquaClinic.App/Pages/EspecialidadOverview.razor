@@ -2,58 +2,57 @@
 @attribute [Authorize]
 @rendermode InteractiveServer
 
-<h3>Especialidades</h3>
+<div class="ag-contenedor" style="padding-top: 24px;">
+    <h1 class="page-title">Especialidades</h1>
 
-<br />
+    <p class="mt-3"><input class="custom-checkbox" type="checkbox" id="incluirHistorial" @onchange="OnIncluirHistorialChanged" /> <label for="incluirHistorial">&iquest;Incluir citas pasadas?</label></p>
 
-<p><input class="custom-checkbox" type="checkbox" id="incluirHistorial" @onchange="OnIncluirHistorialChanged"/>   ¿Incluir citas pasadas?</p>
-
-@if (Especialidades == null)
-{
-    <p><em>Cargando...</em></p>
-}
-else
-{
-    <table>
-        <thead>
-            <tr>
-                <th>Especialidad</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var cat in Especialidades)
-            {
+    @if (Especialidades == null)
+    {
+        <p><em>Cargando...</em></p>
+    }
+    else
+    {
+        <table>
+            <thead>
                 <tr>
-                    <td>@cat.Nombre </td>
-
+                    <th>Especialidad</th>
                 </tr>
-                <tr>
-                    <td>
-                        <table class="nested-table ms-auto me-auto">
-                            <thead>
-                                <tr>
-                                    <th>Nombre</th>
-                                    <th class="category-event-header">Fecha</th>
-                                    <th class="category-event-header">Doctor</th>
-                                    <th class="category-event-header">Precio</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var ev in cat.Citas)
-                                {
+            </thead>
+            <tbody>
+                @foreach (var cat in Especialidades)
+                {
+                    <tr>
+                        <td class="event-name">@cat.Nombre </td>
+
+                    </tr>
+                    <tr>
+                        <td>
+                            <table class="nested-table ms-auto me-auto">
+                                <thead>
                                     <tr>
-                                        <td class="event-name">@ev.Nombre </td>
-                                        <td class="event-date">@ev.Fecha.ToShortDateString() </td>
-                                        <td class="event-artist">@ev.Doctor</td>
-                                        <td class="event-price">@ev.Precio</td>
+                                        <th>Nombre</th>
+                                        <th class="category-event-header">Fecha</th>
+                                        <th class="category-event-header">Doctor</th>
+                                        <th class="category-event-header">Precio</th>
                                     </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-
+                                </thead>
+                                <tbody>
+                                    @foreach (var ev in cat.Citas)
+                                    {
+                                        <tr>
+                                            <td class="event-name">@ev.Nombre </td>
+                                            <td class="event-date">@ev.Fecha.ToShortDateString() </td>
+                                            <td class="event-artist">@ev.Doctor</td>
+                                            <td class="event-price">@ev.Precio</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

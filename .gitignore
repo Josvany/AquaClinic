@@ -28,6 +28,7 @@ bld/
 *.binlog
 /graphify-out
 /.playwright-cli
+/.freebuff
 
 # Rider
 .idea/

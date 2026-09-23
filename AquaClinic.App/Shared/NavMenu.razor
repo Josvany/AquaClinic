@@ -1,28 +1,68 @@
 ﻿<header class="ag-nav">
     <nav class="ag-nav-inner">
-        <a class="ag-logo" href="/">Aqua <span>Skin & Glow</span></a>
+        <a class="ag-logo" href="/">Aqua <span>Skin & Glow Clinic </span></a>
 
         <ul class="ag-nav-links">
             <li><NavLink href="/" Match="NavLinkMatch.All">Inicio</NavLink></li>
             <li><NavLink href="/acerca">Acerca de</NavLink></li>
-            <li><NavLink href="/reservar" class="ag-nav-cta">Reservar cita</NavLink></li>
+            <AuthorizeView>
+                <NotAuthorized>
+                    <li><NavLink href="/reservar" class="ag-nav-cta">Reservar cita</NavLink></li>
+                </NotAuthorized>
+                <Authorized>
+                    @if (!context.User.IsInRole("Administrador") && !context.User.IsInRole("Recepcion") && !context.User.IsInRole("Esteticista"))
+                    {
+                        <li><NavLink href="/reservar" class="ag-nav-cta">Reservar cita</NavLink></li>
+                    }
+                </Authorized>
+            </AuthorizeView>
 
             <AuthorizeView>
                 <Authorized>
                     @if (context.User.IsInRole("Administrador") || context.User.IsInRole("Recepcion") || context.User.IsInRole("Esteticista"))
                     {
-                        <li><NavLink href="/citaoverview">Citas</NavLink></li>
+                        <li><NavLink href="/citaoverview">Citas</NavLink></li>                        
+                        <li class="ag-nav-staff">
+                            <details>
+                                <summary aria-label="Menú de administración">
+                                    <i class="fa-solid fa-user-gear" aria-hidden="true"></i>
+                                </summary>
+                                <div class="ag-staff-menu">
+                                    <NavLink href="/especialidadoverview"><i class="fa-solid fa-spa" aria-hidden="true"></i>Especialidades</NavLink>
+                                    <NavLink href="/nuevaespecialidad"><i class="fa-solid fa-plus" aria-hidden="true"></i>Nueva especialidad</NavLink>
+                                    <NavLink href="/perfil">Mi perfil</NavLink>
+                                    <form action="logout" method="post">
+                                        <AntiforgeryToken />
+                                        <button type="submit" class="ag-staff-logout"><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>Cerrar sesion</button>
+                                    </form>
+                                </div>
+                            </details>
+                        </li>
                     }
-                    <li><NavLink href="/perfil">Mi perfil</NavLink></li>
-                    @if (context.User.IsInRole("Administrador"))
+                    else
                     {
-                        <li><NavLink href="/especialidadoverview">Especialidades</NavLink></li>
-                        <li><NavLink href="/nuevaespecialidad">Nueva especialidad</NavLink></li>
+                        <li class="ag-nav-staff">
+                            <details>
+                                <summary aria-label="Menú de usuario">
+                                    <i class="fa-solid fa-user" aria-hidden="true"></i>
+                                </summary>
+                                <div class="ag-staff-menu">
+                                    <NavLink href="/perfil"><i class="fa-regular fa-id-card" aria-hidden="true"></i>Mi perfil</NavLink>
+                                    <form action="logout" method="post">
+                                        <AntiforgeryToken />
+                                        <button type="submit" class="ag-staff-logout"><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>Cerrar sesion</button>
+                                    </form>
+                                </div>
+                            </details>
+                        </li>
                     }
+                    <li class="ag-saludo-item">
+                        <NavSaludo @rendermode="InteractiveServer" />
+                    </li>
                 </Authorized>
             </AuthorizeView>
         </ul>
-
+        
         <NavAuth @rendermode="InteractiveServer" />
     </nav>
 </header>

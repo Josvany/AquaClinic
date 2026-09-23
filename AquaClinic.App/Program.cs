@@ -19,6 +19,10 @@ builder.Services.AddAutoMapper(cfg => { }, AppDomain.CurrentDomain.GetAssemblies
 // Necesario para que CookieForwardingHandler lea las cookies del request entrante
 builder.Services.AddHttpContextAccessor();
 
+// Cache del saludo del nav (nombre real o derivado del correo), compartido
+// entre las islas interactivas de un mismo circuito (NavSaludo <-> MiPerfil)
+builder.Services.AddSingleton<UsuarioSaludoCache>();
+
 //Agregando radzen
 builder.Services.AddRadzenComponents();
 
@@ -86,7 +90,30 @@ app.MapPost("/auth/login", async (HttpContext ctx, IHttpClientFactory httpClient
 
     // Copia la Set-Cookie de la API a la respuesta del navegador
     CopiarCookies(response, ctx);
-    return Results.Redirect("/");
+
+    // El personal (Admin/Recepcion/Esteticista) aterriza directo en Citas tras
+    // iniciar sesion; clientes y el resto van a la home normal.
+    // La respuesta de login de Identity incluye roles como claim "role".
+    var destino = "/";
+    try
+    {
+        var payload = await response.Content.ReadFromJsonAsync<Dictionary<string, object>>();
+        if (payload is not null
+            && payload.TryGetValue("roles", out var rolesValue)
+            && rolesValue is System.Text.Json.JsonElement { ValueKind: System.Text.Json.JsonValueKind.Array } roles
+            && roles.EnumerateArray().Any(r =>
+                r.ValueKind == System.Text.Json.JsonValueKind.String
+                && (r.GetString() == "Administrador" || r.GetString() == "Recepcion" || r.GetString() == "Esteticista")))
+        {
+            destino = "/citaoverview";
+        }
+    }
+    catch (System.Text.Json.JsonException)
+    {
+        // Respuesta sin cuerpo JSON utilizable: se usa el destino por defecto
+    }
+
+    return Results.Redirect(destino);
 });
 
 app.MapPost("/auth/register", async (HttpContext ctx, IHttpClientFactory httpClientFactory) =>

@@ -1,0 +1,56 @@
+@implements IDisposable
+
+<span class="ag-saludo-hola">Hola,</span>
+<span class="ag-saludo-nombre">@_nombre</span>
+
+@code {
+    [Inject]
+    private IUsuarioDataService UsuarioDataService { get; set; } = default!;
+
+    [Inject]
+    private UsuarioSaludoCache SaludoCache { get; set; } = default!;
+
+    [Inject]
+    private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = default!;
+
+    private string _nombre = "";
+    private string _correo = "";
+    private bool _cargado;
+
+    protected override async Task OnInitializedAsync()
+    {
+        SaludoCache.NombreActualizado += OnNombreActualizado;
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        _correo = authState.User.Identity?.Name ?? "";
+
+        // Valor inmediato derivado del correo, en caso de que la API no responda
+        _nombre = SaludoCache.Obtener(_correo) ?? UsuarioSaludoCache.DerivarNombre(_correo, null);
+        _cargado = true;
+
+        // El nombre real llega de la API; si falla, queda el derivado del correo
+        var usuario = await UsuarioDataService.GetUsuarioActualAsync();
+        if (usuario is not null)
+        {
+            _nombre = SaludoCache.Obtener(_correo)
+                ?? UsuarioSaludoCache.DerivarNombre(usuario.Email, usuario.Nombre);
+            StateHasChanged();
+        }
+    }
+
+    private void OnNombreActualizado(string correo)
+    {
+        if (!string.Equals(correo, _correo, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        _nombre = SaludoCache.Obtener(correo) ?? _nombre;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        SaludoCache.NombreActualizado -= OnNombreActualizado;
+    }
+}

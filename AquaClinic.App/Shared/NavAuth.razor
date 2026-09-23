@@ -1,15 +1,6 @@
 <AuthorizeView>
-    <Authorized>
-        <div class="ag-nav-user">
-            <span class="ag-nav-correo">@context.User.Identity?.Name</span>
-            <form action="logout" method="post">
-                <AntiforgeryToken />
-                <button type="submit" class="ag-nav-logout">Cerrar sesi&oacute;n</button>
-            </form>
-        </div>
-    </Authorized>
     <NotAuthorized>
-        <button type="button" class="ag-nav-login" @onclick="AbrirLogin">Iniciar sesi&oacute;n</button>
+        <button type="button" class="ag-nav-login" @onclick="AbrirLogin">Iniciar sesion</button>
     </NotAuthorized>
 </AuthorizeView>
 
@@ -19,7 +10,7 @@
 
     private async Task AbrirLogin()
     {
-        await DialogService.OpenAsync<LoginDialog>("Iniciar sesion", options: new DialogOptions
+        await DialogService.OpenAsync<LoginDialog>(" ", options: new DialogOptions
         {
             Width = "600px",
             ShowClose = true,

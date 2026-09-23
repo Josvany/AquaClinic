@@ -1,5 +1,5 @@
 html, body {
-    font-family: "Open Sans", Helvetica, Arial, sans-serif;
+    font-family: var(--font-sans, 'Montserrat', 'Segoe UI', sans-serif);
 }
 
 .container-fluid {
@@ -40,8 +40,8 @@ header {
 }
 
     .list-group-item.active {
-        background: rgba(81, 181, 177, 0.1);
-        color: black;
+        background: rgba(30, 95, 92, 0.08);
+        color: var(--color-teal-900, #144845);
     }
 
 .content {
@@ -53,35 +53,111 @@ header {
     width: 100%;
 }
 
+/* Título de página interno (Playfair + filete dorado) */
 .page-title {
-    color: #51B5B1;
-    font-size: 2rem;
+    color: var(--color-teal-900, #144845);
+    font-family: var(--font-display, 'Playfair Display', Georgia, serif);
+    font-size: clamp(1.7rem, 3vw, 2.3rem);
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    line-height: 1.15;
+    margin: 0 0 0.4rem;
+}
+
+.page-title::after {
+    content: "";
+    display: block;
+    width: 64px;
+    height: 2px;
+    margin-top: 12px;
+    background: var(--gradient-gold, linear-gradient(135deg, #d4b36a 0%, #9a7b3a 100%));
 }
 
 button {
-    background: rgba(81, 181, 177, 0.1);
-    border: 1px solid #51B5B1;
-    border-radius: 30px;
+    align-items: center;
+    background-image: var(--gradient-teal, linear-gradient(135deg, #2a6b66 0%, #144845 100%));
+    background-color: #1e5f5c;
+    border: none;
+    border-radius: var(--radius-pill, 999px);
+    box-shadow: var(--shadow-cta, 0 12px 26px rgba(20, 72, 69, 0.28));
     box-sizing: border-box;
-    color: #51b5b1;
-    font-size: 12px;
-    font-weight: bold;
-    height: 30px;
-    line-height: 12px;
+    color: #fff;
+    cursor: pointer;
+    display: inline-flex;
+    justify-content: center;
+    font-family: var(--font-serif, 'Cormorant Garamond', Georgia, serif);
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: var(--tracking-wide, 0.12em);
+    height: auto;
+    line-height: 1.2;
     margin-left: 25px;
-    text-transform: uppercase;
-    width: 200px;
+    min-width: 170px;
+    padding: 11px 26px;
+    text-transform: none;
+    width: auto;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* El botón de cerrar (X) del Dialog de Radzen NO debe heredar el estilo de botón
+   de la App: si no, queda gigante y desalineado y la X no se ve. */
+.rz-dialog-titlebar button,
+.rz-dialog-titlebar .rz-button,
+button.rz-dialog-close {
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    box-shadow: none;
+    min-width: 0;
+    width: auto;
+    height: auto;
+    margin-left: 0;
+    padding: 6px;
+    line-height: 1;
+    font-family: inherit;
+    letter-spacing: normal;
+    color: var(--color-teal-900, #144845);
+    transform: none;
+}
+
+.rz-dialog-titlebar button:hover,
+.rz-dialog-titlebar .rz-button:hover,
+button.rz-dialog-close:hover {
+    background: rgba(30, 95, 92, 0.08);
+    color: var(--color-teal-900, #144845);
+    transform: none;
+    box-shadow: none;
+}
+
+button:hover {
+    background-color: var(--color-teal-900, #144845);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 16px 34px rgba(20, 72, 69, 0.34);
 }
 
 .submit-button {
-    background: #51b5b1;
+    background-image: var(--gradient-teal, linear-gradient(135deg, #2a6b66 0%, #144845 100%));
     color: #fff;
 }
 
 .delete-button {
-    background: rgba(255,0,0,0.2);
-    border: 1px solid #f00;
-    color: #f00;
+    background: rgba(180, 35, 44, 0.08);
+    border: 1.5px solid #b4232c;
+    border-radius: var(--radius-pill, 999px);
+    box-shadow: none;
+    color: #b4232c;
+    min-width: 170px;
+    padding: 11px 26px;
+    text-transform: none;
+    width: auto;
+}
+
+.delete-button:hover {
+    background: rgba(180, 35, 44, 0.14);
+    box-shadow: 0 10px 22px rgba(180, 35, 44, 0.18);
+    color: #b4232c;
+    transform: translateY(-2px);
 }
 
 .login-field {
@@ -89,31 +165,43 @@ button {
     max-width: 500px;
 }
 
+/* Tablas internas: tarjetas blancas con filo dorado */
 table {
     border-collapse: separate;
     border-spacing: 0;
+    background: var(--color-white, #ffffff);
+    border: 1.5px solid rgba(197, 160, 90, 0.55);
+    border-radius: var(--radius-lg, 24px);
+    box-shadow: var(--shadow-card, 0 24px 48px rgba(20, 72, 69, 0.12));
+    overflow: hidden;
     width: 100%;
 }
 
 th,
 td {
-    padding: 15px 15px;
+    padding: 15px 18px;
     vertical-align: middle;
 }
 
 thead {
-    background: #fff;
-    border-bottom: 1px solid #cecfd5;
-    color: #6F6F6F;
-    font-size: 12px;
-    font-weight: bold;
-    line-height: 12px;
+    background: var(--color-white, #fff);
+    border-bottom: 1px solid rgba(197, 160, 90, 0.55);
+    color: var(--color-bronze, #a67c52);
+    font-family: var(--font-sans, 'Montserrat', 'Segoe UI', sans-serif);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: var(--tracking-caps, 0.22em);
+    line-height: 1.4;
     text-align: left;
     text-transform: uppercase;
 }
 
 td, th {
-    border-bottom: 1px solid #cecfd5;
+    border-bottom: 1px solid var(--color-mist, #dce9eb);
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
 }
 
 .event-image {
@@ -125,12 +213,18 @@ td, th {
 .event-name,
 .event-artist,
 .event-price {
-    color: #000;
-    font-size: 14px;
+    color: var(--color-teal-900, #144845);
+    font-size: 0.95rem;
     font-style: normal;
     font-weight: normal;
-    line-height: 14px;
+    line-height: 1.5;
     text-transform: capitalize;
+}
+
+.event-name {
+    font-family: var(--font-serif, 'Cormorant Garamond', Georgia, serif);
+    font-size: 1.1rem;
+    font-weight: 600;
 }
 
 .category-event-header {
@@ -138,26 +232,49 @@ td, th {
 }
 
 .event-purchase-button {
-    background: #51b5b1;
+    background-image: var(--gradient-teal, linear-gradient(135deg, #2a6b66 0%, #144845 100%));
+    border-radius: var(--radius-pill, 999px);
+    box-shadow: var(--shadow-cta, 0 12px 26px rgba(20, 72, 69, 0.28));
     color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    padding: 10px 16px;
+    width: auto;
 }
 
 .event-purchase-button:hover {
-    background: #51b5b1;
+    background-color: var(--color-teal-900, #144845);
+    color: #fff;
 }
 
 .nested-table {
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    margin-bottom: 12px;
     width: 90%;
 }
 
+    .nested-table th {
+        border-bottom: 1px solid var(--color-mist, #dce9eb);
+    }
+
 .back-to-catalog a {
-    color: #51b5b1;
-    font-size: 14px;
-    font-weight: normal;
+    color: var(--color-teal-700, #1e5f5c);
+    font-family: var(--font-serif, 'Cormorant Garamond', Georgia, serif);
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: var(--tracking-wide, 0.12em);
     line-height: 22px;
     padding-left: 5px;
     text-decoration: none;
     cursor: pointer;
+}
+
+.back-to-catalog a:hover {
+    color: var(--color-gold-700, #9a7b3a);
 }
 
 @media only screen and (min-width: 992px) {
@@ -172,13 +289,16 @@ td, th {
 }
 
 .pager-btn {
+    min-width: 75px;
     width: 75px;
-    background: #51b5b1;
+    background-image: var(--gradient-teal, linear-gradient(135deg, #2a6b66 0%, #144845 100%));
     color: #fff;
 }
 
 .pager-btn-disabled {
+    min-width: 75px;
     width: 75px;
-    background: rgba(81, 181, 177, 0.1);
-    color: #51b5b1;
+    background: rgba(30, 95, 92, 0.08);
+    box-shadow: none;
+    color: var(--color-teal-700, #1e5f5c);
 }

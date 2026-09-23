@@ -1,4 +1,5 @@
 using AquaClinic.App.Contracts;
+using AquaClinic.App.Services;
 using AquaClinic.App.ViewModels;
 using Microsoft.AspNetCore.Components;
 
@@ -8,6 +9,9 @@ namespace AquaClinic.App.Pages
     {
         [Inject]
         public IUsuarioDataService UsuarioDataService { get; set; } = default!;
+
+        [Inject]
+        public UsuarioSaludoCache SaludoCache { get; set; } = default!;
 
         public UsuarioViewModel? Usuario { get; set; }
 
@@ -33,6 +37,14 @@ namespace AquaClinic.App.Pages
             {
                 MensajeExito = "Perfil actualizado correctamente.";
                 Usuario = await UsuarioDataService.GetUsuarioActualAsync();
+
+                // El saludo del nav se refresca al instante (misma sesion)
+                if (Usuario is not null)
+                {
+                    SaludoCache.Establecer(
+                        Usuario.Email,
+                        UsuarioSaludoCache.DerivarNombre(Usuario.Email, Usuario.Nombre));
+                }
             }
             else
             {
