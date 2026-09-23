@@ -39,8 +39,8 @@ namespace AquaClinic.Application.Features.Citas.Queries.GetAgendaSemana
             var inicioLocal = request.SemanaInicioLocal.Date;
             var finLocal = request.SemanaFinLocal.Date;
 
-            var inicioUtc = LocalAUtc(new DateTimeOffset(inicioLocal, CitaFechas.OffsetLocal(inicioLocal)));
-            var finUtc = LocalAUtc(new DateTimeOffset(finLocal, CitaFechas.OffsetLocal(finLocal)));
+            var inicioUtc = CitaFechas.AUtc(inicioLocal);
+            var finUtc = CitaFechas.AUtc(finLocal);
 
             var ocupaciones = new List<OcupacionVm>();
 
@@ -81,11 +81,6 @@ namespace AquaClinic.Application.Features.Citas.Queries.GetAgendaSemana
                     .OrderBy(o => o.FechaInicio)
                     .ToList()
             };
-        }
-
-        private static DateTimeOffset LocalAUtc(DateTimeOffset local)
-        {
-            return local.ToUniversalTime();
         }
     }
 }

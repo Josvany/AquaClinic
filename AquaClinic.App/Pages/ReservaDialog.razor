@@ -3,6 +3,7 @@
 @inject IReservasDataService Reservas
 @inject IUsuarioDataService Usuarios
 @inject DialogService Dialogs
+@inject NotificadorUi Notificador
 
 <div class="ag-reserva-modal">
     @if (_enviada)
@@ -25,7 +26,7 @@
         <RadzenTemplateForm TItem="object" Data="@_modelo" Submit="@Enviar">
             <div class="ag-field">
                 <label>Servicio</label>
-                <RadzenDropDown @bind-Value="_servicioId" AllowFiltering="true" TextProperty="Nombre" ValueProperty="ServicioId"
+                <RadzenDropDown @bind-Value="_servicioId" Name="servicio" AllowFiltering="true" TextProperty="Nombre" ValueProperty="ServicioId"
                                 Data="@_servicios" TValue="System.Guid" Placeholder="Elige un servicio" Style="width:100%;" />
                 <RadzenRequiredValidator Component="servicio" Text="Elige un servicio" Popup="false" />
             </div>
@@ -55,11 +56,6 @@
                 <label>Notas (opcional)</label>
                 <RadzenTextArea @bind-Value="_notas" Name="notas" Rows="2" Placeholder="Alergias, preferencias, ..." />
             </div>
-
-            @if (_error is not null)
-            {
-                <div class="alert alert-danger" style="font-size:0.88rem;">@_error</div>
-            }
 
             <div class="ag-reserva-acciones">
                 <RadzenButton ButtonType="ButtonType.Submit" Text="Confirmar cita"
@@ -111,6 +107,7 @@
         catch (Exception)
         {
             _error = "No se pudo cargar el catálogo de servicios. Intenta de nuevo.";
+            Notificador.Error(_error, "No hay conexión");
         }
     }
 
@@ -139,15 +136,18 @@
             {
                 _servicioNombre = _servicios.FirstOrDefault(s => s.ServicioId == _servicioId)?.Nombre ?? "Servicio";
                 _enviada = true;
+                Notificador.Exito($"Cita agendada para el {_fechaInicioLocal:dddd d 'de' MMMM} a las {_fechaInicioLocal:hh\\:mm tt}.");
                 StateHasChanged();
                 return;
             }
 
             _error = resultado.Message ?? "No se pudo crear la cita.";
+            Notificador.Error(_error);
         }
         catch (HttpRequestException)
         {
             _error = "No se pudo conectar con la API. Verifica tu conexión.";
+            Notificador.Error(_error);
         }
         finally
         {

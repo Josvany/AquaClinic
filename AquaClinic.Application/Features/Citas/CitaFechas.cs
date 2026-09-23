@@ -40,10 +40,15 @@ namespace AquaClinic.Application.Features.Citas
             }
         }
 
-        /// <summary>Convierte una fecha/hora local de la clinica a DateTimeOffset UTC.</summary>
+        /// <summary>Convierte una fecha/hora local de la clinica a DateTimeOffset UTC.
+        /// Normaliza Kind (Local/Unspecified) para evitar ArgumentException cuando el
+        /// offset de Vancouver no coincide con la zona de la maquina.</summary>
         public static DateTimeOffset AUtc(DateTime fechaLocal)
         {
-            return new DateTimeOffset(fechaLocal, OffsetLocal(fechaLocal)).ToUniversalTime();
+            // DateTimeKind.Local exige que el offset argumento coincida con la zona de
+            // la maquina; lo tratamos como Unspecified porque la hora es "local de la clinica".
+            var sinZona = DateTime.SpecifyKind(fechaLocal, DateTimeKind.Unspecified);
+            return new DateTimeOffset(sinZona, OffsetLocal(sinZona)).ToUniversalTime();
         }
     }
 }

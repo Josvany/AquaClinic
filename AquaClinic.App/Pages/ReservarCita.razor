@@ -3,6 +3,7 @@
 @inject AgendaRealtimeService Agenda
 @inject IUsuarioDataService Usuarios
 @inject NavigationManager Navigation
+@inject NotificadorUi Notificador
 
 <PageTitle>Reservar cita — Aqua Skin & Glow</PageTitle>
 
@@ -29,13 +30,15 @@
                 <div class="alert alert-warning">@_errorCarga</div>
             }
             else
-            {                    <RadzenScheduler @ref="_scheduler" TItem="OcupacionAgenda" Data="@_ocupaciones"
-                                     TextProperty="Estado" StartProperty="Inicio" EndProperty="Fin"
-                                     Date="@_fecha" Style="height: 78vh; min-height: 560px;"
-                                     SlotSelect="@(OnSlotSelectAsync)"
-                                     AppointmentRender="@(OnAppointmentRender)">
-                    <RadzenWeekView StartTime="@TimeSpan.FromHours(9)" EndTime="@TimeSpan.FromHours(19)" />
-                    <RadzenDayView StartTime="@TimeSpan.FromHours(9)" EndTime="@TimeSpan.FromHours(19)" />
+            {
+
+                <RadzenScheduler @ref="_scheduler" TItem="OcupacionAgenda" Data="@_ocupaciones"
+                                 TextProperty="Estado" StartProperty="Inicio" EndProperty="Fin"
+                                 Date="@_fecha" Style="height: 78vh; min-height: 560px;"
+                                 SlotSelect="@(OnSlotSelectAsync)"
+                                 AppointmentRender="@(OnAppointmentRender)">
+                    <RadzenWeekView StartTime="@TimeSpan.FromHours(8)" EndTime="@TimeSpan.FromHours(19)" MinutesPerSlot="30" />
+                    <RadzenDayView StartTime="@TimeSpan.FromHours(8)" EndTime="@TimeSpan.FromHours(19)" MinutesPerSlot="30" />
                 </RadzenScheduler>
             }
         </div>
@@ -139,13 +142,38 @@
 
     private void OnAppointmentRender(Radzen.SchedulerAppointmentRenderEventArgs<OcupacionAgenda> args)
     {
+        // OJO: Radzen REEMPLAZA las clases por defecto si asignamos args.Attributes["class"],
+        // por eso usamos style inline (siempre gana sobre la hoja de estilos).
+        // El color azul lo pinta el DIV INTERNO .rz-event-content con la variable
+        // del tema --rz-scheduler-event-background-color; para cambiarlo por bloque
+        // redefinimos esas variables CSS en el elemento (se heredan hacia el hijo).
+        // "Reservando": SOLO fondo dorado (el de Iniciar sesion), letras azul/teal.
+        // "Ocupado": fondo teal, letras en el dorado de Iniciar sesion.
         if (args.Data.Estado == "Reservando")
         {
-            args.Attributes["class"] = "ag-cita-reservando";
+            args.Attributes["style"] =
+                "--rz-scheduler-event-background-color: var(--color-gold-500);" +
+                "--rz-scheduler-event-color: var(--color-teal-700);" +
+                "--rz-scheduler-event-line-height: 1.4;" +
+                "background-color: var(--color-gold-500) !important;" +
+                "background-image: none !important;" +
+                "box-shadow: none !important;" +
+                "border: none !important;" +
+                "border-radius: 6px;" +
+                "font-weight: 600;" +
+                "font-style: italic;";
         }
         else
         {
-            args.Attributes["class"] = "ag-cita-ocupado";
+            args.Attributes["style"] =
+                "--rz-scheduler-event-background-color: var(--color-teal-500);" +
+                "--rz-scheduler-event-color: var(--color-gold-500);" +
+                "--rz-scheduler-event-line-height: 1.4;" +
+                "background-color: var(--color-teal-500) !important;" +
+                "background-image: none !important;" +
+                "border: none !important;" +
+                "border-radius: 6px;" +
+                "font-weight: 600;";
         }
     }
 
@@ -166,6 +194,8 @@
         var ok = await Agenda.ReservarSuavementeAsync(inicio, fin);
         if (!ok)
         {
+            Notificador.Advertencia("Alguien está reservando ese horario en este momento. Elige otro disponible.");
+            await CargarAgendaAsync();
             return;
         }
 

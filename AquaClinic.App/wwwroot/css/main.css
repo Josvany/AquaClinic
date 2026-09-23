@@ -129,6 +129,42 @@ button.rz-dialog-close:hover {
     box-shadow: none;
 }
 
+/* Igual que la X del dialogo: el boton de cerrar de las notificaciones Radzen
+   hereda el estilo global de botón de la App (min-width, margin, pastilla...)
+   y la X se sale del cuadro. Solo se resetea el layout; la fuente del icono la
+   pone la clase .rzi del tema (que carga despues de este archivo y gana). */
+.rz-notification-close {
+    background: none;
+    background-image: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    min-width: 0;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 2px;
+    line-height: 1;
+    transform: none;
+    flex: 0 0 auto;
+}
+
+.rz-notification-close:hover {
+    background: rgba(0, 0, 0, 0.08);
+    color: inherit;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Fondo blanco en los bordes del toast: el contenedor fijo y el wrapper del
+   item heredan fondo blanco; transparentarlos deja solo la tarjeta coloreada. */
+.rz-notification,
+.rz-notification-item-wrapper {
+    background: transparent;
+    background-color: transparent;
+    box-shadow: none;
+}
+
 button:hover {
     background-color: var(--color-teal-900, #144845);
     color: #fff;

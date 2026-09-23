@@ -48,6 +48,9 @@ builder.Services.AddScoped<IUsuarioDataService, UsuarioDataService>();
 builder.Services.AddScoped<ICitaDataService, CitaDataService>();
 builder.Services.AddScoped<IEspecialidadDataService, EspecialidadDataService>();
 
+// Notificaciones globales de la UI (toasts Radzen)
+builder.Services.AddScoped<NotificadorUi>();
+
 // Agenda en tiempo real (SignalR hacia la API)
 builder.Services.AddScoped<AgendaRealtimeService>();
 builder.Services.AddScoped<IReservasDataService, ReservasDataService>();

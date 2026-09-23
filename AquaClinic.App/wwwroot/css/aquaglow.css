@@ -1314,22 +1314,9 @@ input:focus-visible {
     background: var(--color-white);
 }
 
-/* Bloques de ocupacion: Ocupado (teal suave) / Reservando (dorado suave) */
-.ag-booking-scheduler .rz-scheduler .rz-event.ag-cita-ocupado {
-    background-color: var(--color-teal-500) !important;
-    background-image: none !important;
-    color: #fff !important;
-    border-radius: 6px;
-}
-
-.ag-booking-scheduler .rz-scheduler .rz-event.ag-cita-reservando {
-    background-color: var(--color-gold-500) !important;
-    background-image: none !important;
-    color: #fff !important;
-    border: 1.5px dashed rgba(255, 255, 255, 0.65) !important;
-    border-radius: 6px;
-    font-style: italic;
-}
+/* Nota: el color de los bloques por estado se aplica via AppointmentRender (style inline
+   en ReservarCita.razor) porque asignar args.Attributes["class"] reemplaza las clases
+   por defecto de Radzen y el selector no coincidiria. */
 
 
 /* Botones del scheduler (hoy, flechas, vistas) en tono suave */
@@ -1345,6 +1332,11 @@ input:focus-visible {
     box-shadow: none !important;
     height: auto !important;
     padding: 7px 16px !important;
+    white-space: nowrap !important;
+    width: auto !important;
+    min-width: fit-content !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
 }
 
 .ag-booking-scheduler .rz-scheduler .rz-button:hover,
@@ -1356,10 +1348,47 @@ input:focus-visible {
 
 
 .rz-scheduler .rz-event {
-    background-color: var(--color-teal-700);
+    background-color: var(--color-teal-500);
+    background-image: none;
+    border: none;
     border-radius: 6px;
     font-family: var(--font-sans);
     font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-gold-500);
+}
+
+/* El color de relleno real del bloque lo pinta el DIV INTERNO .rz-event-content
+   (con la variable del tema --rz-scheduler-event-background-color, azul material).
+   Los estilos inline del AppointmentRender redefinen esa variable por bloque; aqui
+   ademas forzamos que el hijo use la variable heredada y no un azul fijo. */
+.rz-scheduler .rz-event .rz-event-content {
+    background: var(--rz-scheduler-event-background-color, transparent);
+    background-image: none;
+    color: var(--rz-scheduler-event-color, inherit);
+    border: none;
+    box-shadow: none;
+}
+
+/* Texto del bloque ("Ocupado") centrado horizontal y verticalmente */
+.rz-scheduler .rz-event-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+    height: 100%;
+}
+
+/* Evitar que el texto del bloque ("Reservando", "Ocupado") salga cortado */
+.rz-scheduler .rz-event,
+.rz-scheduler .rz-event-content {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: nowrap;
+    padding-left: 8px;
+    padding-right: 8px;
+    line-height: 1.4;
 }
 
 .rz-scheduler .rz-today {
