@@ -161,7 +161,7 @@
                 "border: none !important;" +
                 "border-radius: 6px;" +
                 "font-weight: 600;" +
-                "font-style: italic;";
+                "height: 35px;";
         }
         else
         {
@@ -212,7 +212,7 @@
                 { "FechaFinLocal", args.End },
                 { "ReservaConfirmada", EventCallback.Factory.Create(this, (Func<(bool, DateTime), Task>)(async t => await ReservaTerminadaAsync(t.Item1, t.Item2))) },
                 { "ReservaCancelada", EventCallback.Factory.Create(this, (Func<Task>)(async () => await ReservaCanceladaAsync())) }
-            },
+            }!,
             new DialogOptions
             {
                 Width = "520px",

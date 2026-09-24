@@ -1348,7 +1348,7 @@ input:focus-visible {
 
 
 .rz-scheduler .rz-event {
-    background-color: var(--color-teal-500);
+    /*background-color: var(--color-teal-500);*/
     background-image: none;
     border: none;
     border-radius: 6px;
