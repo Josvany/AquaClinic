@@ -5,8 +5,9 @@ namespace AquaClinic.App.Services
 {
     /// <summary>
     /// Rango de tiempo ocupado/en proceso tal como lo ve el scheduler publico.
-    /// RadzenScheduler trabaja con DateTime (hora local del servidor Blazor),
-    /// asi que los rangos UTC de la API se convierten a local al recibirlos.
+    /// RadzenScheduler trabaja con DateTime en hora local de la CLINICA
+    /// (America/Vancouver), asi que los rangos UTC de la API se convierten
+    /// a esa zona al recibirlos (y viceversa al enviarlos).
     /// </summary>
     public class OcupacionAgenda
     {
@@ -116,16 +117,42 @@ namespace AquaClinic.App.Services
             }
         }
 
-        // ---------- Conversiones de zona (la API habla UTC; el scheduler, DateTime local) ----------
+        // ---------- Conversiones de zona ----------
+        // La API habla UTC y los slots del scheduler son hora local de la CLINICA
+        // (America/Vancouver), la misma conversion que hace Application (CitaFechas).
+        // No usar TimeZoneInfo.Local: la maquina del servidor puede estar en otra zona
+        // y entonces los instantes no coinciden con los de la API (la reserva suave
+        // no se liberaba al confirmar y el slot seguia mostrandose como "Reservando").
+
+        private static readonly TimeZoneInfo ZonaClinica = BuscarZonaClinica();
+
+        private static TimeZoneInfo BuscarZonaClinica()
+        {
+            try
+            {
+                return TimeZoneInfo.FindSystemTimeZoneById("America/Vancouver");
+            }
+            catch (TimeZoneNotFoundException)
+            {
+                return TimeZoneInfo.Local;
+            }
+            catch (InvalidTimeZoneException)
+            {
+                return TimeZoneInfo.Local;
+            }
+        }
 
         private static DateTime ALocal(DateTimeOffset utc)
         {
-            return utc.LocalDateTime;
+            return TimeZoneInfo.ConvertTime(utc, ZonaClinica).DateTime;
         }
 
         private static DateTimeOffset AUtc(DateTime local)
         {
-            return new DateTimeOffset(local, TimeZoneInfo.Local.GetUtcOffset(local));
+            // DateTimeKind.Local exigiria que el offset coincida con la zona de la
+            // maquina; la hora es "local de la clinica", asi que va sin zona.
+            var sinZona = DateTime.SpecifyKind(local, DateTimeKind.Unspecified);
+            return new DateTimeOffset(sinZona, ZonaClinica.GetUtcOffset(sinZona)).ToUniversalTime();
         }
 
         /// <summary>DTO crudo de la API (fechas UTC con offset).</summary>
