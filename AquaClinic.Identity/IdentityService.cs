@@ -62,6 +62,30 @@ namespace AquaClinic.Identity
             return usuario is null ? null : await MaterializarAsync(usuario);
         }
 
+        public async Task<IReadOnlyList<Usuario>> BuscarClientesAsync(string? texto, int limite)
+        {
+            var clientes = await userManager.GetUsersInRoleAsync(RolesClinica.Cliente);
+            var filtro = texto?.Trim();
+
+            var coincidencias = clientes
+                .Where(u => string.IsNullOrWhiteSpace(filtro)
+                    || (u.Nombre ?? string.Empty).Contains(filtro, StringComparison.OrdinalIgnoreCase)
+                    || (u.Apellidos ?? string.Empty).Contains(filtro, StringComparison.OrdinalIgnoreCase)
+                    || (u.Email ?? string.Empty).Contains(filtro, StringComparison.OrdinalIgnoreCase))
+                .OrderBy(u => u.Nombre)
+                .ThenBy(u => u.Apellidos)
+                .Take(limite <= 0 ? 20 : limite)
+                .ToList();
+
+            var resultado = new List<Usuario>(coincidencias.Count);
+            foreach (var cliente in coincidencias)
+            {
+                resultado.Add(await MaterializarAsync(cliente));
+            }
+
+            return resultado;
+        }
+
         public async Task<ResultadoIdentity> CambiarPasswordAsync(string usuarioId, string passwordActual, string passwordNueva)
         {
             var usuario = await userManager.FindByIdAsync(usuarioId);

@@ -46,6 +46,25 @@ namespace AquaClinic.App.Services
             }
         }
 
+        public async Task<List<ClienteBusquedaViewModel>> BuscarClientesAsync(string? texto)
+        {
+            try
+            {
+                var url = "api/usuarios/clientes?limite=50";
+                if (!string.IsNullOrWhiteSpace(texto))
+                {
+                    url += $"&texto={Uri.EscapeDataString(texto.Trim())}";
+                }
+
+                var clientes = await _httpClient.GetFromJsonAsync<List<ClienteBusquedaViewModel>>(url, _jsonOptions);
+                return clientes ?? [];
+            }
+            catch (HttpRequestException)
+            {
+                return [];
+            }
+        }
+
         public async Task<ApiResponse> ActualizarPerfilAsync(string? nombre, string? apellidos, string? telefono)
         {
             try

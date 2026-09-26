@@ -41,6 +41,15 @@ namespace AquaClinic.Application.Features.Citas.Commands.CreateCita
 
         public async Task<Guid> Handle(CreateCitaCommand request, CancellationToken cancellationToken)
         {
+            // Validaciones de entrada (fecha no pasada, contacto del invitado, ...)
+            var validator = new CreateCitaCommandValidator();
+            var validationResult = await validator.ValidateAsync(request, cancellationToken);
+
+            if (validationResult.Errors.Count > 0)
+            {
+                throw new Exceptions.ValidationException(validationResult);
+            }
+
             var servicio = await _servicioRepository.GetByIdAsync(request.ServicioId);
             if (servicio is null || !servicio.Activo)
             {

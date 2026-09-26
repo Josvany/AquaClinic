@@ -37,26 +37,19 @@ namespace AquaClinic.App.Pages
 
         private async Task CargarAgendaAsync()
         {
-            var inicio = InicioDeSemana(_fecha);
+            var inicio = AgendaCalendario.InicioDeSemana(_fecha);
             var ocupaciones = await Agenda.ObtenerAgendaAsync(inicio, inicio.AddDays(7));
 
             // Si un slot ya tiene cita confirmada, cualquier "Reservando" que se solape
             // es residuo (la reserva suave se libera aparte en la API): la hora se
             // muestra como ocupada, nunca como "en proceso de reserva".
             _ocupaciones = ocupaciones
-                .Where(o => o.Estado != "Reservando" ||
-                            !ocupaciones.Any(c => c.Estado == "Ocupado" &&
+                .Where(o => o.Estado != AgendaCalendario.Reservando ||
+                            !ocupaciones.Any(c => c.Estado == AgendaCalendario.Ocupado &&
                                                   c.Inicio < o.Fin && c.Fin > o.Inicio))
                 .ToList();
 
             StateHasChanged();
-        }
-
-        private static DateTime InicioDeSemana(DateTime fecha)
-        {
-            // Semana que inicia el lunes
-            var dias = ((int)fecha.DayOfWeek + 6) % 7;
-            return fecha.Date.AddDays(-dias);
         }
 
         // ---------- Eventos en tiempo real ----------
@@ -81,7 +74,7 @@ namespace AquaClinic.App.Pages
             _ = InvokeAsync(() =>
             {
                 _ocupaciones = _ocupaciones
-                    .Where(o => !(o.Inicio == inicio && o.Estado == "Reservando"))
+                    .Where(o => !(o.Inicio == inicio && o.Estado == AgendaCalendario.Reservando))
                     .ToList();
                 _scheduler?.Reload();
                 StateHasChanged();
@@ -108,39 +101,11 @@ namespace AquaClinic.App.Pages
 
         private void OnAppointmentRender(Radzen.SchedulerAppointmentRenderEventArgs<OcupacionAgenda> args)
         {
-            // OJO: Radzen REEMPLAZA las clases por defecto si asignamos args.Attributes["class"],
-            // por eso usamos style inline (siempre gana sobre la hoja de estilos).
-            // El color azul lo pinta el DIV INTERNO .rz-event-content con la variable
-            // del tema --rz-scheduler-event-background-color; para cambiarlo por bloque
-            // redefinimos esas variables CSS en el elemento (se heredan hacia el hijo).
-            // "Reservando": SOLO fondo dorado (el de Iniciar sesion), letras azul/teal.
+            // "Reservando": fondo dorado (el de Iniciar sesion), letras teal.
             // "Ocupado": fondo teal, letras en el dorado de Iniciar sesion.
-            if (args.Data.Estado == "Reservando")
-            {
-                args.Attributes["style"] =
-                    "--rz-scheduler-event-background-color: var(--color-gold-500);" +
-                    "--rz-scheduler-event-color: var(--color-teal-700);" +
-                    "--rz-scheduler-event-line-height: 1.4;" +
-                    "background-color: var(--color-gold-500) !important;" +
-                    "background-image: none !important;" +
-                    "box-shadow: none !important;" +
-                    "border: none !important;" +
-                    "border-radius: 6px;" +
-                    "font-weight: 600;" +
-                    "height: 35px;";
-            }
-            else
-            {
-                args.Attributes["style"] =
-                    "--rz-scheduler-event-background-color: var(--color-teal-500);" +
-                    "--rz-scheduler-event-color: var(--color-gold-500);" +
-                    "--rz-scheduler-event-line-height: 1.4;" +
-                    "background-color: var(--color-teal-500) !important;" +
-                    "background-image: none !important;" +
-                    "border: none !important;" +
-                    "border-radius: 6px;" +
-                    "font-weight: 600;";
-            }
+            args.Attributes["style"] = args.Data?.Estado == AgendaCalendario.Reservando
+                ? AgendaCalendario.EstiloReservando
+                : AgendaCalendario.EstiloOcupado;
         }
 
         // ---------- Flujo de reserva ----------
@@ -150,9 +115,17 @@ namespace AquaClinic.App.Pages
             var inicio = args.Start;
             var fin = args.End;
 
-            // Ya ocupado: no abre modal
+            // No se puede reservar en el pasado (dia anterior o meses anteriores).
+            if (inicio.Date < AgendaCalendario.HoyClinica)
+            {
+                Notificador.Advertencia("No puedes reservar en fechas pasadas. Elige hoy o un día posterior.");
+                return;
+            }
+
+            // Ya ocupado (cita confirmada o reserva en curso): no abre modal
             if (_ocupaciones.Any(o => o.Inicio < fin && o.Fin > inicio))
             {
+                Notificador.Advertencia("Ese horario no está disponible. Elige otro libre.");
                 return;
             }
 
@@ -168,7 +141,7 @@ namespace AquaClinic.App.Pages
             _seleccionInicio = inicio;
             _tieneSeleccion = true;
 
-            _ocupaciones.Add(new OcupacionAgenda { Inicio = inicio, Fin = fin, Estado = "Reservando" });
+            _ocupaciones.Add(new OcupacionAgenda { Inicio = inicio, Fin = fin, Estado = AgendaCalendario.Reservando });
             _scheduler?.Reload();
 
             var resultado = await DialogService.OpenAsync<ReservaDialog>("Reservar cita",
@@ -202,7 +175,7 @@ namespace AquaClinic.App.Pages
                 // La cita quedo creada: el bloque "Reservando" propio se quita de
                 // inmediato y el slot pasa a verse como ocupado.
                 _ocupaciones = _ocupaciones
-                    .Where(o => !(o.Inicio == _seleccionInicio && o.Estado == "Reservando"))
+                    .Where(o => !(o.Inicio == _seleccionInicio && o.Estado == AgendaCalendario.Reservando))
                     .ToList();
                 _scheduler?.Reload();
 
@@ -218,7 +191,7 @@ namespace AquaClinic.App.Pages
                 _tieneSeleccion = false;
                 await Agenda.LiberarReservaAsync(_seleccionInicio);
                 _ocupaciones = _ocupaciones
-                    .Where(o => !(o.Inicio == _seleccionInicio && o.Estado == "Reservando"))
+                    .Where(o => !(o.Inicio == _seleccionInicio && o.Estado == AgendaCalendario.Reservando))
                     .ToList();
                 _scheduler?.Reload();
             }

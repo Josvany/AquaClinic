@@ -4,10 +4,10 @@ using System.Text.Json;
 namespace AquaClinic.App.Services
 {
     /// <summary>
-    /// Rango de tiempo ocupado/en proceso tal como lo ve el scheduler publico.
-    /// RadzenScheduler trabaja con DateTime en hora local de la CLINICA
-    /// (America/Vancouver), asi que los rangos UTC de la API se convierten
-    /// a esa zona al recibirlos (y viceversa al enviarlos).
+    /// Rango de tiempo ocupado/en proceso tal como lo ven los schedulers (reserva
+    /// publica y agenda interna). RadzenScheduler trabaja con DateTime en hora local
+    /// de la CLINICA (America/Vancouver), asi que los rangos UTC de la API se
+    /// convierten a esa zona al recibirlos (y viceversa al enviarlos).
     /// </summary>
     public class OcupacionAgenda
     {
@@ -15,7 +15,83 @@ namespace AquaClinic.App.Services
         public DateTime Fin { get; set; }
 
         /// <summary>"Ocupado" (cita confirmada) o "Reservando" (seleccion en curso).</summary>
-        public string Estado { get; set; } = "Ocupado";
+        public string Estado { get; set; } = AgendaCalendario.Ocupado;
+
+        /// <summary>Texto del bloque en el calendario (ej. el nombre del cliente).</summary>
+        public string? Text { get; set; }
+    }
+
+    /// <summary>
+    /// Estados, estilos y utilidades de los bloques del scheduler de agenda,
+    /// compartidos por la reserva publica (/reservar) y la agenda interna
+    /// (/citaoverview).
+    /// Los estilos van inline porque Radzen REEMPLAZA las clases del evento si
+    /// asignamos args.Attributes["class"]: el fondo lo pinta el DIV interno
+    /// .rz-event-content con la variable del tema --rz-scheduler-event-background-color,
+    /// asi que la redefinimos en el elemento (se hereda hacia el hijo).
+    /// </summary>
+    public static class AgendaCalendario
+    {
+        /// <summary>Cita confirmada.</summary>
+        public const string Ocupado = "Ocupado";
+
+        /// <summary>Seleccion en curso (reserva suave, se libera sola).</summary>
+        public const string Reservando = "Reservando";
+
+        /// <summary>Fondo teal, letras doradas.</summary>
+        public const string EstiloOcupado =
+            "--rz-scheduler-event-background-color: var(--color-teal-500);" +
+            "--rz-scheduler-event-color: var(--color-gold-500);" +
+            "--rz-scheduler-event-line-height: 1.4;" +
+            "background-color: var(--color-teal-500) !important;" +
+            "background-image: none !important;" +
+            "border: none !important;" +
+            "border-radius: 6px;" +
+            "font-weight: 600;";
+
+        /// <summary>Fondo dorado, letras teal.</summary>
+        public const string EstiloReservando =
+            "--rz-scheduler-event-background-color: var(--color-gold-500);" +
+            "--rz-scheduler-event-color: var(--color-teal-700);" +
+            "--rz-scheduler-event-line-height: 1.4;" +
+            "background-color: var(--color-gold-500) !important;" +
+            "background-image: none !important;" +
+            "box-shadow: none !important;" +
+            "border: none !important;" +
+            "border-radius: 6px;" +
+            "font-weight: 600;" +
+            "height: 35px;";
+
+        /// <summary>Semana que inicia el lunes (mismo criterio que la API).</summary>
+        public static DateTime InicioDeSemana(DateTime fecha)
+        {
+            var dias = ((int)fecha.DayOfWeek + 6) % 7;
+            return fecha.Date.AddDays(-dias);
+        }
+
+        /// <summary>
+        /// Fecha (dia) actual en la zona de la clinica. No usar DateTime.Today: la
+        /// maquina puede estar en otra zona y el "hoy" no coincidiria con el del API.
+        /// </summary>
+        public static DateTime HoyClinica
+        {
+            get
+            {
+                try
+                {
+                    var tz = TimeZoneInfo.FindSystemTimeZoneById("America/Vancouver");
+                    return TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz).Date;
+                }
+                catch (TimeZoneNotFoundException)
+                {
+                    return DateTime.Today;
+                }
+                catch (InvalidTimeZoneException)
+                {
+                    return DateTime.Today;
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -59,15 +135,15 @@ namespace AquaClinic.App.Services
                 .Build();
 
             _conexion.On<DateTimeOffset, DateTimeOffset>("ReservaSuave", (inicio, fin) =>
-                ReservaSuave?.Invoke(new OcupacionAgenda { Inicio = ALocal(inicio), Fin = ALocal(fin), Estado = "Reservando" }));
+                ReservaSuave?.Invoke(new OcupacionAgenda { Inicio = ALocal(inicio), Fin = ALocal(fin), Estado = AgendaCalendario.Reservando }));
 
             _conexion.On<DateTimeOffset>("ReservaLiberada", inicio => ReservaLiberada?.Invoke(ALocal(inicio)));
 
             _conexion.On<DateTimeOffset, DateTimeOffset>("ReservaRechazada", (inicio, fin) =>
-                ReservaSuave?.Invoke(new OcupacionAgenda { Inicio = ALocal(inicio), Fin = ALocal(fin), Estado = "Ocupado" }));
+                ReservaSuave?.Invoke(new OcupacionAgenda { Inicio = ALocal(inicio), Fin = ALocal(fin), Estado = AgendaCalendario.Ocupado }));
 
             _conexion.On<DateTimeOffset, DateTimeOffset>("CitaCreada", (inicio, fin) =>
-                CitaCreada?.Invoke(new OcupacionAgenda { Inicio = ALocal(inicio), Fin = ALocal(fin), Estado = "Ocupado" }));
+                CitaCreada?.Invoke(new OcupacionAgenda { Inicio = ALocal(inicio), Fin = ALocal(fin), Estado = AgendaCalendario.Ocupado }));
 
             _conexion.Closed += ex =>
             {

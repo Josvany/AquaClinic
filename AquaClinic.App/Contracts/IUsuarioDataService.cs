@@ -11,6 +11,9 @@ namespace AquaClinic.App.Contracts
     {
         Task<UsuarioViewModel?> LoginAsync(string email, string password, bool emitirCookie);
         Task<UsuarioViewModel?> GetUsuarioActualAsync();
+
+        /// <summary>Clientes registrados (rol Cliente) para agendarles una cita.</summary>
+        Task<List<ClienteBusquedaViewModel>> BuscarClientesAsync(string? texto);
         Task<ApiResponse> ActualizarPerfilAsync(string? nombre, string? apellidos, string? telefono);
         Task<ApiResponse> CambiarPasswordAsync(string passwordActual, string passwordNueva);
         Task<ApiResponse<string>> OlvidePasswordAsync(string email);

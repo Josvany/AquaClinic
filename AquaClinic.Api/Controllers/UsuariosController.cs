@@ -1,5 +1,7 @@
+using AquaClinic.Api.Authorization;
 using AquaClinic.Api.Infrastructure;
 using AquaClinic.Application.Features.Usuarios;
+using AquaClinic.Application.Features.Usuarios.BuscarClientes;
 using AquaClinic.Application.Features.Usuarios.ActualizarPerfil;
 using AquaClinic.Application.Features.Usuarios.CambiarPassword;
 using AquaClinic.Application.Features.Usuarios.GetUsuarioActual;
@@ -36,6 +38,22 @@ namespace AquaClinic.Api.Controllers
             _mediator = mediator;
             _tokenService = tokenService;
             _identityService = identityService;
+        }
+
+        /// <summary>
+        /// Clientes registrados (rol Cliente) para agendarles una cita desde el back
+        /// office: filtra por nombre, apellidos o correo. Solo datos de contacto.
+        /// </summary>
+        [HttpGet("clientes", Name = "BuscarClientes")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesDefaultResponseType]
+        [HasPermission(Permisos.CitasGestionar)]
+        public async Task<ActionResult<List<ClienteBusquedaVm>>> BuscarClientes(
+            [FromQuery] string? texto,
+            [FromQuery] int limite = 50)
+        {
+            var result = await _mediator.Send(new BuscarClientesQuery { Texto = texto, Limite = limite });
+            return Ok(result);
         }
 
         /// <summary>Registra un cliente nuevo (rol Cliente).</summary>

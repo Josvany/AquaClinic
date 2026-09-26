@@ -50,3 +50,6 @@ appsettings.*.json.local
 # Logs de Serilog
 logs/
 *.log
+
+# otros
+/*.md

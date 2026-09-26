@@ -1,72 +1,120 @@
-﻿@page "/citaoverview"
+@page "/citaoverview"
 @rendermode InteractiveServer
+@implements IAsyncDisposable
 
-<div class="ag-contenedor" style="padding-top: 24px;">
-    <h1 class="page-title">Citas</h1>
+<section class="ag-citas-seccion">
+    <div class="ag-contenedor">
+        <div class="ag-citas-encabezado">
+            <div>
+                <span class="ag-label-caps">Agenda interna</span>
+                <h1 class="ag-citas-titulo">Citas</h1>
+                <p class="ag-citas-subtitulo">
+                    Calendario de la cl&iacute;nica: las citas agendadas y, en dorado, los horarios
+                    que se est&aacute;n reservando en este momento.
+                </p>
+            </div>
 
-    <div class="m-2 d-flex justify-content-end">
-        <button @onclick="AddNewCita" class="me-1">Nueva cita</button>
-        <button @onclick="ExportCitas">Exportar citas</button>
-    </div>
+            <div class="ag-citas-acciones">
+                <RadzenButton Text="Nueva cita" Icon="add_circle_outline"
+                              ButtonStyle="ButtonStyle.Primary" Click="@AddNewCita" />
+                <RadzenButton Text="Exportar citas" Icon="file_download"
+                              ButtonStyle="ButtonStyle.Secondary" Click="@ExportCitas" />
+            </div>
+        </div>
 
-    @if (_errorCarga != null)
-    {
-        <div class="alert alert-danger mt-3">@_errorCarga</div>
-    }
-    else if (Citas == null)
-    {
-        <p><em>Cargando...</em></p>
-    }
-    else
-    {
-        <h4 class="mt-4" style="font-family: var(--font-display); color: var(--color-teal-900);">Calendario de citas</h4>
-        <RadzenScheduler TItem="AppointmentData" Data="_eventos"
-                         TextProperty="Text" StartProperty="Start" EndProperty="End"
-                         Date="_fecha" Style="height: 620px;">
-            <RadzenMonthView />
-            <RadzenWeekView />
-            <RadzenDayView />
-        </RadzenScheduler>
-
-        @if (Citas.Count == 0)
+        @if (_errorCarga is not null)
         {
-            <p class="mt-3"><em>No hay citas agendadas todav&iacute;a.</em></p>
+            <div class="alert alert-danger">@_errorCarga</div>
+        }
+        else if (_citas is null)
+        {
+            <p><em>Cargando...</em></p>
+        }
+        else
+        {
+            <div class="ag-panel ag-citas-calendario">
+                <div class="ag-citas-barra">
+                    <p class="ag-reserva-leyenda">
+                        <span class="ag-leyenda ag-leyenda-ocupado"></span> Cita agendada
+                        &nbsp;&nbsp;
+                        <span class="ag-leyenda ag-leyenda-reservando"></span> Reservando
+                    </p>
+
+                    @if (HayReservasEnProceso)
+                    {
+                        <span class="ag-citas-enproceso ag-citas-enproceso-activo">
+                            <i class="fa-solid fa-circle" aria-hidden="true"></i>
+                            @TextoReservasEnProceso
+                        </span>
+                    }
+                </div>
+
+                <RadzenScheduler @ref="_scheduler" TItem="OcupacionAgenda" Data="@_eventos"
+                                 TextProperty="Text" StartProperty="Inicio" EndProperty="Fin"
+                                 Date="@_fecha" Style="height: 620px;"
+                                 AppointmentRender="@(OnAppointmentRender)">
+                    <RadzenMonthView />
+                    <RadzenWeekView StartTime="@TimeSpan.FromHours(8)" EndTime="@TimeSpan.FromHours(19)" MinutesPerSlot="30" />
+                    <RadzenDayView StartTime="@TimeSpan.FromHours(8)" EndTime="@TimeSpan.FromHours(19)" MinutesPerSlot="30" />
+                </RadzenScheduler>
+            </div>
+
+            <div class="ag-citas-lista">
+                <div class="ag-citas-lista-encabezado">
+                    <h3>Citas agendadas</h3>
+                    <span class="ag-label-caps">@_citas.Count cita(s)</span>
+                </div>
+
+                @if (_citas.Count == 0)
+                {
+                    <p class="ag-citas-vacio"><em>No hay citas agendadas todav&iacute;a.</em></p>
+                }
+                else
+                {
+                    <table class="ag-citas-tabla">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Cliente</th>
+                                <th>Fecha</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var cita in _citas)
+                            {
+                                <tr>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(cita.ImagenUrl))
+                                        {
+                                            <img src="@cita.ImagenUrl" class="event-image" alt="" />
+                                        }
+                                        else
+                                        {
+                                            <span class="ag-citas-sinimagen">
+                                                <i class="fa-regular fa-calendar-check" aria-hidden="true"></i>
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="event-name">@cita.Nombre</td>
+                                    <td class="event-date">@cita.Fecha.ToString("dddd d 'de' MMMM 'de' yyyy, h:mm tt")</td>
+                                    <td>
+                                        <a href="@($"citadetails/{cita.CitaId}")" class="event-purchase-button btn"
+                                           title="Editar cita">
+                                            <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
         }
 
-        <table class="mt-4">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th>Nombre</th>
-                    <th>Fecha</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var ev in Citas)
-                {
-                    <tr>
-                        <td>
-                            @if (!string.IsNullOrEmpty(ev.ImagenUrl))
-                            {
-                                <img src="@(ev.ImagenUrl)" class="event-image" />
-                            }
-                        </td>
-                        <td class="event-name">@ev.Nombre </td>
-                        <td class="event-date">@ev.Fecha.ToShortDateString() </td>
-                        <td>
-                            <a href="@($"citadetails/{ev.CitaId}")" class="event-purchase-button btn">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
-
-    @if (_errorExport != null)
-    {
-        <div class="alert alert-warning mt-3">@_errorExport</div>
-    }
-</div>
+        @if (_errorExport is not null)
+        {
+            <div class="alert alert-warning mt-3">@_errorExport</div>
+        }
+    </div>
+</section>

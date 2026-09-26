@@ -1319,8 +1319,11 @@ input:focus-visible {
    por defecto de Radzen y el selector no coincidiria. */
 
 
-/* Botones del scheduler (hoy, flechas, vistas) en tono suave */
-.ag-booking-scheduler .rz-scheduler .rz-button {
+/* Botones del scheduler (hoy, flechas, vistas) en tono suave.
+   Compartido por la reserva publica (/reservar) y la agenda interna
+   (/citaoverview) para que ambos calendarios se vean igual. */
+.ag-booking-scheduler .rz-scheduler .rz-button,
+.ag-citas-calendario .rz-scheduler .rz-button {
     background-image: none !important;
     background-color: #eaf3f2 !important;
     color: var(--color-teal-900) !important;
@@ -1340,7 +1343,9 @@ input:focus-visible {
 }
 
 .ag-booking-scheduler .rz-scheduler .rz-button:hover,
-.ag-booking-scheduler .rz-scheduler .rz-button.rz-state-active {
+.ag-booking-scheduler .rz-scheduler .rz-button.rz-state-active,
+.ag-citas-calendario .rz-scheduler .rz-button:hover,
+.ag-citas-calendario .rz-scheduler .rz-button.rz-state-active {
     background-color: #d8e9e7 !important;
     border-color: rgba(42, 107, 102, 0.35) !important;
     color: var(--color-teal-900) !important;
@@ -1871,3 +1876,350 @@ select,
 label[for] {
     cursor: pointer;
 }
+
+/* ============================================================
+   Citas: agenda interna (/citaoverview)
+   ============================================================ */
+
+.ag-citas-seccion {
+    padding: 32px 0 clamp(48px, 6vw, 72px);
+}
+
+.ag-citas-encabezado {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 28px;
+    flex-wrap: wrap;
+    margin-bottom: 26px;
+}
+
+.ag-citas-titulo {
+    font-size: var(--text-h1);
+    margin: 10px 0 0;
+}
+
+.ag-citas-titulo::after {
+    content: "";
+    display: block;
+    width: 64px;
+    height: 2px;
+    margin-top: 16px;
+    background: var(--gradient-gold);
+}
+
+.ag-citas-subtitulo {
+    max-width: 56ch;
+    margin: 16px 0 0;
+    color: var(--ag-texto-mudo);
+}
+
+.ag-citas-acciones {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.ag-citas-acciones .rz-button {
+    height: 50px;
+    align-items: center;
+    padding: 0 28px !important;
+    border-radius: var(--radius-pill) !important;
+    font-family: var(--font-serif) !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    letter-spacing: var(--tracking-wide) !important;
+    line-height: 1;
+    box-shadow: none !important;
+}
+
+.ag-citas-acciones .rz-primary {
+    background-image: var(--gradient-teal) !important;
+    background-color: var(--color-teal-700) !important;
+    color: #fff !important;
+    border: none !important;
+    box-shadow: var(--shadow-cta) !important;
+}
+
+.ag-citas-acciones .rz-primary:hover {
+    background-color: var(--color-teal-900) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 16px 34px rgba(20, 72, 69, 0.34) !important;
+}
+
+.ag-citas-acciones .rz-secondary {
+    background: transparent !important;
+    background-image: none !important;
+    color: var(--color-teal-700) !important;
+    border: 1.5px solid var(--color-gold-500) !important;
+}
+
+.ag-citas-acciones .rz-secondary:hover {
+    background: rgba(197, 160, 90, 0.1) !important;
+    color: var(--color-gold-700) !important;
+    border-color: var(--color-gold-700) !important;
+    box-shadow: var(--shadow-gold) !important;
+}
+
+/* Barra del calendario: leyenda de estados + contador de reservas en vivo */
+.ag-citas-barra {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+
+.ag-citas-barra .ag-reserva-leyenda {
+    margin: 0 !important;
+    color: var(--ag-texto-suave);
+}
+
+.ag-citas-enproceso {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 15px;
+    border: 1px solid var(--color-mist);
+    border-radius: var(--radius-pill);
+    background: var(--color-ivory);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--ag-texto-mudo);
+}
+
+.ag-citas-enproceso i {
+    font-size: 0.5rem;
+    color: var(--color-teal-500);
+}
+
+.ag-citas-enproceso-activo {
+    border-color: var(--color-gold-500);
+    background: rgba(197, 160, 90, 0.14);
+    color: var(--color-gold-700);
+}
+
+.ag-citas-enproceso-activo i {
+    color: var(--color-gold-500);
+    animation: ag-pulso 1.6s ease-in-out infinite;
+}
+
+@keyframes ag-pulso {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.25; }
+}
+
+/* Lista de citas agendadas */
+.ag-citas-lista {
+    margin-top: 28px;
+    background: var(--color-white);
+    border: 1.5px solid var(--color-gold-500);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    padding: clamp(1.25rem, 3vw, 2rem);
+}
+
+.ag-citas-lista-encabezado {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+}
+
+.ag-citas-lista-encabezado h3 {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    margin: 0;
+}
+
+.ag-citas-tabla {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ag-citas-tabla th {
+    padding: 12px 10px;
+    font-size: var(--text-caption);
+    font-weight: 600;
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+    color: var(--color-bronze);
+}
+
+.ag-citas-tabla td {
+    padding: 12px 10px;
+    vertical-align: middle;
+}
+
+.ag-citas-tabla tbody tr {
+    transition: background 0.2s ease;
+}
+
+.ag-citas-tabla tbody tr:hover {
+    background: rgba(220, 233, 235, 0.4);
+}
+
+.ag-citas-tabla .event-image,
+.ag-citas-sinimagen {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid var(--color-gold-300);
+}
+
+.ag-citas-sinimagen {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-mist);
+    border-color: var(--color-mist);
+    color: var(--color-teal-700);
+}
+
+.ag-citas-tabla .event-date {
+    /* la clase heredada fuerza capitalize: la fecha se lee mejor tal cual */
+    text-transform: none;
+}
+
+.ag-citas-tabla .event-purchase-button {
+    padding: 8px 13px;
+}
+
+.ag-citas-vacio {
+    margin: 8px 0 0;
+    color: var(--ag-texto-mudo);
+}
+
+/* Botones del calendario de la agenda interna: mismos estilos que el
+   scheduler de /reservar (regla compartida arriba); aqui solo se ajusta el
+   padding de las flechas para que queden redondas. */
+.ag-citas-calendario .rz-scheduler-nav .rz-prev,
+.ag-citas-calendario .rz-scheduler-nav .rz-next {
+    width: 40px;
+    min-width: 40px;
+    padding: 7px 0 !important;
+}
+
+/* ============================================================
+   Dialogo "Nueva cita" (agenda interna)
+   ============================================================ */
+
+.ag-nueva-cita .ag-field {
+    margin-bottom: 14px;
+}
+
+.ag-nueva-cita-error {
+    background: rgba(180, 35, 44, 0.08);
+    border-left: 3px solid #b4232c;
+    border-radius: var(--radius-md);
+    color: #8c1a22;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+}
+
+.ag-nueva-cita-aviso {
+    display: block;
+    margin-top: 6px;
+    color: var(--ag-texto-mudo);
+    font-size: 0.82rem;
+}
+
+/* Tipo de cliente: registrado o no registrado */
+.ag-tipo-cliente {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+button.ag-tipo-cliente-opcion {
+    flex: 1 1 200px;
+    min-width: 0;
+    margin: 0;
+    padding: 11px 16px;
+    border: 1.5px solid var(--color-mist);
+    border-radius: var(--radius-pill);
+    background: var(--color-white);
+    background-image: none;
+    box-shadow: none;
+    color: var(--ag-texto-suave);
+    font-family: var(--font-sans);
+    font-size: 0.86rem;
+    font-weight: 600;
+    letter-spacing: normal;
+    gap: 8px;
+    transform: none;
+}
+
+button.ag-tipo-cliente-opcion:hover {
+    border-color: var(--color-teal-500);
+    background: rgba(42, 107, 102, 0.06);
+    background-image: none;
+    color: var(--color-teal-900);
+    box-shadow: none;
+    transform: none;
+}
+
+button.ag-tipo-cliente-opcion.ag-tipo-cliente-activa,
+button.ag-tipo-cliente-opcion.ag-tipo-cliente-activa:hover {
+    border-color: var(--color-teal-700);
+    background: var(--color-teal-700);
+    background-image: none;
+    color: var(--color-white);
+}
+
+/* Buscador de clientes registrados */
+.ag-buscar-cliente {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.ag-buscar-cliente .rz-textbox {
+    flex: 1;
+    width: auto;
+}
+
+.ag-buscar-cliente .rz-button {
+    min-width: 0;
+    margin-left: 0;
+    padding: 10px 22px;
+    border-radius: var(--radius-pill);
+    background-image: none;
+    box-shadow: none;
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    letter-spacing: var(--tracking-wide);
+}
+
+/* Fecha + hora en dos columnas */
+.ag-fila-doble {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+@media (max-width: 560px) {
+    .ag-fila-doble {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 720px) {
+    .ag-citas-encabezado {
+        align-items: flex-start;
+    }
+
+    .ag-citas-acciones,
+    .ag-citas-acciones .rz-button {
+        width: 100%;
+    }
+}
+

@@ -36,6 +36,12 @@ namespace AquaClinic.Application.Contracts.Authentication
         /// <summary>Obtiene el usuario con roles por Id.</summary>
         Task<Usuario?> ObtenerPorIdAsync(string usuarioId);
 
+        /// <summary>
+        /// Busca clientes registrados (rol Cliente) por nombre, apellidos o correo.
+        /// Sin texto devuelve los primeros ordenados por nombre.
+        /// </summary>
+        Task<IReadOnlyList<Usuario>> BuscarClientesAsync(string? texto, int limite);
+
         /// <summary>Cambia la contrase&#241;a verificando la actual.</summary>
         Task<ResultadoIdentity> CambiarPasswordAsync(string usuarioId, string passwordActual, string passwordNueva);
 

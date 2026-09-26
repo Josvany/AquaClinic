@@ -1,0 +1,96 @@
+@rendermode InteractiveServer
+
+<div class="ag-reserva-modal ag-nueva-cita">
+    @if (_error is not null)
+    {
+        <div class="ag-nueva-cita-error">@_error</div>
+    }
+
+    <div class="ag-field">
+        <label>Tipo de cliente</label>
+        <div class="ag-tipo-cliente" role="group" aria-label="Tipo de cliente">
+            <button type="button" class="ag-tipo-cliente-opcion @(_esRegistrado ? "ag-tipo-cliente-activa" : null)"
+                    @onclick="() => ElegirTipoCliente(true)">
+                <i class="fa-regular fa-user" aria-hidden="true"></i> Cliente registrado
+            </button>
+            <button type="button" class="ag-tipo-cliente-opcion @(!_esRegistrado ? "ag-tipo-cliente-activa" : null)"
+                    @onclick="() => ElegirTipoCliente(false)">
+                <i class="fa-regular fa-user-plus" aria-hidden="true"></i> Cliente no registrado
+            </button>
+        </div>
+    </div>
+
+    @if (_esRegistrado)
+    {
+        <div class="ag-field">
+            <label>Cliente</label>
+            <div class="ag-buscar-cliente">
+                <RadzenTextBox @bind-Value="_busquedaCliente" Placeholder="Buscar por nombre o correo" />
+                <RadzenButton Text="Buscar" ButtonStyle="ButtonStyle.Secondary" Disabled="@_buscando"
+                              Click="@(async () => await BuscarClientesAsync())" />
+            </div>
+            <RadzenDropDown @bind-Value="_clienteId" Data="@_clientes" TextProperty="Etiqueta" ValueProperty="UsuarioId"
+                            AllowFiltering="true" Placeholder="Elige el cliente" Style="width:100%;" />
+
+            @if (_clientes.Count == 0)
+            {
+                <small class="ag-nueva-cita-aviso">No hay clientes registrados que coincidan con la b&uacute;squeda.</small>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="ag-field">
+            <label>Nombre completo</label>
+            <RadzenTextBox @bind-Value="_nombre" Placeholder="Nombre del cliente" />
+        </div>
+
+        <div class="ag-field">
+            <label>Correo</label>
+            <RadzenTextBox @bind-Value="_correo" Placeholder="cliente@correo.com" />
+        </div>
+
+        <div class="ag-field">
+            <label>Tel&eacute;fono (opcional)</label>
+            <RadzenTextBox @bind-Value="_telefono" Placeholder="+1 604 ..." />
+        </div>
+    }
+
+    <div class="ag-field">
+        <label>Servicio</label>
+        <RadzenDropDown Value="@_servicioId" Change="@(async (object? s) => await AlCambiarServicioAsync((Guid)s))"
+                        Data="@_servicios" TextProperty="Nombre" ValueProperty="ServicioId" TValue="System.Guid"
+                        AllowFiltering="true" Placeholder="Elige un servicio" Style="width:100%;" />
+    </div>
+
+    <div class="ag-fila-doble">
+        <div class="ag-field">
+            <label>Fecha</label>
+            <RadzenDatePicker Value="@_fecha" Min="@AgendaCalendario.HoyClinica" ValueChanged="@(async (DateTime? f) => await AlCambiarFechaAsync(f))"
+                              DateFormat="dd/MM/yyyy" Style="width:100%;" />
+        </div>
+
+        <div class="ag-field">
+            <label>Hora</label>
+            <RadzenDropDown Value="@_hora" Change="@(async (object? h) => await AlCambiarHoraAsync(h as OpcionHora))"
+                            Data="@_horas" TextProperty="Texto"
+                            TValue="OpcionHora" Placeholder="Elige una hora" Style="width:100%;" />
+            @if (_horas.Any(h => h.Ocupada))
+            {
+                <small class="ag-nueva-cita-aviso">Las horas marcadas "(ocupada)" ya tienen una cita y no se pueden elegir.</small>
+            }
+        </div>
+    </div>
+
+    <div class="ag-field">
+        <label>Notas (opcional)</label>
+        <RadzenTextArea @bind-Value="_notas" Rows="2" Placeholder="Alergias, preferencias, ..." />
+    </div>
+
+    <div class="ag-reserva-acciones">
+        <RadzenButton Text="Crear cita" ButtonStyle="ButtonStyle.Primary" Disabled="@_enviando"
+                      Click="@(async () => await Enviar())" />
+        <RadzenButton Text="Cancelar" ButtonStyle="ButtonStyle.Secondary" Disabled="@_enviando"
+                      Click="@Cancelar" />
+    </div>
+</div>
