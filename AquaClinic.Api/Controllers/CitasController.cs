@@ -4,6 +4,7 @@ using AquaClinic.Application.Features.Citas.Commands.CreateCita;
 using AquaClinic.Application.Features.Citas.Queries.GetAgendaSemana;
 using AquaClinic.Application.Features.Citas.Queries.GetCitasExport;
 using AquaClinic.Application.Features.Citas.Queries.GetCitasList;
+using AquaClinic.Application.Features.Citas.Queries.GetCitasPaginadas;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -68,6 +69,26 @@ namespace AquaClinic.Api.Controllers
                 // Horario tomado o clinica cerrada: conflicto para el scheduler
                 return Conflict(new { error = ex.Message });
             }
+        }
+
+        /// <summary>
+        /// Pagina del listado de citas (fecha descendente) para el DataGrid
+        /// server-side de la agenda interna.
+        /// </summary>
+        [HttpGet("paginadas", Name = "GetCitasPaginadas")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesDefaultResponseType]
+        [HasPermission(Permisos.CitasVer)]
+        public async Task<ActionResult<CitasPaginadasVm>> GetCitasPaginadas(
+            [FromQuery] int pagina = 1,
+            [FromQuery] int tamanoPagina = 10)
+        {
+            var result = await _mediator.Send(new GetCitasPaginadasQuery
+            {
+                Pagina = pagina,
+                TamanoPagina = tamanoPagina
+            });
+            return Ok(result);
         }
 
         [HttpGet(Name = "GetAllCitas")]

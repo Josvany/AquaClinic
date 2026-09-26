@@ -37,7 +37,9 @@
                                  TextProperty="Estado" StartProperty="Inicio" EndProperty="Fin"
                                  Date="@_fecha" Style="height: 78vh; min-height: 560px;"
                                  SlotSelect="@(OnSlotSelectAsync)"
-                                 AppointmentRender="@(OnAppointmentRender)">
+                                 AppointmentRender="@(OnAppointmentRender)"
+                                 AppointmentMouseEnter="@(AlMouseEnCita)"
+                                 AppointmentMouseLeave="@(AlMouseFueraCita)">
                     <RadzenWeekView StartTime="@TimeSpan.FromHours(8)" EndTime="@TimeSpan.FromHours(19)" MinutesPerSlot="30" />
                     <RadzenDayView StartTime="@TimeSpan.FromHours(8)" EndTime="@TimeSpan.FromHours(19)" MinutesPerSlot="30" />
                 </RadzenScheduler>
@@ -53,5 +55,3 @@
         </div>
     </div>
 </section>
-
-<RadzenDialog />

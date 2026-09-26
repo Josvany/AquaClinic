@@ -9,6 +9,9 @@ namespace AquaClinic.App.Pages
         [Inject]
         public DialogService DialogService { get; set; } = default!;
 
+        [Inject]
+        public TooltipService TooltipService { get; set; } = default!;
+
         private Radzen.Blazor.RadzenScheduler<OcupacionAgenda>? _scheduler;
         private List<OcupacionAgenda> _ocupaciones = [];
         private DateTime _fecha = DateTime.Today;
@@ -17,6 +20,10 @@ namespace AquaClinic.App.Pages
         // Seleccion en curso (reserva suave propia)
         private DateTime _seleccionInicio;
         private bool _tieneSeleccion;
+
+        // Bandera sincrona anti-doble-apertura del modal (el evento SlotSelect
+        // puede dispararse dos veces antes de que el primer await complete).
+        private bool _abriendoModal;
 
         protected override async Task OnInitializedAsync()
         {
@@ -108,10 +115,60 @@ namespace AquaClinic.App.Pages
                 : AgendaCalendario.EstiloOcupado;
         }
 
+        // ---------- Tooltip al pasar el mouse sobre una cita ----------
+
+        private void AlMouseEnCita(Radzen.Blazor.SchedulerAppointmentMouseEventArgs<OcupacionAgenda> args)
+        {
+            if (args.Data is null) return;
+
+            var cita = args.Data;
+            var duracion = cita.Fin - cita.Inicio;
+
+            // Duration = null: el tooltip permanece hasta que el mouse sale de la cita
+            // (AlMouseFueraCita lo cierra); sin esto Radzen lo oculta a los 2 segundos.
+            TooltipService.Open(args.Element, _ => ContenidoTooltip(cita, duracion),
+                new TooltipOptions { Position = TooltipPosition.Right, Duration = null });
+        }
+
+        private RenderFragment ContenidoTooltip(OcupacionAgenda cita, TimeSpan duracion) => builder =>
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "class", "ag-tooltip-cita");
+            builder.OpenElement(2, "strong");
+            builder.AddContent(3, cita.Text);
+            builder.CloseElement();
+            builder.OpenElement(4, "span");
+            builder.AddContent(5, $"{cita.Inicio:dd/MM/yyyy hh:mm tt} – {cita.Fin:hh:mm tt}");
+            builder.CloseElement();
+            builder.OpenElement(6, "span");
+            builder.AddContent(7, $"Duración: {FormatoDuracion(duracion)}");
+            builder.CloseElement();
+            builder.CloseElement();
+        };
+
+        private void AlMouseFueraCita(Radzen.Blazor.SchedulerAppointmentMouseEventArgs<OcupacionAgenda> args)
+        {
+            TooltipService.Close();
+        }
+
+        /// <summary>Formatea la duracion en horas y minutos (ej. "1 h 30 min").</summary>
+        private static string FormatoDuracion(TimeSpan d) =>
+            (d.Hours, d.Minutes) switch
+            {
+                (0, var m) => $"{m} min",
+                (var h, 0) => $"{h} h",
+                (var h, var m) => $"{h} h {m} min"
+            };
+
         // ---------- Flujo de reserva ----------
 
         private async Task OnSlotSelectAsync(Radzen.SchedulerSlotSelectEventArgs args)
         {
+            // Evita abrir dos modales si el navegador dispara el evento dos veces
+            // (dejaba un dialogo duplicado asomando detras, desalineado a la izquierda).
+            if (_tieneSeleccion || _abriendoModal) return;
+            _abriendoModal = true;
+
             var inicio = args.Start;
             var fin = args.End;
 
@@ -133,6 +190,7 @@ namespace AquaClinic.App.Pages
             var ok = await Agenda.ReservarSuavementeAsync(inicio, fin);
             if (!ok)
             {
+                _abriendoModal = false;
                 Notificador.Advertencia("Alguien está reservando ese horario en este momento. Elige otro disponible.");
                 await CargarAgendaAsync();
                 return;
@@ -149,6 +207,7 @@ namespace AquaClinic.App.Pages
                 {
                     { "FechaInicioLocal", args.Start },
                     { "FechaFinLocal", args.End },
+                    { "Ocupaciones", _ocupaciones },
                     { "ReservaConfirmada", EventCallback.Factory.Create(this, (Func<(bool, DateTime), Task>)(async t => await ReservaTerminadaAsync(t.Item1, t.Item2))) },
                     { "ReservaCancelada", EventCallback.Factory.Create(this, (Func<Task>)(async () => await ReservaCanceladaAsync())) }
                 }!,
@@ -164,11 +223,13 @@ namespace AquaClinic.App.Pages
 
             // El dialogo se cerro por la X, Esc o clic fuera: liberar la reserva suave
             await ReservaCanceladaAsync();
+            _abriendoModal = false;
         }
 
         private async Task ReservaTerminadaAsync(bool exito, DateTime fechaLocal)
         {
             _tieneSeleccion = false;
+            _abriendoModal = false;
 
             if (exito)
             {

@@ -26,9 +26,14 @@
         <RadzenTemplateForm TItem="object" Data="@_modelo" Submit="@Enviar">
             <div class="ag-field">
                 <label>Servicio</label>
-                <RadzenDropDown @bind-Value="_servicioId" Name="servicio" AllowFiltering="true" TextProperty="Nombre" ValueProperty="ServicioId"
+                <RadzenDropDown Value="@_servicioId" Change="@(async (object? s) => await AlElegirServicioAsync((Guid)s))"
+                                Name="servicio" AllowFiltering="true" TextProperty="Nombre" ValueProperty="ServicioId"
                                 Data="@_servicios" TValue="System.Guid" Placeholder="Elige un servicio" Style="width:100%;" />
                 <RadzenRequiredValidator Component="servicio" Text="Elige un servicio" Popup="false" />
+                @if (_error is not null)
+                {
+                    <div class="ag-nueva-cita-error">@_error</div>
+                }
             </div>
 
             @if (_esInvitado)
@@ -70,6 +75,9 @@
 @code {
     [Parameter] public DateTime FechaInicioLocal { get; set; }
     [Parameter] public DateTime FechaFinLocal { get; set; }
+    /// <summary>Ocupaciones de la semana (citas + reservas en curso) para validar que
+    /// la duracion del servicio elegido no se solape con otra cita.</summary>
+    [Parameter] public List<OcupacionAgenda> Ocupaciones { get; set; } = [];
     [Parameter] public EventCallback<(bool Exito, DateTime FechaLocal)> ReservaConfirmada { get; set; }
     [Parameter] public EventCallback ReservaCancelada { get; set; }
 
@@ -111,8 +119,41 @@
         }
     }
 
+    private async Task AlElegirServicioAsync(Guid servicioId)
+    {
+        _servicioId = servicioId;
+        _servicioNombre = _servicios.FirstOrDefault(s => s.ServicioId == servicioId)?.Nombre ?? string.Empty;
+        _error = null;
+
+        var servicio = _servicios.FirstOrDefault(s => s.ServicioId == servicioId);
+        if (servicio is null) return;
+
+        var fin = FechaInicioLocal.AddMinutes(servicio.DuracionMinutos);
+
+        // La cita debe caber completa: si se solapa con otra cita o reserva,
+        // el horario no esta disponible aunque el slot inicial este libre.
+        // Se excluye la reserva suave propia (mismo inicio exacto): es esta seleccion.
+        var solapa = Ocupaciones.Any(o => o.Inicio != FechaInicioLocal && o.Inicio < fin && o.Fin > FechaInicioLocal);
+        if (solapa)
+        {
+            _error = $"\"{servicio.Nombre}\" dura {servicio.DuracionMinutos} min y no cabe completa en ese horario. Elige una hora con más tiempo libre o un servicio más corto.";
+        }
+    }
+
     private async Task Enviar(object _)
     {
+        // Revalidar por si el usuario envia sin volver a tocar el dropdown
+        var servicioElegido = _servicios.FirstOrDefault(s => s.ServicioId == _servicioId);
+        if (servicioElegido is not null &&
+            Ocupaciones.Any(o => o.Inicio != FechaInicioLocal &&
+                                 o.Inicio < FechaInicioLocal.AddMinutes(servicioElegido.DuracionMinutos) && o.Fin > FechaInicioLocal))
+        {
+            _error = $"\"{servicioElegido.Nombre}\" dura {servicioElegido.DuracionMinutos} min y no cabe completa en ese horario. Elige una hora con más tiempo libre o un servicio más corto.";
+            Notificador.Advertencia(_error);
+            StateHasChanged();
+            return;
+        }
+
         _enviando = true;
         _error = null;
 

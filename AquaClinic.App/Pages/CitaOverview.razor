@@ -1,9 +1,11 @@
 @page "/citaoverview"
 @rendermode InteractiveServer
 @implements IAsyncDisposable
+@using AquaClinic.App.ViewModels
+@using Radzen.Blazor
 
 <section class="ag-citas-seccion">
-    <div class="ag-contenedor">
+    <div class="ag-contenedor ag-contenedor-ancho">
         <div class="ag-citas-encabezado">
             <div>
                 <span class="ag-label-caps">Agenda interna</span>
@@ -25,10 +27,6 @@
         @if (_errorCarga is not null)
         {
             <div class="alert alert-danger">@_errorCarga</div>
-        }
-        else if (_citas is null)
-        {
-            <p><em>Cargando...</em></p>
         }
         else
         {
@@ -62,53 +60,43 @@
             <div class="ag-citas-lista">
                 <div class="ag-citas-lista-encabezado">
                     <h3>Citas agendadas</h3>
-                    <span class="ag-label-caps">@_citas.Count cita(s)</span>
+                    <span class="ag-label-caps">@_totalCitas cita(s)</span>
                 </div>
 
-                @if (_citas.Count == 0)
-                {
-                    <p class="ag-citas-vacio"><em>No hay citas agendadas todav&iacute;a.</em></p>
-                }
-                else
-                {
-                    <table class="ag-citas-tabla">
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <th>Cliente</th>
-                                <th>Fecha</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var cita in _citas)
-                            {
-                                <tr>
-                                    <td>
-                                        @if (!string.IsNullOrEmpty(cita.ImagenUrl))
-                                        {
-                                            <img src="@cita.ImagenUrl" class="event-image" alt="" />
-                                        }
-                                        else
-                                        {
-                                            <span class="ag-citas-sinimagen">
-                                                <i class="fa-regular fa-calendar-check" aria-hidden="true"></i>
-                                            </span>
-                                        }
-                                    </td>
-                                    <td class="event-name">@cita.Nombre</td>
-                                    <td class="event-date">@cita.Fecha.ToString("dddd d 'de' MMMM 'de' yyyy, h:mm tt")</td>
-                                    <td>
-                                        <a href="@($"citadetails/{cita.CitaId}")" class="event-purchase-button btn"
-                                           title="Editar cita">
-                                            <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                }
+                <RadzenDataGrid @ref="_grid" TItem="CitaListViewModel" Data="@_citas"
+                                LoadData="@(CargarPaginaAsync)" Count="@_totalCitas"
+                                AllowPaging="true" PageSize="10" PagerPageSizeOptions="@(false)" AllowSorting="false" Width="100%">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="CitaListViewModel" Title="" Width="70px">
+                            <Template Context="cita">
+                                @if (!string.IsNullOrEmpty(cita.ImagenUrl))
+                                {
+                                    <img src="@cita.ImagenUrl" class="event-image" alt="" />
+                                }
+                                else
+                                {
+                                    <span class="ag-citas-sinimagen">
+                                        <i class="fa-regular fa-calendar-check" aria-hidden="true"></i>
+                                    </span>
+                                }
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="CitaListViewModel" Property="Nombre" Title="Cliente" />
+                        <RadzenDataGridColumn TItem="CitaListViewModel" Property="Fecha" Title="Fecha">
+                            <Template Context="cita">
+                                <span class="event-date">@cita.Fecha.ToString("dddd d 'de' MMMM 'de' yyyy, h:mm tt")</span>
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="CitaListViewModel" Sortable="false" Width="90px" TextAlign="TextAlign.Center">
+                            <Template Context="cita">
+                                <a href="@($"citadetails/{cita.CitaId}")" class="event-purchase-button btn"
+                                   title="Editar cita">
+                                    <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+                                </a>
+                            </Template>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
             </div>
         }
 

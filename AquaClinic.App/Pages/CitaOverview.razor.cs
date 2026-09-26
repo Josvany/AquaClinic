@@ -4,6 +4,7 @@ using AquaClinic.App.ViewModels;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Radzen;
+using Radzen.Blazor;
 using System.Globalization;
 
 namespace AquaClinic.App.Pages
@@ -12,9 +13,13 @@ namespace AquaClinic.App.Pages
     /// Agenda interna de citas: calendario del back office con las citas agendadas
     /// y, en vivo via SignalR, las reservas en proceso que los visitantes estan
     /// haciendo en la pagina publica /reservar (bloques dorados).
+    /// El listado "Citas agendadas" es un RadzenDataGrid server-side (paginado en
+    /// la API, ordenado por fecha descendente).
     /// </summary>
     public partial class CitaOverview : IAsyncDisposable
     {
+        private const int TamanoPagina = 10;
+
         [Inject]
         public ICitaDataService CitaDataService { get; set; } = default!;
 
@@ -30,13 +35,18 @@ namespace AquaClinic.App.Pages
         [Inject]
         public DialogService DialogService { get; set; } = default!;
 
-        private List<CitaListViewModel>? _citas;
+        private List<CitaListViewModel>? _citas;                   // pagina visible del grid (null = sin cargar)
+        private List<CitaListViewModel> _citasCalendario = [];     // todas, para bloques del scheduler
+        private int _totalCitas;
+        private bool _cargandoPagina;
+
         private List<OcupacionAgenda> _eventos = [];
         private readonly List<OcupacionAgenda> _reservasEnProceso = [];
         private DateTime _fecha = DateTime.Today;
         private string? _errorCarga;
         private string? _errorExport;
         private Radzen.Blazor.RadzenScheduler<OcupacionAgenda>? _scheduler;
+        private Radzen.Blazor.RadzenDataGrid<CitaListViewModel>? _grid;
 
         private bool HayReservasEnProceso => _reservasEnProceso.Count > 0;
 
@@ -46,16 +56,16 @@ namespace AquaClinic.App.Pages
 
         protected override async Task OnInitializedAsync()
         {
-            await CargarCitasAsync();
+            await CargarCitasCalendarioAsync();
             await ConectarAgendaAsync();
         }
 
-        private async Task CargarCitasAsync()
+        /// <summary>Carga completa de citas para los bloques del calendario.</summary>
+        private async Task CargarCitasCalendarioAsync()
         {
             try
             {
-                _citas = await CitaDataService.GetAllCitas();
-                _errorCarga = null;
+                _citasCalendario = await CitaDataService.GetAllCitas();
                 ReconstruirEventos();
             }
             catch (ApiException)
@@ -66,6 +76,56 @@ namespace AquaClinic.App.Pages
             {
                 _errorCarga = "No se pudo conectar con la API. Verifica que esté corriendo.";
             }
+        }
+
+        /// <summary>
+        /// Carga de una pagina del DataGrid (invocado por LoadData del grid; el
+        /// pager de Radzen pasa args.Skip/args.Top). Orden fijo: fecha descendente,
+        /// aplicado en la API.
+        /// </summary>
+        private async Task CargarPaginaAsync(LoadDataArgs args)
+        {
+            if (_cargandoPagina)
+            {
+                return;
+            }
+
+            var skip = args.Skip ?? 0;
+            var top = (args.Top ?? 0) > 0 ? args.Top!.Value : TamanoPagina;
+            var pagina = (int)Math.Floor((double)skip / top) + 1;
+
+            try
+            {
+                _cargandoPagina = true;
+                var respuesta = await CitaDataService.GetCitasPaginadas(pagina, top);
+                _citas = respuesta.Items;
+                _totalCitas = respuesta.Total;
+                _errorCarga = null;
+            }
+            catch (ApiException)
+            {
+                _errorCarga = "No se pudieron cargar las citas. Verifica que tengas permiso para verlas y que la API esté corriendo.";
+            }
+            catch (HttpRequestException)
+            {
+                _errorCarga = "No se pudo conectar con la API. Verifica que esté corriendo.";
+            }
+            finally
+            {
+                _cargandoPagina = false;
+            }
+
+            // El grid server-side se alimenta de la Data asignada en el handler:
+            // forzar re-render para que pinte la pagina recibida.
+            StateHasChanged();
+        }
+
+        /// <summary>
+        /// Recarga la pagina visible (usado cuando llega una cita nueva por SignalR).
+        /// </summary>
+        private async Task RefrescarPaginaVisibleAsync()
+        {
+            await _grid.Reload();
         }
 
         /// <summary>
@@ -100,12 +160,12 @@ namespace AquaClinic.App.Pages
             ReconstruirEventos();
         }
 
-        /// <summary>Bloques del calendario: citas agendadas + reservas en proceso.</summary>
+        /// <summary>Bloques del calendario: citas paginadas visibles + reservas en proceso.</summary>
         private void ReconstruirEventos()
         {
             var bloques = new List<OcupacionAgenda>();
 
-            foreach (var cita in _citas ?? [])
+            foreach (var cita in _citasCalendario)
             {
                 bloques.Add(new OcupacionAgenda
                 {
@@ -162,13 +222,13 @@ namespace AquaClinic.App.Pages
             _ = InvokeAsync(async () =>
             {
                 // La reserva en proceso se confirmo: el bloque dorado desaparece y la
-                // cita recien creada se carga en la lista.
+                // cita recien creada se refleja en la pagina visible del grid.
                 _reservasEnProceso.RemoveAll(r => r.Inicio < ocupacion.Fin && r.Fin > ocupacion.Inicio);
                 ReconstruirEventos();
                 _scheduler?.Reload();
-                StateHasChanged();
 
-                await CargarCitasAsync();
+                await CargarCitasCalendarioAsync();
+                await RefrescarPaginaVisibleAsync();
             });
         }
 
@@ -209,7 +269,8 @@ namespace AquaClinic.App.Pages
         {
             if (creada)
             {
-                await CargarCitasAsync();
+                await CargarCitasCalendarioAsync();
+                await RefrescarPaginaVisibleAsync();
             }
         }
 

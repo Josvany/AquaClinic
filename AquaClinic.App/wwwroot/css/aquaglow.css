@@ -388,6 +388,66 @@ input:focus-visible {
     padding: 0 24px;
 }
 
+/* Variante amplia (agenda interna): 90% del ancho de la pantalla */
+.ag-contenedor-ancho {
+    width: 90%;
+    max-width: none;
+    margin: 0 auto;
+}
+
+@media (max-width: 880px) {
+    .ag-contenedor-ancho {
+        width: 100%;
+        padding: 0 16px;
+    }
+}
+
+/* DataGrid y scheduler a lo ancho del contenedor, con scroll horizontal
+   solo en pantallas angostas (la fecha larga de la cita no rompe el layout) */
+.ag-citas-lista .rz-data-grid,
+.ag-citas-lista .rz-data-grid-data {
+    width: 100%;
+}
+
+.ag-citas-lista .rz-grid-table {
+    min-width: 560px;
+}
+
+.ag-citas-lista .rz-data-grid-data {
+    overflow-x: auto;
+}
+
+@media (max-width: 720px) {
+    .ag-citas-lista {
+        padding: 1rem;
+    }
+
+    /* El grid interno puede ser mas ancho que la tarjeta: su wrapper hace
+       scroll, nunca el body (evita desplazamiento horizontal de toda la pagina) */
+    .ag-citas-lista {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .ag-citas-lista .rz-data-grid {
+        max-width: 100%;
+    }
+
+    .ag-citas-lista .rz-data-grid-data {
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    .ag-citas-lista .rz-grid-table {
+        min-width: 480px;
+    }
+
+    .ag-citas-lista .rz-pager {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+}
+
 .ag-section {
     padding: clamp(56px, 9vw, 110px) 0;
 }
@@ -765,10 +825,10 @@ input:focus-visible {
    Reserva de cita: layout a pantalla amplia
    ============================================================ */
 
-/* Contenedor mas ancho que el estandar: el calendario respira */
+/* Contenedor a pantalla amplia: el calendario respira (90%) */
 .ag-reserva-contenedor {
-    width: 92%;
-    max-width: 1600px;
+    width: 90%;
+    max-width: none;
     margin: 0 auto;
 }
 
@@ -788,6 +848,22 @@ input:focus-visible {
 .ag-reserva-leyenda {
     margin-top: 8px !important;
     font-size: 0.9rem;
+}
+
+/* Tooltip de citas del scheduler (duracion al pasar el mouse) */
+.ag-tooltip-cita {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 180px;
+}
+
+.ag-tooltip-cita strong {
+    color: var(--ag-verde);
+}
+
+.ag-tooltip-cita span {
+    font-size: 0.85rem;
 }
 
 /* La tarjeta del calendario ocupa todo el ancho del contenedor */
@@ -1069,7 +1145,7 @@ input:focus-visible {
 .rz-dialog {
     border-radius: var(--radius-lg) !important;
     border: 1.5px solid var(--color-gold-500) !important;
-    box-shadow: 0 30px 70px -20px rgba(20, 72, 69, 0.45) !important;
+    box-shadow: none !important;
 }
 
 .rz-dialog-titlebar .rz-dialog-title,
@@ -1294,7 +1370,7 @@ input:focus-visible {
 .rz-dropdown-panel {
     border: 1px solid var(--color-gold-500);
     border-radius: var(--radius-lg);
-    box-shadow: 0 24px 48px rgba(20, 72, 69, 0.2) !important;
+    box-shadow: none !important;
 }
 
 .rz-dropdown-panel .rz-dropdown-item.rz-state-highlight {
@@ -1312,6 +1388,21 @@ input:focus-visible {
     border: 1px solid rgba(197, 160, 90, 0.4);
     border-radius: var(--radius-lg);
     background: var(--color-white);
+}
+
+/* En pantallas angostas el contenido del mes (7 columnas) puede ser mas ancho
+   que el scheduler: el scroll vive DENTRO del view, nunca desborda la pagina */
+.rz-scheduler .rz-view-content {
+    overflow-x: auto;
+}
+
+.rz-scheduler,
+.rz-scheduler .rz-view {
+    max-width: 100%;
+}
+
+.rz-scheduler .rz-view-content > * {
+    min-width: 0;
 }
 
 /* Nota: el color de los bloques por estado se aplica via AppointmentRender (style inline
@@ -1441,14 +1532,19 @@ input:focus-visible {
     .ag-hero-media {
         aspect-ratio: 16 / 10;
     }
-}
-
-@media (max-width: 640px) {
+}    @media (max-width: 640px) {
     .ag-nav-inner {
         flex-direction: column;
         align-items: stretch;
         padding: 12px 16px;
     }
+
+    /* main.css le pone padding 17px 37px a todo <header>; aqui lo neutralizamos
+       en movil porque empuja el nav fuera de la pantalla (scroll horizontal) */
+    .ag-nav {
+        padding: 0;
+    }
+
 
     .ag-logo {
         text-align: center;
@@ -1549,7 +1645,14 @@ input:focus-visible {
 .rz-datepicker-panel {
     border: 1px solid rgba(197, 160, 90, 0.55) !important;
     border-radius: var(--radius-md, 12px) !important;
-    box-shadow: 0 24px 48px rgba(20, 72, 69, 0.2) !important;
+    box-shadow: none !important;
+}
+
+/* Tooltip de citas: sin sombra */
+.rz-tooltip,
+.rz-tooltip.rz-shadow,
+.rz-tooltip-content {
+    box-shadow: none !important;
 }
 
 .rz-datepicker-panel .rz-datepicker-header,
@@ -1720,6 +1823,12 @@ input[type="checkbox"].custom-checkbox {
    Menú details/summary propio: funciona en SSR estático, sin circuito Blazor. */
 .ag-nav-staff details {
     position: relative;
+}
+
+/* El popup solo existe cuando el details esta abierto (antes quedaba montado
+   invisible-mente en el flujo y empujaba el ancho del nav en moviles) */
+.ag-nav-staff details:not([open]) .ag-staff-menu {
+    display: none;
 }
 
 .ag-nav-staff summary {
@@ -2097,15 +2206,96 @@ label[for] {
     color: var(--ag-texto-mudo);
 }
 
-/* Botones del calendario de la agenda interna: mismos estilos que el
-   scheduler de /reservar (regla compartida arriba); aqui solo se ajusta el
-   padding de las flechas para que queden redondas. */
-.ag-citas-calendario .rz-scheduler-nav .rz-prev,
-.ag-citas-calendario .rz-scheduler-nav .rz-next {
-    width: 40px;
-    min-width: 40px;
-    padding: 7px 0 !important;
+/* DataGrid server-side de citas agendadas. Radzen 11 usa clases rz-pager-*
+   (no rz-paginator-*): la pagina activa y los botones siguen la paleta teal
+   igual que los botones de navegacion del RadzenScheduler. */
+.ag-citas-lista .rz-datatable {
+    border: none;
 }
+
+.ag-citas-lista .rz-datatable-thead > tr > th {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--color-mist);
+    padding: 12px 10px;
+    font-size: var(--text-caption);
+    font-weight: 600;
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+    color: var(--color-bronze);
+    font-family: var(--font-sans);
+}
+
+.ag-citas-lista .rz-datatable-data > tr > td {
+    border: none;
+    border-bottom: 1px solid rgba(220, 233, 235, 0.6);
+    padding: 12px 10px;
+    vertical-align: middle;
+}
+
+.ag-citas-lista .rz-datatable-data > tr:hover > td {
+    background: rgba(220, 233, 235, 0.4);
+}
+
+.ag-citas-lista .rz-pager {
+    border: none;
+    background: transparent;
+    padding-top: 14px;
+}
+
+.ag-citas-lista .rz-pager .rz-pager-element {
+    border-radius: var(--radius-pill);
+    color: var(--color-teal-900);
+    background-color: #eaf3f2;
+    /* main.css pinta TODO <button> con el degradado teal global: los botones del
+       pager son <button>, hay que anularlo explicitamente para igualar los tonos
+       de la navegacion del RadzenScheduler (fondo plano verde claro) */
+    background-image: none !important;
+    box-shadow: none !important;
+    transition: background-color 0.2s ease;
+}
+
+.ag-citas-lista .rz-pager .rz-pager-element:hover {
+    background-color: #d8e9e7 !important;
+    background-image: none !important;
+    color: var(--color-teal-900);
+    transform: none;
+    box-shadow: none !important;
+}
+
+.ag-citas-lista .rz-pager .rz-pager-element.rz-state-active {
+    background: var(--color-teal-700) !important;
+    background-image: none !important;
+    color: #fff;
+}
+
+.ag-citas-lista .rz-pager .rz-pager-element.rz-state-disabled {
+    background-color: transparent;
+    color: var(--ag-texto-mudo);
+    opacity: 0.5;
+}
+
+.ag-citas-lista .event-image,
+.ag-citas-lista .ag-citas-sinimagen {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid var(--color-gold-300);
+}
+
+.ag-citas-lista .ag-citas-sinimagen {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-mist);
+    border-color: var(--color-mist);
+    color: var(--color-teal-700);
+}
+
+/* Botones del calendario de la agenda interna: mismos estilos que el
+   scheduler de /reservar via la regla compartida de arriba (incluidas las
+   flechas < >, que antes tenian un override de 40px que las dejaba pegadas). */
 
 /* ============================================================
    Dialogo "Nueva cita" (agenda interna)

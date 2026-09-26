@@ -2,6 +2,7 @@
 using AquaClinic.App.Contracts;
 using AquaClinic.App.Services.Base;
 using AquaClinic.App.ViewModels;
+using System.Net.Http.Json;
 
 namespace AquaClinic.App.Services
 {
@@ -20,6 +21,20 @@ namespace AquaClinic.App.Services
             var allCitas = await _client.GetAllCitasAsync();
             var mappedCitas = _mapper.Map<ICollection<CitaListViewModel>>(allCitas);
             return mappedCitas.ToList();
+        }
+
+        /// <summary>
+        /// Pagina del listado de citas (server-side) para el DataGrid de la
+        /// agenda interna. Usa HttpClient directo (el cliente tipado NSwag no
+        /// incluye el endpoint nuevo; regenerarlo exigiria la API corriendo).
+        /// </summary>
+        public async Task<CitasPaginadasViewModel> GetCitasPaginadas(int pagina, int tamanoPagina)
+        {
+            var response = await _client.HttpClient
+                .GetFromJsonAsync<CitasPaginadasViewModel>(
+                    $"api/citas/paginadas?pagina={pagina}&tamanoPagina={tamanoPagina}");
+
+            return response ?? new CitasPaginadasViewModel();
         }
 
         public async Task<CitaDetailViewModel> GetCitaById(Guid id)
