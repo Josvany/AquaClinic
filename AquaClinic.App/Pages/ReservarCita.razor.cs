@@ -175,6 +175,7 @@ namespace AquaClinic.App.Pages
             // No se puede reservar en el pasado (dia anterior o meses anteriores).
             if (inicio.Date < AgendaCalendario.HoyClinica)
             {
+                _abriendoModal = false;
                 Notificador.Advertencia("No puedes reservar en fechas pasadas. Elige hoy o un día posterior.");
                 return;
             }
@@ -182,6 +183,7 @@ namespace AquaClinic.App.Pages
             // Ya ocupado (cita confirmada o reserva en curso): no abre modal
             if (_ocupaciones.Any(o => o.Inicio < fin && o.Fin > inicio))
             {
+                _abriendoModal = false;
                 Notificador.Advertencia("Ese horario no está disponible. Elige otro libre.");
                 return;
             }

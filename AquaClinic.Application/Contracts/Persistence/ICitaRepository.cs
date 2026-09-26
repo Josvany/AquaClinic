@@ -9,6 +9,9 @@ namespace AquaClinic.Application.Contracts.Persistence
     {
         Task<IReadOnlyList<Cita>> GetCitasWithServiciosAsync();
 
+        /// <summary>Cita por Id con su servicio y especialidad (detalle de la agenda).</summary>
+        Task<Cita?> GetByIdWithServiciosAsync(Guid citaId);
+
         /// <summary>
         /// Pagina de citas ordenadas por fecha descendente (para el listado
         /// server-side de la agenda interna). Devuelve (items, total).

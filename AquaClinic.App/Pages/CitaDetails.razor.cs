@@ -35,15 +35,23 @@ namespace AquaClinic.App.Pages
 
         protected override async Task OnInitializedAsync()
         {
+            var list = await EspecialidadDataService.GetAllEspecialidades();
+            Especialidades = new ObservableCollection<EspecialidadViewModel>(list);
+
             if (Guid.TryParse(CitaId, out SelectedCitaId))
             {
                 CitaDetailViewModel = await CitaDataService.GetCitaById(SelectedCitaId);
-                SelectedEspecialidadId = CitaDetailViewModel.EspecialidadId.ToString();
+                // Respetar la especialidad de la cita si viene; si no, la primera de la lista
+                var deLaCita = CitaDetailViewModel.EspecialidadId;
+                SelectedEspecialidadId = (deLaCita != Guid.Empty
+                    && Especialidades.Any(e => e.EspecialidadId == deLaCita))
+                    ? deLaCita.ToString()
+                    : Especialidades.FirstOrDefault()?.EspecialidadId.ToString() ?? string.Empty;
             }
-
-            var list = await EspecialidadDataService.GetAllEspecialidades();
-            Especialidades = new ObservableCollection<EspecialidadViewModel>(list);
-            SelectedEspecialidadId = Especialidades.FirstOrDefault().EspecialidadId.ToString();
+            else
+            {
+                SelectedEspecialidadId = Especialidades.FirstOrDefault()?.EspecialidadId.ToString() ?? string.Empty;
+            }
         }
 
         protected async Task HandleValidSubmit()

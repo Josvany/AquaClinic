@@ -2,6 +2,7 @@ using AquaClinic.Api.Authorization;
 using AquaClinic.Api.Utility;
 using AquaClinic.Application.Features.Citas.Commands.CreateCita;
 using AquaClinic.Application.Features.Citas.Queries.GetAgendaSemana;
+using AquaClinic.Application.Features.Citas.Queries.GetCitaById;
 using AquaClinic.Application.Features.Citas.Queries.GetCitasExport;
 using AquaClinic.Application.Features.Citas.Queries.GetCitasList;
 using AquaClinic.Application.Features.Citas.Queries.GetCitasPaginadas;
@@ -88,6 +89,20 @@ namespace AquaClinic.Api.Controllers
                 Pagina = pagina,
                 TamanoPagina = tamanoPagina
             });
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Detalle de una cita para la pantalla /citadetails de la agenda interna.
+        /// </summary>
+        [HttpGet("{id}", Name = "GetCitaById")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesDefaultResponseType]
+        [HasPermission(Permisos.CitasVer)]
+        public async Task<ActionResult<CitaDetailVm>> GetCitaById(Guid id)
+        {
+            var result = await _mediator.Send(new GetCitaByIdQuery { Id = id });
             return Ok(result);
         }
 

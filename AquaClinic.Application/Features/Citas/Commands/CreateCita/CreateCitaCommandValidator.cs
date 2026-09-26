@@ -28,6 +28,33 @@ namespace AquaClinic.Application.Features.Citas.Commands.CreateCita
             }
         }
 
+        /// <summary>
+        /// Hora actual en la zona de la clinica. Las fechas de las citas llegan en
+        /// hora local de la clinica (no de la maquina): compararlas contra
+        /// DateTime.Now rechazaria citas validas cuando el servidor esta en otra
+        /// zona horaria (ej. un slot de esta tarde en Vancouver visto desde una
+        /// maquina con varias horas de diferencia).
+        /// </summary>
+        private static DateTime AhoraClinica
+        {
+            get
+            {
+                try
+                {
+                    var tz = TimeZoneInfo.FindSystemTimeZoneById("America/Vancouver");
+                    return TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz).DateTime;
+                }
+                catch (TimeZoneNotFoundException)
+                {
+                    return DateTime.Now;
+                }
+                catch (InvalidTimeZoneException)
+                {
+                    return DateTime.Now;
+                }
+            }
+        }
+
         public CreateCitaCommandValidator()
         {
             RuleFor(c => c.ServicioId)
@@ -35,7 +62,7 @@ namespace AquaClinic.Application.Features.Citas.Commands.CreateCita
 
             RuleFor(c => c.FechaInicioLocal)
                 .Must(f => f != default).WithMessage("La fecha de la cita es obligatoria.")
-                .Must(f => f > DateTime.Now).WithMessage("No puedes agendar una cita en el pasado.")
+                .Must(f => f > AhoraClinica).WithMessage("No puedes agendar una cita en el pasado.")
                 .Must(f => f.Date >= HoyClinica)
                     .WithMessage("No puedes agendar en fechas pasadas (dias o meses anteriores al actual).")
                 .Must(f => f.Date <= HoyClinica.AddDays(60))

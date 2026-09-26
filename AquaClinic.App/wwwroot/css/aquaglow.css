@@ -2201,6 +2201,24 @@ label[for] {
     padding: 8px 13px;
 }
 
+/* Boton editar del DataGrid: bootstrap .btn le agrega borde/fondo blanquecino
+   (--bs-btn-border-color #dee2e6) que se ve como un cuadro blanco detras del
+   icono; se anula para dejar solo el pill teal */
+.ag-citas-lista .rz-grid-table .event-purchase-button {
+    background-color: transparent;
+    background-image: var(--gradient-teal);
+    border: none !important;
+    box-shadow: none;
+    padding: 9px 14px;
+}
+
+.ag-citas-lista .rz-grid-table .event-purchase-button:hover {
+    background-color: var(--color-teal-900);
+    color: #fff;
+    transform: none;
+    box-shadow: none;
+}
+
 .ag-citas-vacio {
     margin: 8px 0 0;
     color: var(--ag-texto-mudo);
