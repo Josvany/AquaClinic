@@ -26,14 +26,18 @@ namespace AquaClinic.App.Pages
         public IUsuarioDataService UsuarioDataService { get; set; } = default!;
 
         public CambiarPasswordModelo Modelo { get; set; } = new();
-        public string? Message { get; set; }
+        public string? MensajeExito { get; set; }
+        public string? MensajeError { get; set; }
         public string? TokenRestablecimiento { get; set; }
 
         protected async Task HandleCambiar()
         {
+            MensajeExito = null;
+            MensajeError = null;
+
             if (Modelo.PasswordNueva != Modelo.PasswordNuevaConfirmacion)
             {
-                Message = "Las contraseña no coinciden.";
+                MensajeError = "Las contraseña no coinciden.";
                 return;
             }
 
@@ -42,15 +46,15 @@ namespace AquaClinic.App.Pages
 
             if (respuesta.Success)
             {
-                Message = "Contraseña actualizada correctamente.";
+                MensajeExito = "Contraseña actualizada correctamente.";
                 Modelo = new CambiarPasswordModelo();
             }
             else
             {
-                Message = respuesta.Message;
+                MensajeError = respuesta.Message;
                 if (!string.IsNullOrEmpty(respuesta.ValidationErrors))
                 {
-                    Message += " " + respuesta.ValidationErrors;
+                    MensajeError += " " + respuesta.ValidationErrors;
                 }
             }
         }

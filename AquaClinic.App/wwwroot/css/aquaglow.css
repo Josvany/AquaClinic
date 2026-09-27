@@ -70,6 +70,10 @@
     --ag-sans: var(--font-sans);
 }
 
+html {
+    height: 100%;
+}
+
 html, body {
     font-family: var(--font-sans);
     background: var(--color-ivory);
@@ -81,8 +85,23 @@ html, body {
 
 body {
     min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
+}
+
+/* App.razor envuelve <Routes /> en <AntiforgeryStateProvider>, que el
+   navegador trata como elemento desconocido (display block, altura auto).
+   Sin este estilo la cadena flex del body se corta ahi y el footer queda
+   a media pagina en las vistas cortas (perfil, cambiarpassword). */
+/* Blazor crea el wrapper con tagName en mayusculas (createElement), por lo
+   que el selector de tipo solo coincide si se escribe igual. Cubrimos ambas. */
+antiforgerrystateprovider,
+ANTIFORGERYSTATEPROVIDER {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
 }
 
 h1, h2, h3, h4 {
@@ -102,6 +121,13 @@ input:focus-visible {
 .ag-main {
     flex: 1 0 auto;
     width: 100%;
+}
+
+/* El footer queda siempre pegado al pie: el contenido crece y empuja,
+   pero en paginas cortas el margin auto lo lleva al fondo del viewport. */
+footer.ag-footer {
+    margin-top: auto;
+    flex-shrink: 0;
 }
 
 /* Utilidades de la guía */
@@ -810,6 +836,77 @@ input:focus-visible {
     letter-spacing: var(--tracking-caps);
     text-transform: uppercase;
     color: var(--color-bronze);
+}
+
+/* ============================================================
+   Perfil de usuario: informacion mas grande y legible
+   ============================================================ */
+
+.ag-perfil .col-form-label {
+    font-size: 0.85rem;
+    padding-top: calc(0.85rem + 1px);
+    padding-bottom: 0.85rem;
+}
+
+.ag-perfil .form-control {
+    font-size: 1.05rem;
+    padding: 0.85rem 1.1rem;
+}
+
+.ag-perfil .form-control[readonly] {
+    background: var(--color-mist, #f4f1ea);
+    color: var(--color-teal-800, #1e5f5c);
+}
+
+.ag-perfil .badge {
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-pill, 999px);
+}
+
+.ag-perfil-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.9rem;
+    margin-top: 2rem;
+}
+
+.ag-perfil-acciones .submit-button {
+    margin-left: 0;
+}
+
+.ag-perfil-btn-secundario {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-white);
+    border: 1.5px solid var(--color-gold-500, #c5a05a);
+    border-radius: var(--radius-pill, 999px);
+    color: var(--color-teal-900, #144845);
+    font-family: var(--font-serif, 'Cormorant Garamond', Georgia, serif);
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: var(--tracking-wide, 0.12em);
+    min-width: 170px;
+    padding: 11px 26px;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.ag-perfil-btn-secundario:hover {
+    background: rgba(197, 160, 90, 0.12);
+    color: var(--color-teal-900, #144845);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px rgba(197, 160, 90, 0.22);
+}
+
+@media (max-width: 575.98px) {
+    .ag-perfil-acciones .submit-button,
+    .ag-perfil-btn-secundario {
+        width: 100%;
+    }
 }
 
 .ag-booking-card .rz-button.rz-primary {

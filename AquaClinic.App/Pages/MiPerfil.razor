@@ -1,9 +1,9 @@
-﻿@page "/perfil"
+@page "/perfil"
 @rendermode InteractiveServer
 
 <PageTitle>Mi perfil</PageTitle>
 
-<div class="ag-contenedor" style="padding-top: 24px;">
+<div class="ag-contenedor ag-perfil" style="padding-top: 24px;">
     <h1 class="page-title">Mi perfil</h1>
 
     @if (Cargando)
@@ -31,44 +31,44 @@
 
                 <div class="row mb-3">
                     <label class="col-sm-3 col-form-label">Correo:</label>
-                    <div class="col-sm-8">
+                    <div class="col-sm-9">
                         <input class="form-control" value="@Usuario.Email" readonly />
                     </div>
                 </div>
 
                 <div class="row mb-3">
                     <label class="col-sm-3 col-form-label">Nombre:</label>
-                    <div class="col-sm-8">
+                    <div class="col-sm-9">
                         <InputText class="form-control" @bind-Value="Usuario.Nombre" />
                     </div>
                 </div>
 
                 <div class="row mb-3">
                     <label class="col-sm-3 col-form-label">Apellidos:</label>
-                    <div class="col-sm-8">
+                    <div class="col-sm-9">
                         <InputText class="form-control" @bind-Value="Usuario.Apellidos" />
                     </div>
                 </div>
 
                 <div class="row mb-3">
                     <label class="col-sm-3 col-form-label">Tel&#233;fono:</label>
-                    <div class="col-sm-8">
+                    <div class="col-sm-9">
                         <InputText class="form-control" @bind-Value="Usuario.Telefono" />
                     </div>
                 </div>
 
                 <div class="row mb-3">
                     <label class="col-sm-3 col-form-label">Roles:</label>
-                    <div class="col-sm-8">
+                    <div class="col-sm-9">
                         <span class="badge bg-info">@string.Join(", ", Usuario.Roles)</span>
                     </div>
                 </div>
 
-                <button type="submit" class="submit-button" style="margin-left: 0;">Guardar cambios</button>
+                <div class="ag-perfil-acciones">
+                    <button type="submit" class="submit-button">Guardar cambios</button>
+                    <a href="/cambiarpassword" class="ag-perfil-btn-secundario">Cambiar contrase&#241;a</a>
+                </div>
             </EditForm>
         </div>
-
-        <br />
-        <p class="mt-3"><a href="/cambiarpassword" style="color: var(--color-teal-700);">Cambiar contrase&#241;a</a></p>
     }
 </div>
