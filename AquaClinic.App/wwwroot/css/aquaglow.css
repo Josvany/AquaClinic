@@ -871,6 +871,12 @@ input:focus-visible {
     width: 100%;
 }
 
+/* Domingo cerrado: slots del dia deshabilitados (atenuados y sin clic) */
+.rz-slot.ag-slot-deshabilitado {
+    pointer-events: none;
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
 .ag-reserva-contenedor .ag-booking-scheduler .rz-scheduler {
     width: 100%;
 }

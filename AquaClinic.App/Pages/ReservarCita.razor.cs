@@ -106,6 +106,17 @@ namespace AquaClinic.App.Pages
 
         // ---------- Render de bloques: color segun estado ----------
 
+        private void OnSlotRender(Radzen.SchedulerSlotRenderEventArgs args)
+        {
+            // Domingo cerrado: el slot se ve deshabilitado y no recibe clics
+            // (pointer-events: none), sin necesidad de notificacion.
+            if (args.Start.DayOfWeek == DayOfWeek.Sunday)
+            {
+                var claseBase = args.Attributes.TryGetValue("class", out var c) ? c?.ToString() : null;
+                args.Attributes["class"] = $"{claseBase} ag-slot-deshabilitado".Trim();
+            }
+        }
+
         private void OnAppointmentRender(Radzen.SchedulerAppointmentRenderEventArgs<OcupacionAgenda> args)
         {
             // "Reservando": fondo dorado (el de Iniciar sesion), letras teal.
@@ -177,6 +188,14 @@ namespace AquaClinic.App.Pages
             {
                 _abriendoModal = false;
                 Notificador.Advertencia("No puedes reservar en fechas pasadas. Elige hoy o un día posterior.");
+                return;
+            }
+
+            // Los domingos la clinica no atiende: los slots vienen deshabilitados
+            // (OnSlotRender), no abren el modal.
+            if (inicio.DayOfWeek == DayOfWeek.Sunday)
+            {
+                _abriendoModal = false;
                 return;
             }
 

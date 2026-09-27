@@ -38,6 +38,7 @@
                                  Date="@_fecha" Style="height: 78vh; min-height: 560px;"
                                  SlotSelect="@(OnSlotSelectAsync)"
                                  AppointmentRender="@(OnAppointmentRender)"
+                                 SlotRender="@(OnSlotRender)"
                                  AppointmentMouseEnter="@(AlMouseEnCita)"
                                  AppointmentMouseLeave="@(AlMouseFueraCita)">
                     <RadzenWeekView StartTime="@TimeSpan.FromHours(8)" EndTime="@TimeSpan.FromHours(19)" MinutesPerSlot="30" />
