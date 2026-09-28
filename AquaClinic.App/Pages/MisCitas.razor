@@ -1,6 +1,7 @@
 @page "/miscitas"
 @rendermode InteractiveServer
 @using AquaClinic.App.ViewModels
+@using Radzen.Blazor
 
 <section class="ag-citas-seccion">
     <div class="ag-contenedor">
@@ -33,34 +34,43 @@
         }
         else
         {
-            <div class="ag-miscitas-lista">
-                @foreach (var cita in Citas)
-                {
-                    <div class="ag-panel ag-miscitas-item">
-                        <div class="ag-miscitas-fecha">
-                            <span class="ag-miscitas-fecha-dia">@cita.Fecha.ToString("dd")</span>
-                            <span class="ag-miscitas-fecha-mes">@cita.Fecha.ToString("MMM", null)</span>
-                        </div>
-
-                        <div class="ag-miscitas-info">
-                            <h3 class="ag-miscitas-servicio">@cita.Servicio</h3>
-                            <p class="ag-miscitas-detalle">
-                                <i class="fa-regular fa-clock" aria-hidden="true"></i>
-                                @cita.Fecha.ToString("dddd d 'de' MMMM 'de' yyyy, h:mm tt")
-                                @if (cita.Precio > 0)
+            <div class="ag-panel ag-miscitas-grid">
+                <RadzenDataGrid TItem="MiCitaViewModel" Data="@Citas"
+                                AllowPaging="true" PageSize="5" PagerPageSizeOptions="@(false)"
+                                AllowSorting="false" Width="100%">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="MiCitaViewModel" Title="Fecha" Width="90px">
+                            <Template Context="cita">
+                                <div class="ag-miscitas-fecha">
+                                    <span class="ag-miscitas-fecha-dia">@cita.Fecha.ToString("dd")</span>
+                                    <span class="ag-miscitas-fecha-mes">@cita.Fecha.ToString("MMM", null)</span>
+                                </div>
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="MiCitaViewModel" Title="Servicio">
+                            <Template Context="cita">
+                                <h3 class="ag-miscitas-servicio">@cita.Servicio</h3>
+                                <p class="ag-miscitas-detalle">
+                                    <i class="fa-regular fa-clock" aria-hidden="true"></i>
+                                    @cita.Fecha.ToString("dddd d 'de' MMMM 'de' yyyy, h:mm tt")
+                                    @if (cita.Precio > 0)
+                                    {
+                                        <span class="ag-miscitas-precio">&nbsp;&middot;&nbsp;@cita.Precio.ToString("C")</span>
+                                    }
+                                </p>
+                                @if (!string.IsNullOrWhiteSpace(cita.Notas))
                                 {
-                                    <span class="ag-miscitas-precio">&nbsp;&middot;&nbsp;@cita.Precio.ToString("C")</span>
+                                    <p class="ag-miscitas-notas">@cita.Notas</p>
                                 }
-                            </p>
-                            @if (!string.IsNullOrWhiteSpace(cita.Notas))
-                            {
-                                <p class="ag-miscitas-notas">@cita.Notas</p>
-                            }
-                        </div>
-
-                        <span class="ag-miscitas-estado ag-miscitas-estado-@cita.Estado.ToLower()">@TraducirEstado(cita.Estado)</span>
-                    </div>
-                }
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="MiCitaViewModel" Title="Estado" Width="120px" TextAlign="TextAlign.Center" CssClass="ag-miscitas-col-estado">
+                            <Template Context="cita">
+                                <span class="ag-miscitas-estado ag-miscitas-estado-@cita.Estado.ToLower()">@TraducirEstado(cita.Estado)</span>
+                            </Template>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
             </div>
         }
     </div>

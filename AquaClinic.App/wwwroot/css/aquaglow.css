@@ -2364,7 +2364,8 @@ label[for] {
     padding-top: 14px;
 }
 
-.ag-citas-lista .rz-pager .rz-pager-element {
+.ag-citas-lista .rz-pager .rz-pager-element,
+.ag-miscitas-grid .rz-pager .rz-pager-element {
     border-radius: var(--radius-pill);
     color: var(--color-teal-900);
     background-color: #eaf3f2;
@@ -2376,7 +2377,8 @@ label[for] {
     transition: background-color 0.2s ease;
 }
 
-.ag-citas-lista .rz-pager .rz-pager-element:hover {
+.ag-citas-lista .rz-pager .rz-pager-element:hover,
+.ag-miscitas-grid .rz-pager .rz-pager-element:hover {
     background-color: #d8e9e7 !important;
     background-image: none !important;
     color: var(--color-teal-900);
@@ -2384,16 +2386,49 @@ label[for] {
     box-shadow: none !important;
 }
 
-.ag-citas-lista .rz-pager .rz-pager-element.rz-state-active {
+.ag-citas-lista .rz-pager .rz-pager-element.rz-state-active,
+.ag-miscitas-grid .rz-pager .rz-pager-element.rz-state-active {
     background: var(--color-teal-700) !important;
     background-image: none !important;
     color: #fff;
 }
 
-.ag-citas-lista .rz-pager .rz-pager-element.rz-state-disabled {
+.ag-citas-lista .rz-pager .rz-pager-element.rz-state-disabled,
+.ag-miscitas-grid .rz-pager .rz-pager-element.rz-state-disabled {
     background-color: transparent;
     color: var(--ag-texto-mudo);
     opacity: 0.5;
+}
+
+/* Celdas y cabecera del grid de /miscitas con la misma estetica que el
+   listado interno de citas */
+.ag-miscitas-grid .rz-datatable {
+    border: none;
+}
+
+.ag-miscitas-grid .rz-datatable-thead > tr > th {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--color-mist);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #a08548;
+}
+
+.ag-miscitas-grid .rz-grid-table td {
+    vertical-align: middle;
+    border-bottom: 1px solid var(--color-mist);
+    background: transparent !important;
+}
+
+/* El badge de estado no se corta en la columna estrecha */
+.ag-miscitas-grid .ag-miscitas-col-estado {
+    white-space: nowrap;
+    text-align: center;
+    padding-left: 4px !important;
+    padding-right: 4px !important;
 }
 
 .ag-citas-lista .event-image,
@@ -2606,13 +2641,14 @@ button.ag-tipo-cliente-opcion.ag-tipo-cliente-activa:hover {
 }
 
 .ag-miscitas-estado {
-    flex-shrink: 0;
-    padding: 0.35rem 0.9rem;
+    display: inline-block;
+    padding: 0.3rem 0.55rem;
     border-radius: 999px;
-    font-size: 0.85rem;
+    font-size: 0.72rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
     background: var(--color-mist);
     color: var(--color-teal-900);
 }
@@ -2656,10 +2692,6 @@ button.ag-tipo-cliente-opcion.ag-tipo-cliente-activa:hover {
 @media (max-width: 576px) {
     .ag-miscitas-item {
         flex-wrap: wrap;
-    }
-
-    .ag-miscitas-estado {
-        margin-left: 88px;
     }
 }
 
