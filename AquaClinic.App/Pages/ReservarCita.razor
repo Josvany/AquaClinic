@@ -35,7 +35,7 @@
 
                 <RadzenScheduler @ref="_scheduler" TItem="OcupacionAgenda" Data="@_ocupaciones"
                                  TextProperty="Estado" StartProperty="Inicio" EndProperty="Fin"
-                                 Date="@_fecha" Style="height: 78vh; min-height: 560px;"
+                                 Date="@_fecha" DateChange="@(OnFechaCambioAsync)" Style="height: 78vh; min-height: 560px;"
                                  SlotSelect="@(OnSlotSelectAsync)"
                                  AppointmentRender="@(OnAppointmentRender)"
                                  SlotRender="@(OnSlotRender)"

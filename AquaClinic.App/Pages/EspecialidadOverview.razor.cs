@@ -1,4 +1,6 @@
-﻿using AquaClinic.App.Contracts;
+using AquaClinic.App.Contracts;
+using AquaClinic.App.Services;
+using AquaClinic.App.Services.Base;
 using AquaClinic.App.ViewModels;
 using Microsoft.AspNetCore.Components;
 using System.Collections.Generic;
@@ -18,18 +20,34 @@ namespace AquaClinic.App.Pages
 
         protected async override Task OnInitializedAsync()
         {
-            Especialidades = await EspecialidadDataService.GetAllEspecialidadesWithCitas(false);
+            try
+            {
+                Especialidades = await EspecialidadDataService.GetAllEspecialidadesWithCitas(false);
+            }
+            catch (ApiException)
+            {
+                // Endpoint no disponible / error de la API: la pagina muestra la
+                // lista vacia sin tumbar el render (nav incluido)
+                Especialidades = new List<EspecialidadCitasViewModel>();
+            }
         }
 
         protected async void OnIncluirHistorialChanged(ChangeEventArgs args)
         {
-            if((bool)args.Value)
+            try
             {
-                Especialidades = await EspecialidadDataService.GetAllEspecialidadesWithCitas(true);
+                if((bool)args.Value)
+                {
+                    Especialidades = await EspecialidadDataService.GetAllEspecialidadesWithCitas(true);
+                }
+                else
+                {
+                    Especialidades = await EspecialidadDataService.GetAllEspecialidadesWithCitas(false);
+                }
             }
-            else
+            catch (ApiException)
             {
-                Especialidades = await EspecialidadDataService.GetAllEspecialidadesWithCitas(false);
+                Especialidades = new List<EspecialidadCitasViewModel>();
             }
         }
     }

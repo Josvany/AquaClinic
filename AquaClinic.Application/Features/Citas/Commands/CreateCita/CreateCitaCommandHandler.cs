@@ -1,6 +1,8 @@
 using AquaClinic.Application.Contracts.Citas;
+using AquaClinic.Application.Contracts.Infrastructure;
 using AquaClinic.Application.Contracts.Persistence;
 using AquaClinic.Application.Exceptions;
+using AquaClinic.Application.Models.Mail;
 using AquaClinic.Domain.Entities;
 using AquaClinic.Domain.Enums;
 using MediatR;
@@ -12,7 +14,9 @@ namespace AquaClinic.Application.Features.Citas.Commands.CreateCita
     /// Crea la cita validando: existencia del servicio, horario de atencion de la
     /// clinica (America/Vancouver), bloqueos vigentes, solapamiento con citas
     /// activas y que la reserva suave seleccionada siga vigente.
-    /// La confirmacion por correo se agregara mas adelante.
+    /// La confirmacion por correo se registra en la cola de salida (outbox) y se
+    /// intenta de inmediato; si Mailjet falla, queda Pendiente para reintento y
+    /// la cita se crea igualmente.
     /// </summary>
     public class CreateCitaCommandHandler : IRequestHandler<CreateCitaCommand, Guid>
     {
@@ -21,6 +25,8 @@ namespace AquaClinic.Application.Features.Citas.Commands.CreateCita
         private readonly ICitaRepository _citaRepository;
         private readonly IReservasSuavesStore _reservasSuaves;
         private readonly IAgregadorAgenda _agendador;
+        private readonly IEmailPendienteRepository _emailsPendientes;
+        private readonly IEmailService _emailService;
         private readonly ILogger<CreateCitaCommandHandler> _logger;
 
         public CreateCitaCommandHandler(
@@ -29,6 +35,8 @@ namespace AquaClinic.Application.Features.Citas.Commands.CreateCita
             ICitaRepository citaRepository,
             IReservasSuavesStore reservasSuaves,
             IAgregadorAgenda agendador,
+            IEmailPendienteRepository emailsPendientes,
+            IEmailService emailService,
             ILogger<CreateCitaCommandHandler> logger)
         {
             _servicioRepository = servicioRepository;
@@ -36,6 +44,8 @@ namespace AquaClinic.Application.Features.Citas.Commands.CreateCita
             _citaRepository = citaRepository;
             _reservasSuaves = reservasSuaves;
             _agendador = agendador;
+            _emailsPendientes = emailsPendientes;
+            _emailService = emailService;
             _logger = logger;
         }
 
@@ -47,7 +57,7 @@ namespace AquaClinic.Application.Features.Citas.Commands.CreateCita
 
             if (validationResult.Errors.Count > 0)
             {
-                throw new Exceptions.ValidationException(validationResult);
+                throw new ValidationException(validationResult);
             }
 
             var servicio = await _servicioRepository.GetByIdAsync(request.ServicioId);
@@ -94,7 +104,7 @@ namespace AquaClinic.Application.Features.Citas.Commands.CreateCita
                 PersonalId = null, // asignacion de esteticista pendiente
                 FechaInicio = inicioUtc,
                 FechaFin = finUtc,
-                Estado = EstadoCita.Pendiente,
+                Estado = EstadoCita.Confirmada,
                 Notas = request.Notas
             };
 
@@ -102,10 +112,15 @@ namespace AquaClinic.Application.Features.Citas.Commands.CreateCita
 
             await _citaRepository.AsignarServicioAsync(cita.CitaId, servicio.ServicioId);
 
+            // Confirmacion por correo: se persiste en la cola ANTES de intentar
+            // el envio; un fallo de Mailjet queda registrado para reintento sin
+            // afectar la cita.
+            await EncolarConfirmacionAsync(cita, servicio.Nombre, inicioLocal, duracion);
+
             // Aviso en tiempo real: la hora pasa de "Reservando" a "Ocupado" para todos
             try
             {
-                await _agendador.NotificarCitaCreadaAsync(new Features.Citas.ReservaSuaveDto(inicioUtc, finUtc));
+                await _agendador.NotificarCitaCreadaAsync(new ReservaSuaveDto(inicioUtc, finUtc));
             }
             catch (Exception ex)
             {
@@ -115,6 +130,75 @@ namespace AquaClinic.Application.Features.Citas.Commands.CreateCita
             }
 
             return cita.CitaId;
+        }
+
+        private async Task EncolarConfirmacionAsync(Cita cita, string servicioNombre, DateTime inicioLocal, int duracion)
+        {
+            // Un correo sin destinatario no se encola (la cita sigue siendo valida)
+            var destinatario = cita.EmailInvitado;
+            if (string.IsNullOrWhiteSpace(destinatario))
+            {
+                _logger.LogWarning(
+                    "Cita {CitaId} sin correo de contacto: no se encolara confirmacion",
+                    cita.CitaId);
+                return;
+            }
+
+            var finLocal = inicioLocal.AddMinutes(duracion);
+            var email = new EmailPendiente
+            {
+                CitaId = cita.CitaId,
+                Destinatario = destinatario,
+                Asunto = "Confirmacion de tu cita - Aqua Skin & Glow Clinic",
+                Cuerpo = $"Hola {(cita.NombreInvitado ?? "cliente")},\n\n" +
+                    $"Tu cita quedo agendada:\n\n" +
+                    $"Servicio: {servicioNombre}\n" +
+                    $"Fecha: {inicioLocal:dddd dd 'de' MMMM 'de' yyyy}\n" +
+                    $"Hora: {inicioLocal:hh:mm tt} - {finLocal:hh:mm tt} (hora de Vancouver)\n\n" +
+                    $"Si necesitas reprogramar o cancelar, contactanos respondiendo este correo.\n\n" +
+                    "Aqua Skin & Glow Clinic\nLangley, BC",
+                Estado = EstadoEmail.Pendiente
+            };
+
+            await _emailsPendientes.AddAsync(email);
+
+            // Intento inmediato; si falla, el servicio de reintentos lo retomara
+            try
+            {
+                var enviado = await _emailService.SendEmail(new Email
+                {
+                    To = email.Destinatario,
+                    Subject = email.Asunto,
+                    Body = email.Cuerpo
+                });
+
+                email.Intentos = 1;
+                email.UltimoIntentoUtc = DateTime.UtcNow;
+
+                if (enviado)
+                {
+                    email.Estado = EstadoEmail.Enviado;
+                    email.EnviadoUtc = DateTime.UtcNow;
+                }
+                else
+                {
+                    email.UltimoError = "El proveedor de correo rechazo el envio (intento inmediato).";
+                }
+
+                await _emailsPendientes.UpdateAsync(email);
+            }
+            catch (Exception ex)
+            {
+                // La cita ya esta creada: el fallo del correo no debe propagarse.
+                email.Intentos = 1;
+                email.UltimoIntentoUtc = DateTime.UtcNow;
+                email.UltimoError = ex.Message;
+                await _emailsPendientes.UpdateAsync(email);
+
+                _logger.LogError(ex,
+                    "Fallo el envio inmediato de la confirmacion de la cita {CitaId}; quedo en cola para reintento",
+                    cita.CitaId);
+            }
         }
 
         private async Task ValidarHorarioClinicaAsync(DateTime inicioLocal, DateTime finLocal)

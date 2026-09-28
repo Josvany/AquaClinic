@@ -7,7 +7,10 @@
     <title>AquaClinic</title>
     <base href="/" />
     <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
-    <script src="https://kit.fontawesome.com/05c0aff4ff.js" crossorigin="anonymous"></script>
+    <!-- Font Awesome via CSS estatico: el kit JS inyecta estilos dinamicos que
+         Blazor elimina en navegaciones enhanced (los iconos del nav desaparecian
+         al entrar a una pagina). Un <link> persiste en todo el head. -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Great+Vibes&family=Montserrat:wght@100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
     <link href="css/normalize.css" rel="stylesheet" />
     <link href="css/app.css" rel="stylesheet" />

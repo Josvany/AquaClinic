@@ -43,6 +43,7 @@ namespace AquaClinic.Persistence
         public DbSet<PromocionServicio> PromocionesServicios { get; set; }
         public DbSet<Cupon> Cupones { get; set; }
         public DbSet<MovimientoPuntos> MovimientosPuntos { get; set; }
+        public DbSet<EmailPendiente> EmailsPendientes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

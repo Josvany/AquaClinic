@@ -15,7 +15,7 @@ namespace AquaClinic.Persistence.Migrations
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
-
+#pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "10.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
@@ -258,6 +258,66 @@ namespace AquaClinic.Persistence.Migrations
                     b.HasIndex("UsuarioId");
 
                     b.ToTable("Cupones");
+                });
+
+            modelBuilder.Entity("AquaClinic.Domain.Entities.EmailPendiente", b =>
+                {
+                    b.Property<Guid>("EmailPendienteId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Asunto")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid?>("CitaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Cuerpo")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("Destinatario")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime?>("EnviadoUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Estado")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Intentos")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UltimoError")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("UltimoIntentoUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("EmailPendienteId");
+
+                    b.HasIndex("CitaId");
+
+                    b.HasIndex("Estado", "UltimoIntentoUtc");
+
+                    b.ToTable("EmailsPendientes");
                 });
 
             modelBuilder.Entity("AquaClinic.Domain.Entities.Especialidad", b =>
@@ -1084,6 +1144,14 @@ namespace AquaClinic.Persistence.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Promocion");
+                });
+
+            modelBuilder.Entity("AquaClinic.Domain.Entities.EmailPendiente", b =>
+                {
+                    b.HasOne("AquaClinic.Domain.Entities.Cita", null)
+                        .WithMany()
+                        .HasForeignKey("CitaId")
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("AquaClinic.Domain.Entities.MovimientoPuntos", b =>

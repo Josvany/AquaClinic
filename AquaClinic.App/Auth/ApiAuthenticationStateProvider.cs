@@ -8,8 +8,11 @@ namespace AquaClinic.App.Auth
     /// Proveedor de estado de autenticacion basado en el JWT guardado en el
     /// TokenStore. Los claims (incluidos los roles) se leen directamente del
     /// access token ya validado por la API; no hay consulta al perfil ni cookies.
+    /// En SSR estatico el TokenStore puede estar vacio (el circuito aun no
+    /// restauro la sesion): entonces se usa el HttpContext.User poblado por
+    /// SesionTicketAuthHandler, para que [Authorize] y el nav coincidan.
     /// </summary>
-    public class ApiAuthenticationStateProvider(TokenStore tokenStore) : AuthenticationStateProvider
+    public class ApiAuthenticationStateProvider(TokenStore tokenStore, IHttpContextAccessor httpContextAccessor) : AuthenticationStateProvider
     {
         private ClaimsPrincipal? _principal;
         private bool _yaConsultado;
@@ -37,23 +40,24 @@ namespace AquaClinic.App.Auth
 
         private ClaimsPrincipal? ConstruirPrincipal()
         {
-            if (string.IsNullOrEmpty(tokenStore.AccessToken))
+            if (!string.IsNullOrEmpty(tokenStore.AccessToken))
             {
-                return null;
+                try
+                {
+                    var jwt = new JwtSecurityTokenHandler().ReadJwtToken(tokenStore.AccessToken);
+                    var identidad = new ClaimsIdentity(jwt.Claims, "Jwt", ClaimTypes.Name, ClaimTypes.Role);
+                    return new ClaimsPrincipal(identidad);
+                }
+                catch
+                {
+                    // Token corrupto: tratar como sesion terminada
+                    tokenStore.Limpiar();
+                }
             }
 
-            try
-            {
-                var jwt = new JwtSecurityTokenHandler().ReadJwtToken(tokenStore.AccessToken);
-                var identidad = new ClaimsIdentity(jwt.Claims, "Jwt", ClaimTypes.Name, ClaimTypes.Role);
-                return new ClaimsPrincipal(identidad);
-            }
-            catch
-            {
-                // Token corrupto: tratar como sesion terminada
-                tokenStore.Limpiar();
-                return null;
-            }
+            // SSR estatico sin circuito: usar el usuario reconstruido desde el
+            // ticket por el middleware (mismos claims que el JWT)
+            return httpContextAccessor.HttpContext?.User;
         }
 
         private static ClaimsPrincipal Anonimo()

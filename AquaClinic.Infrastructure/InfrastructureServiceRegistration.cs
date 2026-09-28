@@ -16,6 +16,9 @@ namespace AquaClinic.Infrastructure
             services.AddTransient<IEmailService, EmailService>();
             services.AddTransient<ICsvExporter, CsvExporter>();
 
+            // Reintentos de correos de cita en segundo plano
+            services.AddHostedService<EmailRetryBackgroundService>();
+
             return services;
         }
     }

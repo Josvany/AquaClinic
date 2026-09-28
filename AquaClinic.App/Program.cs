@@ -2,6 +2,8 @@ using AquaClinic.App;
 using AquaClinic.App.Auth;
 using AquaClinic.App.Contracts;
 using AquaClinic.App.Services;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using Radzen;
 
@@ -58,6 +60,18 @@ builder.Services.AddScoped<IServiciosPublicosDataService, ReservasDataService>()
 
 // Autenticacion via JWT: el principal se construye desde el access token del TokenStore
 builder.Services.AddScoped<ApiAuthenticationStateProvider>();
+
+// Esquema de autenticacion de la App (para el [Authorize] del middleware):
+// reconstruye el principal desde la sesion del ticket (igual que el circuito
+// interactivo). La sesion real vive en el JWT; este esquema nunca emite cookies.
+builder.Services
+    .AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = "SesionTicket";
+        options.DefaultChallengeScheme = "SesionTicket";
+    })
+    .AddScheme<AuthenticationSchemeOptions, SesionTicketAuthHandler>("SesionTicket", null);
+
 builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<ApiAuthenticationStateProvider>());
 
 // Cliente nombrado para los endpoints de autenticacion minimal API
@@ -68,6 +82,7 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
 

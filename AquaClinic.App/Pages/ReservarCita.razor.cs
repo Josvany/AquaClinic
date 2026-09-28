@@ -44,8 +44,13 @@ namespace AquaClinic.App.Pages
 
         private async Task CargarAgendaAsync()
         {
-            var inicio = AgendaCalendario.InicioDeSemana(_fecha);
-            var ocupaciones = await Agenda.ObtenerAgendaAsync(inicio, inicio.AddDays(7));
+            // Radzen dibuja la semana segun su cultura (en esta instalacion
+            // domingo->sabado) y la API filtra por rango UTC. Se consulta con un
+            // dia de margen a cada lado para cubrir la semana visible sin depender
+            // de la convencion (domingo o lunes) del primer dia; Radzen ignora
+            // los bloques que caen fuera de la vista.
+            var inicio = _fecha.Date.AddDays(-((int)_fecha.DayOfWeek) - 1);
+            var ocupaciones = await Agenda.ObtenerAgendaAsync(inicio, inicio.AddDays(9));
 
             // Si un slot ya tiene cita confirmada, cualquier "Reservando" que se solape
             // es residuo (la reserva suave se libera aparte en la API): la hora se
@@ -57,6 +62,17 @@ namespace AquaClinic.App.Pages
                 .ToList();
 
             StateHasChanged();
+        }
+
+        // ---------- Navegacion de semanas ----------
+        // Las flechas/Hoy de Radzen cambian la fecha interna del scheduler; sin
+        // este handler la pagina nunca pedia la agenda de la nueva semana y las
+        // citas futuras no aparecian al navegar.
+        private async Task OnFechaCambioAsync(DateTime fecha)
+        {
+            if (fecha.Date == _fecha.Date) return;
+            _fecha = fecha;
+            await CargarAgendaAsync();
         }
 
         // ---------- Eventos en tiempo real ----------
