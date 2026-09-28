@@ -37,6 +37,25 @@ namespace AquaClinic.App.Services
             return response ?? new CitasPaginadasViewModel();
         }
 
+        /// <summary>
+        /// Citas del usuario autenticado ("Mis citas"). Usa HttpClient directo
+        /// por el mismo motivo: el cliente NSwag aun no incluye el endpoint.
+        /// </summary>
+        public async Task<List<MiCitaViewModel>> GetMisCitas()
+        {
+            try
+            {
+                var citas = await _client.HttpClient
+                    .GetFromJsonAsync<List<MiCitaViewModel>>("api/citas/mias");
+
+                return citas ?? [];
+            }
+            catch (HttpRequestException)
+            {
+                return [];
+            }
+        }
+
         public async Task<CitaDetailViewModel> GetCitaById(Guid id)
         {
             var selectedCita = await _client.GetCitaByIdAsync(id);

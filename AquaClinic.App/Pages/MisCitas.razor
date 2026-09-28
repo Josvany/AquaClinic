@@ -1,0 +1,78 @@
+@page "/miscitas"
+@rendermode InteractiveServer
+@using AquaClinic.App.ViewModels
+
+<section class="ag-citas-seccion">
+    <div class="ag-contenedor">
+        <div class="ag-citas-encabezado">
+            <div>
+                <span class="ag-label-caps">Mi cuenta</span>
+                <h1 class="ag-citas-titulo">Mis citas</h1>
+                <p class="ag-citas-subtitulo">
+                    Todas las citas que has agendado en la cl&iacute;nica, de la m&aacute;s reciente a la m&aacute;s antigua.
+                </p>
+            </div>
+        </div>
+
+        @if (Cargando)
+        {
+            <p><em>Cargando...</em></p>
+        }
+        else if (_error is not null)
+        {
+            <div class="alert alert-danger">@_error</div>
+        }
+        else if (Citas.Count == 0)
+        {
+            <div class="ag-panel ag-miscitas-vacio">
+                <i class="fa-regular fa-calendar-check" aria-hidden="true"></i>
+                <h3>A&uacute;n no tienes citas</h3>
+                <p>Cuando agendes una cita aparecer&aacute; aqu&iacute; con su estado y detalle.</p>
+                <a href="/reservar" class="event-purchase-button btn">Reservar cita</a>
+            </div>
+        }
+        else
+        {
+            <div class="ag-miscitas-lista">
+                @foreach (var cita in Citas)
+                {
+                    <div class="ag-panel ag-miscitas-item">
+                        <div class="ag-miscitas-fecha">
+                            <span class="ag-miscitas-fecha-dia">@cita.Fecha.ToString("dd")</span>
+                            <span class="ag-miscitas-fecha-mes">@cita.Fecha.ToString("MMM", null)</span>
+                        </div>
+
+                        <div class="ag-miscitas-info">
+                            <h3 class="ag-miscitas-servicio">@cita.Servicio</h3>
+                            <p class="ag-miscitas-detalle">
+                                <i class="fa-regular fa-clock" aria-hidden="true"></i>
+                                @cita.Fecha.ToString("dddd d 'de' MMMM 'de' yyyy, h:mm tt")
+                                @if (cita.Precio > 0)
+                                {
+                                    <span class="ag-miscitas-precio">&nbsp;&middot;&nbsp;@cita.Precio.ToString("C")</span>
+                                }
+                            </p>
+                            @if (!string.IsNullOrWhiteSpace(cita.Notas))
+                            {
+                                <p class="ag-miscitas-notas">@cita.Notas</p>
+                            }
+                        </div>
+
+                        <span class="ag-miscitas-estado ag-miscitas-estado-@cita.Estado.ToLower()">@TraducirEstado(cita.Estado)</span>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    private static string TraducirEstado(string estado) => estado switch
+    {
+        "Pendiente" => "Pendiente",
+        "Confirmada" => "Confirmada",
+        "Cancelada" => "Cancelada",
+        "Completada" => "Completada",
+        _ => estado
+    };
+}

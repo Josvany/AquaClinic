@@ -7,6 +7,9 @@ namespace AquaClinic.App.Contracts
     {
         Task<List<CitaListViewModel>> GetAllCitas();
         Task<CitasPaginadasViewModel> GetCitasPaginadas(int pagina, int tamanoPagina);
+
+        /// <summary>Citas del usuario autenticado (pantalla "Mis citas").</summary>
+        Task<List<MiCitaViewModel>> GetMisCitas();
         Task<CitaDetailViewModel> GetCitaById(Guid id);
         Task<ApiResponse<Guid>> CreateCita(CitaDetailViewModel eventDetailViewModel);
         Task<ApiResponse<Guid>> UpdateCita(CitaDetailViewModel eventDetailViewModel);

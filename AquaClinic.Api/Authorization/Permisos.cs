@@ -20,5 +20,8 @@ namespace AquaClinic.Api.Authorization
         // ===== Citas (fase de agendado) =====
         public const string CitasVer = "citas:ver";
         public const string CitasGestionar = "citas:gestionar";
+
+        // ===== Citas propias del cliente =====
+        public const string MisCitasVer = "miscitas:ver";
     }
 }

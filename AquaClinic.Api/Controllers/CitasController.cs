@@ -6,6 +6,7 @@ using AquaClinic.Application.Features.Citas.Queries.GetCitaById;
 using AquaClinic.Application.Features.Citas.Queries.GetCitasExport;
 using AquaClinic.Application.Features.Citas.Queries.GetCitasList;
 using AquaClinic.Application.Features.Citas.Queries.GetCitasPaginadas;
+using AquaClinic.Application.Features.Citas.Queries.GetMisCitas;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -70,6 +71,20 @@ namespace AquaClinic.Api.Controllers
                 // Horario tomado o clinica cerrada: conflicto para el scheduler
                 return Conflict(new { error = ex.Message });
             }
+        }
+
+        /// <summary>
+        /// Citas del usuario autenticado (rol Cliente) para su pantalla
+        /// "Mis citas": su historial completo, sin exponer datos de otros.
+        /// </summary>
+        [HttpGet("mias", Name = "GetMisCitas")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesDefaultResponseType]
+        [HasPermission(Permisos.MisCitasVer)]
+        public async Task<ActionResult<List<MiCitaVm>>> GetMisCitas()
+        {
+            var result = await _mediator.Send(new GetMisCitasQuery());
+            return Ok(result);
         }
 
         /// <summary>

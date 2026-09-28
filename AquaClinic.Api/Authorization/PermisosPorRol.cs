@@ -38,7 +38,8 @@ namespace AquaClinic.Api.Authorization
             [RolesClinica.Cliente] =
             [
                 Permisos.ServiciosVer,
-                Permisos.EspecialidadesVer
+                Permisos.EspecialidadesVer,
+                Permisos.MisCitasVer
             ]
         };
 

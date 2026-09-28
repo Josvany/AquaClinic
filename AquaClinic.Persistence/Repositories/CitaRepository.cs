@@ -47,6 +47,17 @@ namespace AquaClinic.Persistence.Repositories
             return (items, total);
         }
 
+        public async Task<IReadOnlyList<Cita>> GetCitasDeUsuarioAsync(string usuarioId)
+        {
+            return await _dbContext.Citas
+                .Include(c => c.CitasServicios)!
+                .ThenInclude(cs => cs.Servicio)
+                .AsNoTracking()
+                .Where(c => c.UsuarioId == usuarioId)
+                .OrderByDescending(c => c.FechaInicio)
+                .ToListAsync();
+        }
+
         public async Task AsignarServicioAsync(Guid citaId, Guid servicioId)
         {
             var existe = await _dbContext.CitasServicios
