@@ -963,6 +963,115 @@ footer.ag-footer {
     font-size: 0.85rem;
 }
 
+/* Slots disponibles del scheduler: tooltip por CSS (sin JS) con la misma
+   estetica y transicion que el tooltip de cita "Ocupado" de Radzen
+   (.rz-tooltip: fade de opacidad + transicion top/left .2s, borde dorado,
+   sin sombra y esquina redondeada como los paneles de la app) */
+.rz-slot.ag-slot-libre {
+    cursor: pointer;
+    position: relative;
+}
+
+/* Slot libre donde la cita completa del servicio elegido NO cabe:
+   atenuado y sin cursor de reserva (el clic lo rechaza el modal igualmente) */
+.rz-slot.ag-slot-nocabe {
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 4px,
+        rgba(20, 72, 69, 0.06) 4px,
+        rgba(20, 72, 69, 0.06) 7px);
+    cursor: not-allowed;
+}
+
+/* Dropdown de servicio sobre el calendario */
+.ag-reserva-servicio {
+    margin-bottom: 1rem;
+}
+
+.ag-reserva-servicio label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-teal-900);
+    margin-bottom: 0.4rem;
+}
+
+.ag-reserva-servicio-ayuda {
+    margin: 0.4rem 0 0;
+    font-size: 0.85rem;
+    color: #6b7f7d;
+}
+
+/* Sugerencias de horas alternas del modal de reserva */
+.ag-reserva-sugerencias {
+    margin: 0 0 1rem;
+    padding: 0.9rem 1rem;
+    background: rgba(197, 160, 90, 0.12);
+    border: 1px solid rgba(197, 160, 90, 0.4);
+    border-radius: 10px;
+}
+
+.ag-reserva-sugerencias p {
+    margin: 0 0 0.6rem;
+    font-size: 0.9rem;
+    color: var(--color-teal-900);
+}
+
+.ag-reserva-sugerencias-botones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.ag-reserva-sugerencia {
+    padding: 0.45rem 1rem;
+    background: var(--color-teal-900);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.ag-reserva-sugerencia:hover {
+    background: var(--color-teal-700, #1d5f5a);
+    transform: translateY(-1px);
+}
+
+.rz-slot.ag-slot-libre::after {
+    content: attr(data-ag-tooltip);
+    position: absolute;
+    z-index: 3000;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, calc(-50% + 4px));
+    padding: 1px 10px;
+    background: #fff;
+    color: #3d5a58;
+    font-size: 0.78rem;
+    line-height: 1.35;
+    white-space: nowrap;
+    text-align: center;
+    border: 1px solid rgba(197, 160, 90, 0.55);
+    border-radius: 8px;
+    box-shadow: none;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+}
+
+.rz-slot.ag-slot-libre:hover::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%);
+}
+
 /* La tarjeta del calendario ocupa todo el ancho del contenedor */
 .ag-reserva-contenedor .ag-booking-scheduler {
     width: 100%;

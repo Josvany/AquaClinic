@@ -2,6 +2,7 @@
 @inject IServiciosPublicosDataService Servicios
 @inject IReservasDataService Reservas
 @inject IUsuarioDataService Usuarios
+@inject SeleccionReservaEstado SeleccionReserva
 @inject DialogService Dialogs
 @inject NotificadorUi Notificador
 
@@ -10,8 +11,8 @@
     {
         <div class="ag-booking-confirmacion">
             <h3>&#161;Cita recibida!</h3>
-            <p>Te esperamos el <strong>@_fechaInicioLocal.ToString("dddd, d 'de' MMMM 'de' yyyy")</strong>
-               a las <strong>@_fechaInicioLocal.ToString("hh\\:mm tt")</strong>.</p>
+            <p>Te esperamos el <strong>@_fechaInicio.ToString("dddd, d 'de' MMMM 'de' yyyy")</strong>
+               a las <strong>@_fechaInicio.ToString("hh\\:mm tt")</strong>.</p>
             <p style="font-size:0.92rem; color:var(--ag-tinta);">@_servicioNombre</p>
             <RadzenButton Text="Listo" Click="@(async () => await OnConfirmarAsync(true))" ButtonStyle="ButtonStyle.Primary" Style="width:100%;" />
         </div>
@@ -20,7 +21,7 @@
     {
         <p class="ag-reserva-modal-fecha">
             <i class="fa-regular fa-calendar-check" aria-hidden="true"></i>
-            @_fechaInicioLocal.ToString("dddd, d 'de' MMMM 'de' yyyy &#183; hh\\:mm tt")
+            @_fechaInicio.ToString("dddd, d 'de' MMMM 'de' yyyy · hh\\:mm tt")
         </p>
 
         <RadzenTemplateForm TItem="object" Data="@_modelo" Submit="@Enviar">
@@ -35,6 +36,24 @@
                     <div class="ag-nueva-cita-error">@_error</div>
                 }
             </div>
+
+            @if (_sugerencias.Count > 0)
+            {
+                <div class="ag-reserva-sugerencias">
+                    <p>
+                        <i class="fa-solid fa-lightbulb" aria-hidden="true"></i>
+                        No cabe completa desde las @_fechaInicio.ToString("hh\\:mm tt"). Horas libres donde s&iacute; cabe:
+                    </p>
+                    <div class="ag-reserva-sugerencias-botones">
+                        @foreach (var sugerida in _sugerencias)
+                        {
+                            <button type="button" class="ag-reserva-sugerencia" @onclick="@(async () => await ReAnclarAsync(sugerida))">
+                                @sugerida.ToString("hh\\:mm tt")
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
 
             @if (_esInvitado)
             {
@@ -76,10 +95,18 @@
     [Parameter] public DateTime FechaInicioLocal { get; set; }
     [Parameter] public DateTime FechaFinLocal { get; set; }
     /// <summary>Ocupaciones de la semana (citas + reservas en curso) para validar que
-    /// la duracion del servicio elegido no se solape con otra cita.</summary>
+    /// la duracion del servicio elegido no se solape con otra cita. Puede ser null:
+    /// entonces se usa el getter OcupacionesProvider para leer la lista VIVA.</summary>
     [Parameter] public List<OcupacionAgenda> Ocupaciones { get; set; } = [];
+
+    /// <summary>Getter de las ocupaciones actuales (la pagina lo pasa para que el
+    /// modal lea la lista fresca al elegir servicio, no un snapshot viejo).</summary>
+    [Parameter] public Func<List<OcupacionAgenda>>? OcupacionesProvider { get; set; }
     [Parameter] public EventCallback<(bool Exito, DateTime FechaLocal)> ReservaConfirmada { get; set; }
     [Parameter] public EventCallback ReservaCancelada { get; set; }
+    /// <summary>El usuario eligio una hora alternativa: la pagina libera la
+    /// reserva suave vieja y toma la nueva.</summary>
+    [Parameter] public EventCallback<DateTime> ReservaReAnclada { get; set; }
 
     private object _modelo = new();
     private List<ServicioPublicoVm> _servicios = [];
@@ -94,13 +121,38 @@
     private bool _enviando;
     private string? _error;
 
-    private DateTime _fechaInicioLocal => FechaInicioLocal;
+    // Hora de inicio ACTUAL de la reserva (puede cambiar via re-anclaje)
+    private DateTime _fechaInicio;
+
+    /// <summary>Horas alternas donde el servicio elegido si cabe (vacias si cabe en la hora elegida).</summary>
+    private List<DateTime> _sugerencias = [];
+
+    private const int PasoMinutos = 15;
+
+    /// <summary>Horario de atencion por dia: ESPEJO del seed de HorariosClinica
+    /// (AquaClinicDbContext). La App no consulta la tabla: la API es quien valida
+    /// el horario real al crear la cita (409 si no cabe). Domingo cerrado; si se
+    /// cambia el seed, actualizar este espejo.</summary>
+    private static readonly TimeSpan AperturaLunesAViernes = new(9, 0, 0);
+    private static readonly TimeSpan CierreLunesAViernes = new(18, 0, 0);
+    private static readonly TimeSpan AperturaSabado = new(10, 0, 0);
+    private static readonly TimeSpan CierreSabado = new(16, 0, 0);
 
     protected override async Task OnInitializedAsync()
     {
+        _fechaInicio = FechaInicioLocal;
+
         try
         {
             _servicios = (await Servicios.ObtenerServiciosAsync()).ToList();
+
+            // Servicio elegido en la pagina (dropdown sobre el calendario): preseleccion
+            var preseleccion = SeleccionReserva.ServicioElegido;
+            if (preseleccion is not null && _servicios.Any(s => s.ServicioId == preseleccion.ServicioId))
+            {
+                _servicioId = preseleccion.ServicioId;
+                _servicioNombre = preseleccion.Nombre;
+            }
 
             // Si hay sesion, precargar datos y no pedir contacto
             var usuario = await Usuarios.GetUsuarioActualAsync();
@@ -111,6 +163,12 @@
                 _correo = usuario.Email;
                 _telefono = usuario.Telefono ?? string.Empty;
             }
+
+            // Validar la duracion del servicio preseleccionado contra la hora inicial
+            if (_servicioId != Guid.Empty)
+            {
+                ValidarEncaje();
+            }
         }
         catch (Exception)
         {
@@ -119,37 +177,196 @@
         }
     }
 
+    private int DuracionElegida =>
+        _servicios.FirstOrDefault(s => s.ServicioId == _servicioId)?.DuracionMinutos ?? 0;
+
     private async Task AlElegirServicioAsync(Guid servicioId)
     {
         _servicioId = servicioId;
         _servicioNombre = _servicios.FirstOrDefault(s => s.ServicioId == servicioId)?.Nombre ?? string.Empty;
         _error = null;
 
-        var servicio = _servicios.FirstOrDefault(s => s.ServicioId == servicioId);
-        if (servicio is null) return;
+        ValidarEncaje();
+        await Task.CompletedTask;
+    }
 
-        var fin = FechaInicioLocal.AddMinutes(servicio.DuracionMinutos);
+    /// <summary>
+    /// Si la cita completa no cabe en la hora actual, calcula sugerencias de
+    /// horas alternas (pasos de 15 min, mismo dia, dentro del horario de la
+    /// clinica y sin solapamientos); si cabe, limpia el estado de error.
+    /// </summary>
+    private void ValidarEncaje()
+    {
+        _sugerencias = [];
 
-        // La cita debe caber completa: si se solapa con otra cita o reserva,
-        // el horario no esta disponible aunque el slot inicial este libre.
-        // Se excluye la reserva suave propia (mismo inicio exacto): es esta seleccion.
-        var solapa = Ocupaciones.Any(o => o.Inicio != FechaInicioLocal && o.Inicio < fin && o.Fin > FechaInicioLocal);
-        if (solapa)
+        if (_servicioId == Guid.Empty || DuracionElegida == 0)
         {
-            _error = $"\"{servicio.Nombre}\" dura {servicio.DuracionMinutos} min y no cabe completa en ese horario. Elige una hora con más tiempo libre o un servicio más corto.";
+            _error = null;
+            return;
         }
+
+        if (CabeCompleto(_fechaInicio, DuracionElegida))
+        {
+            _error = null;
+            return;
+        }
+
+        MarcarNoCabe();
+    }
+
+    /// <summary>La cita elegida no cabe en la hora actual: marca el error y
+    /// calcula las sugerencias (con mensaje distinto si no hay ninguna).
+    /// Devuelve el mensaje para notificar sin advertencias de nulabilidad.</summary>
+    private string MarcarNoCabe()
+    {
+        _sugerencias = CalcularSugerencias(DuracionElegida);
+        _error = _sugerencias.Count > 0
+            ? $"\"{_servicioNombre}\" dura {DuracionElegida} min y no cabe completa en ese horario. Elige una hora sugerida:"
+            : $"\"{_servicioNombre}\" dura {DuracionElegida} min y no cabe completa en ese horario, y no hay horas libres en los próximos días.";
+        return _error;
+    }
+
+    private List<OcupacionAgenda> OcupacionesActuales =>
+        OcupacionesProvider?.Invoke() ?? Ocupaciones;
+
+    private bool CabeCompleto(DateTime inicio, int duracionMinutos)
+    {
+        var fin = inicio.AddMinutes(duracionMinutos);
+
+        // Mismo dia, dentro del horario de atencion de ESE dia (el sábado abre
+        // 10:00-16:00, el resto 9:00-18:00: misma regla que valida la API)
+        var (aperturaDia, cierreDia) = HorarioDe(inicio.DayOfWeek);
+        if (fin.Date != inicio.Date || fin.TimeOfDay > cierreDia || inicio.TimeOfDay < aperturaDia)
+        {
+            return false;
+        }
+
+        // Sin solapamiento: bloquean las citas confirmadas y las reservas suaves de
+        // otros usuarios. La reserva suave PROPIA (Estado Reservando en la hora de
+        // inicio actual) se excluye; excluir por "Inicio != _fechaInicio" a secas
+        // dejaba pasar servicios que solapan una cita real que empieza justo despues
+        // del slot elegido (ej. 9:45 + 45 min contra una cita que empieza a las 10:00).
+        return !OcupacionesActuales.Any(o =>
+            !(o.Estado == AgendaCalendario.Reservando && o.Inicio == inicio) &&
+            o.Inicio < fin && o.Fin > inicio);
+    }
+
+    /// <summary>
+    /// Proximas horas (maximo 4) donde la cita completa cabe, buscando en pasos
+    /// de 15 min desde la hora elegida y, si el dia se agota (o ya paso), en los
+    /// dias siguientes dentro del rango de ocupaciones conocidas. De hoy solo se
+    /// sugieren horas que aun no pasan; si hoy no alcanza (ej. quedan 15 min
+    /// antes del cierre), la sugerencia salta a la apertura del dia siguiente.
+    /// </summary>
+    private List<DateTime> CalcularSugerencias(int duracionMinutos)
+    {
+        var sugerencias = new List<DateTime>();
+        var limite = _fechaInicio.Date.AddDays(7);
+        var ocupaciones = OcupacionesActuales;
+        var ahora = AhoraClinica;
+
+        for (var hora = _fechaInicio; hora.Date < limite && sugerencias.Count < 4; hora = hora.AddMinutes(PasoMinutos))
+        {
+            // Dia ya pasado: saltar directo a la apertura del dia siguiente
+            if (hora.Date < ahora.Date)
+            {
+                hora = hora.Date.AddDays(1).Add(AperturaDe(hora.AddDays(1).DayOfWeek)).AddMinutes(-PasoMinutos); // el for avanza
+                continue;
+            }
+
+            // Hoy: las horas ya pasadas no se sugieren (el for sigue avanzando)
+            if (hora.Date == ahora.Date && hora <= ahora)
+            {
+                continue;
+            }
+
+            // Domingo cerrado: saltar a la apertura del dia siguiente (lunes 9:00)
+            if (hora.DayOfWeek == DayOfWeek.Sunday)
+            {
+                hora = hora.Date.AddDays(1).Add(AperturaLunesAViernes).AddMinutes(-PasoMinutos); // el for avanza
+                continue;
+            }
+
+            var fin = hora.AddMinutes(duracionMinutos);
+
+            // La cita completa ya no cabe en el horario del dia: seguir en la
+            // apertura del dia siguiente (si hoy solo quedan 15 min pegados al
+            // cierre, la sugerencia pasa al dia siguiente)
+            if (fin.TimeOfDay > CierreDe(hora.DayOfWeek))
+            {
+                hora = hora.Date.AddDays(1).Add(AperturaDe(hora.AddDays(1).DayOfWeek)).AddMinutes(-PasoMinutos); // el for avanza
+                continue;
+            }
+
+            if (ocupaciones.Any(o =>
+                    !(o.Estado == AgendaCalendario.Reservando && o.Inicio == hora) &&
+                    o.Inicio < fin && o.Fin > hora))
+            {
+                continue;
+            }
+
+            sugerencias.Add(hora);
+        }
+
+        return sugerencias;
+    }
+
+    /// <summary>Horario de atencion del dia (espejo del seed de HorariosClinica).</summary>
+    private static (TimeSpan Apertura, TimeSpan Cierre) HorarioDe(DayOfWeek dia) => dia switch
+    {
+        DayOfWeek.Sunday => (AperturaLunesAViernes, CierreLunesAViernes), // cerrado: lo bloquea el guard de domingos
+        DayOfWeek.Saturday => (AperturaSabado, CierreSabado),
+        _ => (AperturaLunesAViernes, CierreLunesAViernes)
+    };
+
+    private static TimeSpan AperturaDe(DayOfWeek dia) => HorarioDe(dia).Apertura;
+
+    private static TimeSpan CierreDe(DayOfWeek dia) => HorarioDe(dia).Cierre;
+
+    /// <summary>Hora actual en la zona de la clinica (America/Vancouver): las
+    /// sugerencias no deben ofrecer horas que ya pasaron del dia de hoy.</summary>
+    private static DateTime AhoraClinica
+    {
+        get
+        {
+            try
+            {
+                var tz = TimeZoneInfo.FindSystemTimeZoneById("America/Vancouver");
+                return TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz).DateTime;
+            }
+            catch (TimeZoneNotFoundException)
+            {
+                return DateTime.Now;
+            }
+            catch (InvalidTimeZoneException)
+            {
+                return DateTime.Now;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Re-ancla la reserva a una hora sugerida: notifica a la pagina (que libera
+    /// la reserva suave vieja y toma la nueva) y actualiza la fecha del modal.
+    /// </summary>
+    private async Task ReAnclarAsync(DateTime nuevaHora)
+    {
+        SeleccionReserva.ReAnclar(nuevaHora);
+        _fechaInicio = nuevaHora;
+        _sugerencias = [];
+        _error = null;
+
+        // Aviso a la pagina para que sincronice la reserva suave
+        await ReservaReAnclada.InvokeAsync(nuevaHora);
     }
 
     private async Task Enviar(object _)
     {
         // Revalidar por si el usuario envia sin volver a tocar el dropdown
-        var servicioElegido = _servicios.FirstOrDefault(s => s.ServicioId == _servicioId);
-        if (servicioElegido is not null &&
-            Ocupaciones.Any(o => o.Inicio != FechaInicioLocal &&
-                                 o.Inicio < FechaInicioLocal.AddMinutes(servicioElegido.DuracionMinutos) && o.Fin > FechaInicioLocal))
+        if (_servicioId != Guid.Empty && !CabeCompleto(_fechaInicio, DuracionElegida))
         {
-            _error = $"\"{servicioElegido.Nombre}\" dura {servicioElegido.DuracionMinutos} min y no cabe completa en ese horario. Elige una hora con más tiempo libre o un servicio más corto.";
-            Notificador.Advertencia(_error);
+            var mensaje = MarcarNoCabe();
+            Notificador.Advertencia(mensaje);
             StateHasChanged();
             return;
         }
@@ -164,7 +381,7 @@
             var resultado = await Reservas.CrearCitaAsync(new ReservaCitaVm
             {
                 ServicioId = _servicioId,
-                FechaInicioLocal = FechaInicioLocal,
+                FechaInicioLocal = _fechaInicio,
                 DuracionMinutos = null,
                 UsuarioId = usuario?.UsuarioId,
                 NombreInvitado = _esInvitado ? _nombre : null,
@@ -177,7 +394,7 @@
             {
                 _servicioNombre = _servicios.FirstOrDefault(s => s.ServicioId == _servicioId)?.Nombre ?? "Servicio";
                 _enviada = true;
-                Notificador.Exito($"Cita agendada para el {_fechaInicioLocal:dddd d 'de' MMMM} a las {_fechaInicioLocal:hh\\:mm tt}.");
+                Notificador.Exito($"Cita agendada para el {_fechaInicio:dddd d 'de' MMMM} a las {_fechaInicio:hh\\:mm tt}.");
                 StateHasChanged();
                 return;
             }
@@ -198,7 +415,7 @@
 
     private async Task OnConfirmarAsync(bool _)
     {
-        await ReservaConfirmada.InvokeAsync((true, FechaInicioLocal));
+        await ReservaConfirmada.InvokeAsync((true, _fechaInicio));
         Dialogs.Close();
     }
 

@@ -219,7 +219,7 @@ namespace AquaClinic.Application.Features.Citas.Commands.CreateCita
                 if (inicioLocal < apertura || finLocal > cierre)
                 {
                     throw new BadRequestException(
-                        $"El horario de atencion ese dia es de {horario.HoraApertura:hh\\:mm} a {horario.HoraCierre:hh\\:mm}.");
+                        $"El horario de atencion ese dia es de {horario.HoraApertura:HH\\:mm} a {horario.HoraCierre:HH\\:mm}.");
                 }
             }
         }

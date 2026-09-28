@@ -58,6 +58,9 @@ builder.Services.AddScoped<AgendaRealtimeService>();
 builder.Services.AddScoped<IReservasDataService, ReservasDataService>();
 builder.Services.AddScoped<IServiciosPublicosDataService, ReservasDataService>();
 
+// Servicio elegido + re-anclaje de hora compartidos entre /reservar y el dialogo
+builder.Services.AddScoped<SeleccionReservaEstado>();
+
 // Autenticacion via JWT: el principal se construye desde el access token del TokenStore
 builder.Services.AddScoped<ApiAuthenticationStateProvider>();
 

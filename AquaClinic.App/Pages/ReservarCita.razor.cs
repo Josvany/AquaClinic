@@ -124,14 +124,32 @@ namespace AquaClinic.App.Pages
 
         private void OnSlotRender(Radzen.SchedulerSlotRenderEventArgs args)
         {
-            // Domingo cerrado: el slot se ve deshabilitado y no recibe clics
-            // (pointer-events: none), sin necesidad de notificacion.
-            if (args.Start.DayOfWeek == DayOfWeek.Sunday)
+            var claseBase = args.Attributes.TryGetValue("class", out var c) ? c?.ToString() : null;
+
+            // Domingo cerrado o hora de hoy ya pasada: el slot se ve deshabilitado
+            // y no recibe clics (pointer-events: none), sin notificacion.
+            if (args.Start.DayOfWeek == DayOfWeek.Sunday || EsHoraPasada(args.Start))
             {
-                var claseBase = args.Attributes.TryGetValue("class", out var c) ? c?.ToString() : null;
                 args.Attributes["class"] = $"{claseBase} ag-slot-deshabilitado".Trim();
+                return;
+            }
+
+            var ocupado = _ocupaciones.Any(o => o.Inicio < args.End && o.Fin > args.Start);
+
+            // Horario libre: tooltip con la hora del slot (los ocupados/reservando
+            // conservan el tooltip de cita del AppointmentMouseEnter).
+            if (!ocupado)
+            {
+                args.Attributes["data-ag-tooltip"] = $"{args.Start:hh:mm tt} – {args.End:hh:mm tt}";
+                args.Attributes["class"] = $"{claseBase} ag-slot-libre".Trim();
             }
         }
+
+        /// <summary>Slot de HOY cuya hora ya paso (comparado con el momento actual
+        /// en la zona de la clinica, America/Vancouver): no reservable, igual que
+        /// los domingos. Los dias anteriores los cubre el guard de fechas pasadas.</summary>
+        private static bool EsHoraPasada(DateTime slotInicio) =>
+            slotInicio.Date == AgendaCalendario.HoyClinica && slotInicio <= AgendaCalendario.AhoraClinica;
 
         private void OnAppointmentRender(Radzen.SchedulerAppointmentRenderEventArgs<OcupacionAgenda> args)
         {
@@ -199,11 +217,34 @@ namespace AquaClinic.App.Pages
             var inicio = args.Start;
             var fin = args.End;
 
+            // Refrescar la agenda ANTES de decidir: la lista puede estar vieja si
+            // otra persona agendo mientras la pagina estaba abierta y la notificacion
+            // en tiempo real no llego (ej. la cita se creo desde otro canal).
+            try
+            {
+                await CargarAgendaAsync();
+            }
+            catch (HttpRequestException)
+            {
+                // Sin conexion se continua con los datos en memoria; la API
+                // rechazara de todos modos si el horario esta tomado.
+            }
+
             // No se puede reservar en el pasado (dia anterior o meses anteriores).
             if (inicio.Date < AgendaCalendario.HoyClinica)
             {
                 _abriendoModal = false;
                 Notificador.Advertencia("No puedes reservar en fechas pasadas. Elige hoy o un día posterior.");
+                return;
+            }
+
+            // Hora de hoy ya pasada: los slots vienen grises sin clic (OnSlotRender);
+            // este guard cubre el caso de una pagina abierta mientras corria el reloj
+            // (el render de slots no se re-ejecuta solo). Silencioso: el usuario ve
+            // el slot gris, un toast de mas seria ruido.
+            if (EsHoraPasada(inicio))
+            {
+                _abriendoModal = false;
                 return;
             }
 
@@ -215,11 +256,16 @@ namespace AquaClinic.App.Pages
                 return;
             }
 
-            // Ya ocupado (cita confirmada o reserva en curso): no abre modal
-            if (_ocupaciones.Any(o => o.Inicio < fin && o.Fin > inicio))
+            // Slot ocupado (o que toca una ocupacion: el clic sobre el borde del
+            // bloque "Ocupado" redondea al slot contiguo, que tambien esta ocupado).
+            // Solo aviso: NO se abre modal ni se toma reserva suave. Las sugerencias
+            // de horas alternas se ven al reservar en un slot libre y elegir un
+            // servicio que no cabe completa (ReservaDialog).
+            var tocaOcupacion = _ocupaciones.Any(o => o.Inicio < fin && o.Fin > inicio);
+            if (tocaOcupacion)
             {
                 _abriendoModal = false;
-                Notificador.Advertencia("Ese horario no está disponible. Elige otro libre.");
+                Notificador.Advertencia("Ese horario no está disponible. Elige un slot libre.");
                 return;
             }
 
@@ -236,6 +282,9 @@ namespace AquaClinic.App.Pages
             _seleccionInicio = inicio;
             _tieneSeleccion = true;
 
+            // El bloque "Reservando" propio se dibuja a la altura del slot inicial;
+            // el modal puede re-anclarlo a otra hora (sugerencias) y entonces la
+            // pagina lo reemplaza via ReAnclarReservaAsync.
             _ocupaciones.Add(new OcupacionAgenda { Inicio = inicio, Fin = fin, Estado = AgendaCalendario.Reservando });
             _scheduler?.Reload();
 
@@ -245,8 +294,10 @@ namespace AquaClinic.App.Pages
                     { "FechaInicioLocal", args.Start },
                     { "FechaFinLocal", args.End },
                     { "Ocupaciones", _ocupaciones },
+                    { "OcupacionesProvider", (Func<List<OcupacionAgenda>>)(() => _ocupaciones) },
                     { "ReservaConfirmada", EventCallback.Factory.Create(this, (Func<(bool, DateTime), Task>)(async t => await ReservaTerminadaAsync(t.Item1, t.Item2))) },
-                    { "ReservaCancelada", EventCallback.Factory.Create(this, (Func<Task>)(async () => await ReservaCanceladaAsync())) }
+                    { "ReservaCancelada", EventCallback.Factory.Create(this, (Func<Task>)(async () => await ReservaCanceladaAsync())) },
+                    { "ReservaReAnclada", EventCallback.Factory.Create(this, (Func<DateTime, Task>)(async nueva => await ReAnclarReservaAsync(nueva))) }
                 }!,
                 new DialogOptions
                 {
@@ -270,10 +321,11 @@ namespace AquaClinic.App.Pages
 
             if (exito)
             {
-                // La cita quedo creada: el bloque "Reservando" propio se quita de
-                // inmediato y el slot pasa a verse como ocupado.
+                // La cita pudo haberse re-anclado a otra hora (sugerencias del
+                // modal): se quita el bloque "Reservando" que coincide con la
+                // hora FINAL usada por el modal, no necesariamente el inicial.
                 _ocupaciones = _ocupaciones
-                    .Where(o => !(o.Inicio == _seleccionInicio && o.Estado == AgendaCalendario.Reservando))
+                    .Where(o => !(o.Inicio == fechaLocal && o.Estado == AgendaCalendario.Reservando))
                     .ToList();
                 _scheduler?.Reload();
 
@@ -293,6 +345,31 @@ namespace AquaClinic.App.Pages
                     .ToList();
                 _scheduler?.Reload();
             }
+        }
+
+        /// <summary>
+        /// El modal eligio una hora alternativa: libera la reserva suave vieja y
+        /// toma la nueva, para que los demas usuarios vean el cambio en vivo.
+        /// </summary>
+        private async Task ReAnclarReservaAsync(DateTime nuevaHora)
+        {
+            if (!_tieneSeleccion || nuevaHora == _seleccionInicio) return;
+
+            // Liberar la reserva suave del inicio viejo
+            await Agenda.LiberarReservaAsync(_seleccionInicio);
+            _ocupaciones = _ocupaciones
+                .Where(o => !(o.Inicio == _seleccionInicio && o.Estado == AgendaCalendario.Reservando))
+                .ToList();
+
+            // Tomar la nueva hora
+            var ok = await Agenda.ReservarSuavementeAsync(nuevaHora, nuevaHora.AddMinutes(15));
+            if (ok)
+            {
+                _ocupaciones.Add(new OcupacionAgenda { Inicio = nuevaHora, Fin = nuevaHora.AddMinutes(15), Estado = AgendaCalendario.Reservando });
+            }
+
+            _seleccionInicio = nuevaHora;
+            _scheduler?.Reload();
         }
 
         public async ValueTask DisposeAsync()

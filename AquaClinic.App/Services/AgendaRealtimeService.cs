@@ -92,6 +92,31 @@ namespace AquaClinic.App.Services
                 }
             }
         }
+
+        /// <summary>
+        /// Momento actual en la zona de la clinica (America/Vancouver). Igual que
+        /// HoyClinica: la maquina puede estar en otra zona y el "ahora" no coincidiria
+        /// con el del API ni con los slots del scheduler.
+        /// </summary>
+        public static DateTime AhoraClinica
+        {
+            get
+            {
+                try
+                {
+                    var tz = TimeZoneInfo.FindSystemTimeZoneById("America/Vancouver");
+                    return TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz).DateTime;
+                }
+                catch (TimeZoneNotFoundException)
+                {
+                    return DateTime.Now;
+                }
+                catch (InvalidTimeZoneException)
+                {
+                    return DateTime.Now;
+                }
+            }
+        }
     }
 
     /// <summary>
