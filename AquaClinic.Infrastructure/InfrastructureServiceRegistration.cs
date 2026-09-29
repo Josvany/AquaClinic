@@ -1,5 +1,6 @@
 ﻿using AquaClinic.Application.Contracts.Infrastructure;
 using AquaClinic.Application.Models.Mail;
+using AquaClinic.Infrastructure.Contabilidad;
 using AquaClinic.Infrastructure.FileExport;
 using AquaClinic.Infrastructure.Mail;
 using Microsoft.Extensions.Configuration;
@@ -18,6 +19,9 @@ namespace AquaClinic.Infrastructure
 
             // Reintentos de correos de cita en segundo plano
             services.AddHostedService<EmailRetryBackgroundService>();
+
+            // Mini-contabilidad de servicios atendidos en segundo plano
+            services.AddHostedService<ContabilidadBackgroundService>();
 
             return services;
         }

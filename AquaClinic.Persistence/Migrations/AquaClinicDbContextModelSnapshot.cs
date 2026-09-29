@@ -520,6 +520,63 @@ namespace AquaClinic.Persistence.Migrations
                     b.ToTable("MovimientosPuntos");
                 });
 
+            modelBuilder.Entity("AquaClinic.Domain.Entities.MovimientoServicio", b =>
+                {
+                    b.Property<Guid>("MovimientoServicioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CitaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTimeOffset>("FechaAtencion")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("NombreCliente")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid?>("PersonalId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("PrecioSnapshot")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<Guid>("ServicioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("UsuarioId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("MovimientoServicioId");
+
+                    b.HasIndex("FechaAtencion");
+
+                    b.HasIndex("PersonalId");
+
+                    b.HasIndex("ServicioId");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.HasIndex("CitaId", "ServicioId")
+                        .IsUnique();
+
+                    b.ToTable("MovimientosServicios");
+                });
+
             modelBuilder.Entity("AquaClinic.Domain.Entities.Personal", b =>
                 {
                     b.Property<Guid>("PersonalId")
@@ -723,6 +780,49 @@ namespace AquaClinic.Persistence.Migrations
                     b.HasIndex("ServicioId");
 
                     b.ToTable("PromocionesServicios");
+                });
+
+            modelBuilder.Entity("AquaClinic.Domain.Entities.ResumenDiarioServicio", b =>
+                {
+                    b.Property<Guid>("ResumenDiarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ActualizadoUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CantidadAtenciones")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaLocal")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("MontoTotal")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("decimal(12,2)");
+
+                    b.Property<Guid>("ServicioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("ResumenDiarioId");
+
+                    b.HasIndex("ServicioId");
+
+                    b.HasIndex("FechaLocal", "ServicioId")
+                        .IsUnique();
+
+                    b.ToTable("ResumenesDiarios");
                 });
 
             modelBuilder.Entity("AquaClinic.Domain.Entities.Servicio", b =>
@@ -1168,6 +1268,35 @@ namespace AquaClinic.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("AquaClinic.Domain.Entities.MovimientoServicio", b =>
+                {
+                    b.HasOne("AquaClinic.Domain.Entities.Cita", "Cita")
+                        .WithMany()
+                        .HasForeignKey("CitaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AquaClinic.Domain.Entities.Personal", null)
+                        .WithMany()
+                        .HasForeignKey("PersonalId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("AquaClinic.Domain.Entities.Servicio", "Servicio")
+                        .WithMany()
+                        .HasForeignKey("ServicioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AquaClinic.Identity.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Cita");
+
+                    b.Navigation("Servicio");
+                });
+
             modelBuilder.Entity("AquaClinic.Domain.Entities.Personal", b =>
                 {
                     b.HasOne("AquaClinic.Identity.Models.ApplicationUser", null)
@@ -1210,6 +1339,17 @@ namespace AquaClinic.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Promocion");
+
+                    b.Navigation("Servicio");
+                });
+
+            modelBuilder.Entity("AquaClinic.Domain.Entities.ResumenDiarioServicio", b =>
+                {
+                    b.HasOne("AquaClinic.Domain.Entities.Servicio", "Servicio")
+                        .WithMany()
+                        .HasForeignKey("ServicioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Servicio");
                 });

@@ -46,47 +46,51 @@
                         <i class="fa-solid fa-lightbulb" aria-hidden="true"></i>
                         No cabe completa desde las @_fechaInicio.ToString("hh\\:mm tt"). Horas libres donde s&iacute; cabe:
                     </p>
-                    <div class="ag-reserva-sugerencias-botones">
+                    <RadzenRow class="ag-reserva-sugerencias-fila">
                         @foreach (var sugerida in _sugerencias)
                         {
                             var etiqueta = EtiquetaDiaSugerida(sugerida);
-                            <button type="button" class="ag-reserva-sugerencia" @onclick="@(async () => await ReAnclarAsync(sugerida))">
-                                @sugerida.ToString("hh\\:mm tt")
-                                @if (etiqueta is not null)
-                                {
-                                    <span class="ag-reserva-sugerencia-dia">@etiqueta</span>
-                                }
-                            </button>
+                            <RadzenColumn Size="4">
+                                <button type="button" class="ag-reserva-sugerencia" @onclick="@(async () => await ReAnclarAsync(sugerida))">
+                                    @sugerida.ToString("hh\\:mm tt")
+                                    @if (etiqueta is not null)
+                                    {
+                                        <span class="ag-reserva-sugerencia-dia">@etiqueta</span>
+                                    }
+                                </button>
+                            </RadzenColumn>
                         }
-                    </div>
+                    </RadzenRow>
                 </div>
             }
 
             @if (_esInvitado)
             {
-                <div class="ag-field">
-                    <label>Nombre completo</label>
-                    <RadzenTextBox @bind-Value="_nombre" Name="nombre" Placeholder="Tu nombre" />
-                    <RadzenRequiredValidator Component="nombre" Text="Escribe tu nombre" Popup="false" />
-                </div>
+                <div class="ag-reserva-dos-columnas">
+                    <div class="ag-field">
+                        <label>Nombre completo</label>
+                        <RadzenTextBox @bind-Value="_nombre" Name="nombre" Placeholder="Tu nombre" />
+                        <RadzenRequiredValidator Component="nombre" Text="Escribe tu nombre" Popup="false" />
+                    </div>
 
-                <div class="ag-field">
-                    <label>Correo</label>
-                    <RadzenTextBox @bind-Value="_correo" Name="correo" Placeholder="tu@correo.com" />
-                    <RadzenRequiredValidator Component="correo" Text="Escribe tu correo" Popup="false" />
-                    <RadzenEmailValidator Component="correo" Text="Revisa el formato del correo" Popup="false" />
-                </div>
+                    <div class="ag-field">
+                        <label>Correo</label>
+                        <RadzenTextBox @bind-Value="_correo" Name="correo" Placeholder="tu@correo.com" />
+                        <RadzenRequiredValidator Component="correo" Text="Escribe tu correo" Popup="false" />
+                        <RadzenEmailValidator Component="correo" Text="Revisa el formato del correo" Popup="false" />
+                    </div>
 
-                <div class="ag-field">
-                    <label>Tel&eacute;fono (opcional)</label>
-                    <RadzenTextBox @bind-Value="_telefono" Name="telefono" Placeholder="+1 604 ..." />
+                    <div class="ag-field">
+                        <label>Tel&eacute;fono (opcional)</label>
+                        <RadzenTextBox @bind-Value="_telefono" Name="telefono" Placeholder="+1 604 ..." />
+                    </div>
+
+                    <div class="ag-field">
+                        <label>Notas (opcional)</label>
+                        <RadzenTextArea @bind-Value="_notas" Name="notas" Rows="2" Placeholder="Alergias, preferencias, ..." />
+                    </div>
                 </div>
             }
-
-            <div class="ag-field">
-                <label>Notas (opcional)</label>
-                <RadzenTextArea @bind-Value="_notas" Name="notas" Rows="2" Placeholder="Alergias, preferencias, ..." />
-            </div>
 
             <div class="ag-reserva-acciones">
                 <RadzenButton ButtonType="ButtonType.Submit" Text="Confirmar cita"

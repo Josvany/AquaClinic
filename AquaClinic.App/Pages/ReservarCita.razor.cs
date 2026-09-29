@@ -307,7 +307,7 @@ namespace AquaClinic.App.Pages
                 }!,
                 new DialogOptions
                 {
-                    Width = "520px",
+                    Width = "760px",
                     ShowClose = true,
                     CloseDialogOnEsc = true,
                     CloseDialogOnOverlayClick = true,

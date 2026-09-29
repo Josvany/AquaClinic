@@ -990,8 +990,8 @@ footer.ag-footer {
 
 /* Sugerencias de horas alternas del modal de reserva */
 .ag-reserva-sugerencias {
-    margin: 0 0 1rem;
-    padding: 0.9rem 1rem;
+    margin: 0 0 0.5rem;
+    padding: 0.6rem 1rem;
     background: rgba(197, 160, 90, 0.12);
     border: 1px solid rgba(197, 160, 90, 0.4);
     border-radius: 10px;
@@ -1003,20 +1003,37 @@ footer.ag-footer {
         color: var(--color-teal-900);
     }
 
-.ag-reserva-sugerencias-botones {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
+    /* Sugerencias: fila Radzen con RadzenColumn Size="4" (un tercio del ancho cada
+   columna) para que todas las pastillas queden alineadas y sin sobresalir */
+    .ag-reserva-sugerencias-fila,
+    .ag-reserva-sugerencias .rz-row {
+        margin: 0;
+        gap: 0.5rem;
+    }
+
+    .ag-reserva-sugerencias .rz-col-4 {
+        padding: 0;
+    }
 
 .ag-reserva-sugerencia {
-    padding: 0.45rem 1rem;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 2px 6px;
+    width: 100%;
+    min-width: 0;
+    margin-left: 0;
+    padding: 0.45rem 0.6rem;
     background: var(--color-teal-900);
     color: #fff;
     border: none;
     border-radius: 999px;
     font-size: 0.9rem;
     font-weight: 600;
+    text-align: center;
+    box-sizing: border-box;
     cursor: pointer;
     transition: background-color 0.2s ease, transform 0.15s ease;
 }
@@ -1028,7 +1045,6 @@ footer.ag-footer {
 
 /* Aviso de que la hora sugerida ya cae en otro dia (dia siguiente, etc.) */
 .ag-reserva-sugerencia-dia {
-    margin-left: 0.4rem;
     font-size: 0.72rem;
     font-weight: 500;
     opacity: 0.85;
@@ -1143,18 +1159,36 @@ footer.ag-footer {
     gap: 8px;
     font-weight: 600;
     color: var(--color-teal-900);
-    margin: 0 0 16px;
+    margin: 0 0 10px;
 }
 
 .ag-reserva-modal .ag-field {
-    margin-bottom: 14px;
+    margin-bottom: 12px;
+}
+
+/* Campos del modal (nombre, correo, telefono y notas) en dos columnas: inputs
+   mas anchos sin estirar la altura del dialogo */
+.ag-reserva-dos-columnas {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 16px;
+    margin-bottom: 12px;
+}
+
+    .ag-reserva-dos-columnas .ag-field {
+        margin-bottom: 0;
+    }
+
+/* El aviso de "no cabe" vive dentro del modal: margenes compactos */
+.ag-reserva-modal .ag-nueva-cita-error {
+    margin-bottom: 10px;
 }
 
 /* Acciones del modal: botones alineados y con la paleta del tema */
 .ag-reserva-acciones {
     display: flex;
     gap: 12px;
-    margin-top: 20px;
+    margin-top: 14px;
 }
 
     .ag-reserva-acciones .rz-button {
