@@ -11,8 +11,10 @@
     {
         <div class="ag-booking-confirmacion">
             <h3>&#161;Cita recibida!</h3>
-            <p>Te esperamos el <strong>@_fechaInicio.ToString("dddd, d 'de' MMMM 'de' yyyy")</strong>
-               a las <strong>@_fechaInicio.ToString("hh\\:mm tt")</strong>.</p>
+            <p>
+                Te esperamos el <strong>@_fechaInicio.ToString("dddd, d 'de' MMMM 'de' yyyy")</strong>
+                a las <strong>@_fechaInicio.ToString("hh\\:mm tt")</strong>.
+            </p>
             <p style="font-size:0.92rem; color:var(--ag-tinta);">@_servicioNombre</p>
             <RadzenButton Text="Listo" Click="@(async () => await OnConfirmarAsync(true))" ButtonStyle="ButtonStyle.Primary" Style="width:100%;" />
         </div>
@@ -104,9 +106,10 @@
     [Parameter] public Func<List<OcupacionAgenda>>? OcupacionesProvider { get; set; }
     [Parameter] public EventCallback<(bool Exito, DateTime FechaLocal)> ReservaConfirmada { get; set; }
     [Parameter] public EventCallback ReservaCancelada { get; set; }
-    /// <summary>El usuario eligio una hora alternativa: la pagina libera la
-    /// reserva suave vieja y toma la nueva.</summary>
-    [Parameter] public EventCallback<DateTime> ReservaReAnclada { get; set; }
+    /// <summary>Cambio el alcance de la reserva suave en curso: al elegir servicio
+    /// (la duracion de la sesion manda) o al re-anclar a una hora sugerida. La
+    /// pagina ajusta el bloque "Reservando" al rango [inicio, inicio + duracion].</summary>
+    [Parameter] public EventCallback<(DateTime Inicio, int DuracionMinutos)> ReservaActualizada { get; set; }
 
     private object _modelo = new();
     private List<ServicioPublicoVm> _servicios = [];
@@ -187,6 +190,16 @@
         _error = null;
 
         ValidarEncaje();
+
+        // La reserva suave (bloque "Reservando") debe abarcar toda la sesion,
+        // no solo el slot de 15 min del clic: 9:00 + 45 min => 9:00-9:45 para
+        // todos los visitantes. Solo si el servicio SI cabe (si no, la reserva
+        // queda en el slot inicial hasta elegir una hora sugerida).
+        if (_servicioId != Guid.Empty && DuracionElegida > 0 && _error is null)
+        {
+            await ReservaActualizada.InvokeAsync((_fechaInicio, DuracionElegida));
+        }
+
         await Task.CompletedTask;
     }
 
@@ -243,11 +256,10 @@
 
         // Sin solapamiento: bloquean las citas confirmadas y las reservas suaves de
         // otros usuarios. La reserva suave PROPIA (Estado Reservando en la hora de
-        // inicio actual) se excluye; excluir por "Inicio != _fechaInicio" a secas
-        // dejaba pasar servicios que solapan una cita real que empieza justo despues
-        // del slot elegido (ej. 9:45 + 45 min contra una cita que empieza a las 10:00).
+        // inicio actual) se excluye por _fechaInicio: su bloque puede abarcar toda
+        // la duracion del servicio, asi que no se puede excluir por rango.
         return !OcupacionesActuales.Any(o =>
-            !(o.Estado == AgendaCalendario.Reservando && o.Inicio == inicio) &&
+            !(o.Estado == AgendaCalendario.Reservando && o.Inicio == _fechaInicio) &&
             o.Inicio < fin && o.Fin > inicio);
     }
 
@@ -299,7 +311,7 @@
             }
 
             if (ocupaciones.Any(o =>
-                    !(o.Estado == AgendaCalendario.Reservando && o.Inicio == hora) &&
+                    !(o.Estado == AgendaCalendario.Reservando && o.Inicio == _fechaInicio) &&
                     o.Inicio < fin && o.Fin > hora))
             {
                 continue;
@@ -356,8 +368,9 @@
         _sugerencias = [];
         _error = null;
 
-        // Aviso a la pagina para que sincronice la reserva suave
-        await ReservaReAnclada.InvokeAsync(nuevaHora);
+        // Aviso a la pagina para que sincronice la reserva suave (con la
+        // duracion del servicio: el bloque abarca toda la sesion)
+        await ReservaActualizada.InvokeAsync((nuevaHora, DuracionElegida));
     }
 
     private async Task Enviar(object _)

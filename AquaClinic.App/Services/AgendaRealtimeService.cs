@@ -59,8 +59,7 @@ namespace AquaClinic.App.Services
             "box-shadow: none !important;" +
             "border: none !important;" +
             "border-radius: 6px;" +
-            "font-weight: 600;" +
-            "height: 35px;";
+            "font-weight: 600;";
 
         /// <summary>Semana que inicia el lunes (mismo criterio que la API).</summary>
         public static DateTime InicioDeSemana(DateTime fecha)

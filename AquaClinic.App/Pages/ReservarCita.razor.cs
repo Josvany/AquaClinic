@@ -136,9 +136,14 @@ namespace AquaClinic.App.Pages
 
             var ocupado = _ocupaciones.Any(o => o.Inicio < args.End && o.Fin > args.Start);
 
-            // Horario libre: tooltip con la hora del slot (los ocupados/reservando
-            // conservan el tooltip de cita del AppointmentMouseEnter).
-            if (!ocupado)
+            // Ocupado (cita o "Reservando"): fondo teal translucido + tooltip.
+            // Libre: tooltip al pasar el mouse (estilo .ag-slot-libre, CSS puro).
+            if (ocupado)
+            {
+                args.Attributes["data-ag-tooltip"] = $"{args.Start:hh:mm tt} – {args.End:hh:mm tt}";
+                args.Attributes["class"] = $"{claseBase} ag-slot-ocupado".Trim();
+            }
+            else
             {
                 args.Attributes["data-ag-tooltip"] = $"{args.Start:hh:mm tt} – {args.End:hh:mm tt}";
                 args.Attributes["class"] = $"{claseBase} ag-slot-libre".Trim();
@@ -282,9 +287,10 @@ namespace AquaClinic.App.Pages
             _seleccionInicio = inicio;
             _tieneSeleccion = true;
 
-            // El bloque "Reservando" propio se dibuja a la altura del slot inicial;
-            // el modal puede re-anclarlo a otra hora (sugerencias) y entonces la
-            // pagina lo reemplaza via ReAnclarReservaAsync.
+            // El bloque "Reservando" propio arranca con el slot de 15 min del clic;
+            // el modal lo re-ancla a otra hora (sugerencias) o lo extiende a la
+            // duracion del servicio elegido, y la pagina lo sincroniza via
+            // ActualizarReservaAsync.
             _ocupaciones.Add(new OcupacionAgenda { Inicio = inicio, Fin = fin, Estado = AgendaCalendario.Reservando });
             _scheduler?.Reload();
 
@@ -297,7 +303,7 @@ namespace AquaClinic.App.Pages
                     { "OcupacionesProvider", (Func<List<OcupacionAgenda>>)(() => _ocupaciones) },
                     { "ReservaConfirmada", EventCallback.Factory.Create(this, (Func<(bool, DateTime), Task>)(async t => await ReservaTerminadaAsync(t.Item1, t.Item2))) },
                     { "ReservaCancelada", EventCallback.Factory.Create(this, (Func<Task>)(async () => await ReservaCanceladaAsync())) },
-                    { "ReservaReAnclada", EventCallback.Factory.Create(this, (Func<DateTime, Task>)(async nueva => await ReAnclarReservaAsync(nueva))) }
+                    { "ReservaActualizada", EventCallback.Factory.Create(this, (Func<(DateTime, int), Task>)(async ajuste => await ActualizarReservaAsync(ajuste))) }
                 }!,
                 new DialogOptions
                 {
@@ -348,28 +354,42 @@ namespace AquaClinic.App.Pages
         }
 
         /// <summary>
-        /// El modal eligio una hora alternativa: libera la reserva suave vieja y
-        /// toma la nueva, para que los demas usuarios vean el cambio en vivo.
+        /// El modal cambio el alcance de la reserva suave: elegir servicio (la
+        /// sesion completa manda) o re-anclar a una hora sugerida. El bloque
+        /// "Reservando" abarca inicio..inicio+duracion para todos los visitantes.
         /// </summary>
-        private async Task ReAnclarReservaAsync(DateTime nuevaHora)
+        private async Task ActualizarReservaAsync((DateTime Inicio, int DuracionMinutos) ajuste)
         {
-            if (!_tieneSeleccion || nuevaHora == _seleccionInicio) return;
+            if (!_tieneSeleccion) return;
 
-            // Liberar la reserva suave del inicio viejo
-            await Agenda.LiberarReservaAsync(_seleccionInicio);
-            _ocupaciones = _ocupaciones
-                .Where(o => !(o.Inicio == _seleccionInicio && o.Estado == AgendaCalendario.Reservando))
-                .ToList();
+            var duracion = ajuste.DuracionMinutos > 0 ? ajuste.DuracionMinutos : 15;
+            var inicio = ajuste.Inicio;
+            var fin = inicio.AddMinutes(duracion);
 
-            // Tomar la nueva hora
-            var ok = await Agenda.ReservarSuavementeAsync(nuevaHora, nuevaHora.AddMinutes(15));
-            if (ok)
+            // Mismo inicio: la reserva suave en la API se identifica por la
+            // conexion, asi que re-tomar el rango la reemplaza (los demas ven el
+            // ReservaSuave actualizado con el fin nuevo). Cambio de hora: hay que
+            // liberar la vieja primero (LiberarPorInicio) y despues tomar la nueva.
+            if (inicio != _seleccionInicio)
             {
-                _ocupaciones.Add(new OcupacionAgenda { Inicio = nuevaHora, Fin = nuevaHora.AddMinutes(15), Estado = AgendaCalendario.Reservando });
+                await Agenda.LiberarReservaAsync(_seleccionInicio);
+                _ocupaciones = _ocupaciones
+                    .Where(o => !(o.Inicio == _seleccionInicio && o.Estado == AgendaCalendario.Reservando))
+                    .ToList();
+                _seleccionInicio = inicio;
             }
 
-            _seleccionInicio = nuevaHora;
-            _scheduler?.Reload();
+            var ok = await Agenda.ReservarSuavementeAsync(inicio, fin);
+            if (ok)
+            {
+                _ocupaciones = _ocupaciones
+                    .Where(o => !(o.Estado == AgendaCalendario.Reservando &&
+                                  o.Inicio < fin && o.Fin > inicio))
+                    .Append(new OcupacionAgenda { Inicio = inicio, Fin = fin, Estado = AgendaCalendario.Reservando })
+                    .ToList();
+                _scheduler?.Reload();
+                StateHasChanged();
+            }
         }
 
         public async ValueTask DisposeAsync()
