@@ -566,6 +566,7 @@ footer.ag-footer {
 }
 
 .ag-hero-media {
+    position: relative;
     aspect-ratio: 4 / 5;
     border-radius: var(--radius-lg);
     border: 1.5px solid var(--color-gold-500);
@@ -581,6 +582,16 @@ footer.ag-footer {
     color: var(--color-teal-700);
     box-shadow: var(--shadow-card);
 }
+
+    /* Doble linea dorada: un marco dentro del marco, tipico del grabado editorial */
+    .ag-hero-media::after {
+        content: "";
+        position: absolute;
+        inset: 10px;
+        border: 1px solid rgba(212, 179, 106, 0.5);
+        border-radius: calc(var(--radius-lg) - 8px);
+        pointer-events: none;
+    }
 
 .ag-ola {
     position: absolute;
@@ -603,57 +614,126 @@ footer.ag-footer {
    Servicios (lista editorial)
    ============================================================ */
 
+/* ============================================================
+   Servicios como banner-cards (rama animaciones)
+   Tarjeta blanca de ancho completo con espina degradada teal a la
+   izquierda y la palabra del tratamiento como marca de agua script.
+   ============================================================ */
+
 .ag-servicios-lista {
-    border-top: 1px solid rgba(197, 160, 90, 0.4);
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
 }
 
-.ag-servicio {
-    display: grid;
-    grid-template-columns: 96px 1.2fr 1.4fr auto;
-    gap: 28px;
-    align-items: center;
-    padding: 34px 0;
-    border-bottom: 1px solid rgba(197, 160, 90, 0.4);
+.ag-banner-servicio {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    background: var(--color-white);
+    border: 1.5px solid rgba(197, 160, 90, 0.55);
+    border-radius: var(--radius-lg);
+    padding: clamp(26px, 4vw, 44px) clamp(24px, 4vw, 48px);
     text-decoration: none;
     color: inherit;
-    transition: background 0.25s ease, padding-left 0.25s ease;
+    box-shadow: var(--shadow-card);
+    transition: transform 0.3s var(--ag-ease), box-shadow 0.3s var(--ag-ease), border-color 0.3s var(--ag-ease);
 }
 
-    .ag-servicio:hover {
-        background: rgba(255, 255, 255, 0.65);
-        padding-left: 14px;
-        padding-right: 14px;
+    /* Espina de identidad: barra degradada teal en el borde izquierdo */
+    .ag-banner-servicio::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 6px;
+        background: var(--gradient-teal);
+        transform-origin: top;
+        transition: transform 0.35s var(--ag-ease);
     }
 
-.ag-servicio-num {
+    .ag-banner-servicio:hover {
+        transform: translateY(-3px);
+        border-color: var(--color-gold-500);
+        box-shadow: 0 30px 60px rgba(20, 72, 69, 0.16);
+    }
+
+        /* Un solo gesto: la espina crece levemente al pasar el cursor */
+        .ag-banner-servicio:hover::before {
+            transform: scaleY(1.06);
+        }
+
+.ag-banner-marca {
+    position: absolute;
+    right: clamp(18px, 4vw, 48px);
+    top: 50%;
+    transform: translateY(-50%);
     font-family: var(--font-script);
-    font-size: 1.7rem;
+    font-size: clamp(3.2rem, 7vw, 5.4rem);
+    line-height: 1;
     color: var(--color-gold-500);
+    opacity: 0.14;
+    pointer-events: none;
+    user-select: none;
+    white-space: nowrap;
+    transition: opacity 0.35s var(--ag-ease), transform 0.35s var(--ag-ease);
 }
 
-.ag-servicio h3 {
+    .ag-banner-servicio:hover .ag-banner-marca {
+        opacity: 0.28;
+        transform: translateY(-50%) translateX(-8px);
+    }
+
+.ag-banner-servicio h3 {
     font-family: var(--font-display);
-    font-size: 1.45rem;
-    margin: 0 0 6px;
-    transition: color 0.2s ease;
+    font-size: clamp(1.45rem, 2.6vw, 1.9rem);
+    margin: 0 0 10px;
+    max-width: 24ch;
+    position: relative;
+    transition: color 0.25s var(--ag-ease);
 }
 
-.ag-servicio p {
-    font-size: 0.94rem;
+    .ag-banner-servicio:hover h3 {
+        color: var(--color-teal-700);
+    }
+
+.ag-banner-servicio p {
+    font-size: 0.95rem;
+    line-height: 1.7;
     color: #466063;
-    margin: 0;
+    margin: 0 0 18px;
+    max-width: 62ch;
+    position: relative;
 }
 
-.ag-servicio-tarifa {
+.ag-banner-tarifa {
+    display: inline-block;
     font-family: var(--font-serif);
     font-size: 1.2rem;
     font-weight: 600;
+    letter-spacing: var(--tracking-wide);
     color: var(--color-gold-700);
-    white-space: nowrap;
+    position: relative;
 }
 
-.ag-servicio:hover h3 {
-    color: var(--color-teal-700);
+/* Movil: la marca de agua se encoge y se atenuna detras del texto */
+@media (max-width: 640px) {
+    .ag-banner-marca {
+        font-size: 2.6rem;
+        opacity: 0.1;
+        right: 16px;
+    }
+
+    .ag-banner-servicio p {
+        max-width: none;
+    }
+}
+
+/* Refinamiento de elegancia: los banners no llevan la animacion generica
+   de entrada por clase (animaciones.css los revela con stagger) */
+.ag-banner-servicio {
+    will-change: transform;
 }
 
 /* ============================================================
@@ -716,14 +796,20 @@ footer.ag-footer {
 
 .ag-testimonio {
     background: var(--color-white);
-    border: 1.5px solid var(--color-gold-500);
+    border: 1.5px solid rgba(197, 160, 90, 0.5);
     border-radius: var(--radius-lg);
     padding: 32px;
     display: flex;
     flex-direction: column;
     gap: 18px;
     box-shadow: var(--shadow-card);
+    transition: transform 0.3s var(--ag-ease), box-shadow 0.3s var(--ag-ease), border-color 0.3s var(--ag-ease);
 }
+
+    .ag-testimonio:hover {
+        transform: translateY(-4px);
+        border-color: var(--color-gold-500);
+    }
 
     .ag-testimonio p {
         font-style: italic;
@@ -1464,6 +1550,27 @@ footer.ag-footer {
     text-transform: none;
 }
 
+/* Caja de error del modal de login (credenciales invalidas): el modal
+   permanece abierto y este aviso aparece sobre los campos */
+.ag-login-error {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(180, 35, 44, 0.08);
+    border-left: 3px solid #b4232c;
+    border-radius: var(--radius-md);
+    color: #8c1a22;
+    font-size: 0.88rem;
+    padding: 10px 14px;
+    margin: 0 0 14px;
+    text-align: left;
+    animation: ag-alerta-entra 0.3s var(--ag-ease) both;
+}
+
+    .ag-login-error[hidden] {
+        display: none;
+    }
+
     .ag-link:hover {
         color: var(--color-gold-700);
     }
@@ -1768,20 +1875,19 @@ footer.ag-footer {
         grid-template-columns: 1fr;
     }
 
-    .ag-servicio {
-        grid-template-columns: 56px 1fr;
-        grid-template-rows: auto auto auto;
-        row-gap: 8px;
-    }
-
-        .ag-servicio h3,
-        .ag-servicio p,
-        .ag-servicio-tarifa {
-            grid-column: 2;
-        }
 
     .ag-hero-media {
         aspect-ratio: 16 / 10;
+    }
+}
+
+/* Rango intermedio (tablet vertical): el nav no cabe en una linea y
+   sin esto desborda la pantalla (scroll horizontal). El colapso total
+   a columna llega en 640px. */
+@media (max-width: 880px) and (min-width: 641px) {
+    .ag-nav-inner {
+        flex-wrap: wrap;
+        row-gap: 6px;
     }
 }
 
@@ -1835,9 +1941,15 @@ footer.ag-footer {
     }
 
     .ag-btn,
-    .ag-servicio h3,
-    .ag-servicio {
+    .ag-banner-servicio h3,
+    .ag-banner-servicio,
+    .ag-banner-marca,
+    .ag-banner-servicio::before {
         transition: none;
+    }
+
+    .ag-banner-servicio:hover {
+        transform: none;
     }
 }
 
@@ -2028,28 +2140,8 @@ footer.ag-footer {
         pointer-events: none;
     }
 
-/* Entrada suave del contenido (solo transform/opacity) */
-@keyframes ag-aparecer {
-    from {
-        opacity: 0;
-        transform: translateY(14px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.ag-hero-grid > div,
-.ag-seccion-intro,
-.ag-servicio,
-.ag-testimonio,
-.ag-booking,
-.ag-sobre-grid,
-.ag-auth-card {
-    animation: ag-aparecer 0.6s ease both;
-}
+/* Entrada de contenido: movida a css/animaciones.css (reveal on scroll
+   con stagger), que reemplaza la animacion unica al cargar. */
 
 /* El scheduler y selects nativos siguen la paleta */
 .form-select {

@@ -1,0 +1,187 @@
+/* ============================================================
+   Aqua Skin & Glow Clinic — capa de animaciones suaves
+   Rama: animaciones
+
+   Reglas de la casa:
+   - Solo transform y opacity (nunca propiedades de layout).
+   - Una sola curva: var(--ag-ease), definida aqui.
+   - Duraciones 250-700 ms; un momento orquestado, no lluvia de efectos.
+   - El estado oculto SOLO existe con html.ag-js (lo agrega js/aqua.js):
+     sin JavaScript el contenido es siempre visible.
+   - Todo se anula bajo prefers-reduced-motion.
+   ============================================================ */
+
+:root {
+    --ag-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+    --ag-duracion: 0.5s;
+}
+
+/* ------------------------------------------------------------
+   1. Reveal on scroll (data-ag-reveal, manejado por js/aqua.js)
+   ------------------------------------------------------------ */
+
+html.ag-js [data-ag-reveal] {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+        opacity var(--ag-duracion) var(--ag-ease),
+        transform var(--ag-duracion) var(--ag-ease);
+}
+
+html.ag-js [data-ag-reveal].ag-revelado {
+    opacity: 1;
+    transform: none;
+}
+
+/* Escalon: cada hijo entra 60ms despues del anterior */
+html.ag-js [data-ag-reveal-escalon] > * {
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+        opacity 0.4s var(--ag-ease),
+        transform 0.4s var(--ag-ease);
+    transition-delay: calc(var(--ag-orden, 0) * 60ms);
+}
+
+html.ag-js [data-ag-reveal-escalon].ag-revelado > * {
+    opacity: 1;
+    transform: none;
+}
+
+/* ------------------------------------------------------------
+   2. Hero: unica secuencia de entrada al cargar la portada
+   ------------------------------------------------------------ */
+
+html.ag-js .ag-hero .ag-label-caps,
+html.ag-js .ag-hero h1,
+html.ag-js .ag-hero-lead,
+html.ag-js .ag-hero .ag-acciones {
+    opacity: 0;
+    transform: translateY(16px);
+    animation: ag-entrada-hero 0.7s var(--ag-ease) forwards;
+}
+
+html.ag-js .ag-hero h1 {
+    animation-delay: 0.08s;
+}
+
+html.ag-js .ag-hero-lead {
+    animation-delay: 0.16s;
+}
+
+html.ag-js .ag-hero .ag-acciones {
+    animation-delay: 0.26s;
+}
+
+@keyframes ag-entrada-hero {
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* Red de seguridad (js/aqua.js agrega la clase a los 1.6s): si la
+   animacion no termina en algun entorno (webview sin composicion),
+   el hero queda visible de todos modos. */
+html.ag-hero-listo .ag-hero .ag-label-caps,
+html.ag-hero-listo .ag-hero h1,
+html.ag-hero-listo .ag-hero-lead,
+html.ag-hero-listo .ag-hero .ag-acciones {
+    opacity: 1;
+    transform: none;
+    animation: none;
+}
+
+/* ------------------------------------------------------------
+   3. Modales, paneles desplegables y alertas Radzen
+   ------------------------------------------------------------ */
+
+.rz-dialog {
+    animation: ag-dialog-entra 0.32s var(--ag-ease) both;
+}
+
+@keyframes ag-dialog-entra {
+    from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.rz-dialog-wrapper,
+.rz-window-wrapper {
+    animation: ag-fade-entra 0.25s var(--ag-ease) both;
+}
+
+@keyframes ag-fade-entra {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.rz-dropdown-panel,
+.rz-datepicker-panel,
+.ag-staff-menu {
+    animation: ag-panel-entra 0.22s var(--ag-ease) both;
+}
+
+@keyframes ag-panel-entra {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.alert {
+    animation: ag-alerta-entra 0.35s var(--ag-ease) both;
+}
+
+@keyframes ag-alerta-entra {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* ------------------------------------------------------------
+   4. Accesibilidad: prefiere movimiento reducido -> todo quieto
+   ------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+    html.ag-js [data-ag-reveal],
+    html.ag-js [data-ag-reveal-escalon] > *,
+    html.ag-js .ag-hero .ag-label-caps,
+    html.ag-js .ag-hero h1,
+    html.ag-js .ag-hero-lead,
+    html.ag-js .ag-hero .ag-acciones,
+    .rz-dialog,
+    .rz-dialog-wrapper,
+    .rz-window-wrapper,
+    .rz-dropdown-panel,
+    .rz-datepicker-panel,
+    .ag-staff-menu,
+    .alert {
+        animation: none !important;
+        transition: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+}

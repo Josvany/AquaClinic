@@ -1,8 +1,15 @@
 <div class="ag-login-dialog">
     <span class="ag-saludo">Bienvenido de nuevo</span>
 
-    <form method="post" action="/auth/login">
+    <!-- El submit se intercepta con fetch (js/aqua.js -> agLoginModal):
+         si las credenciales fallan el modal NO se cierra, muestra el
+         mensaje de error y permite reintentar; si acierta, navega a la
+         URL que el servidor indica en la redireccion. -->
+    <form action="/auth/login" method="post" @ref="_form" @onsubmit="EnviarAsync" @onsubmit:preventDefault="true">
         <AntiforgeryToken />
+        <div class="ag-login-error" hidden>
+            <span class="ag-login-error-texto"></span>
+        </div>
         <div class="ag-field">
             <label for="dialogUserName">Correo</label>
             <input type="email" id="dialogUserName" name="email" required placeholder="tu@correo.com" />
@@ -20,11 +27,21 @@
 </div>
 
 @code {
+    private ElementReference _form;
+
     [Inject]
     private DialogService DialogService { get; set; } = default!;
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
+
+    [Inject]
+    private IJSRuntime JS { get; set; } = default!;
+
+    private async Task EnviarAsync()
+    {
+        await JS.InvokeVoidAsync("agLoginModal", _form);
+    }
 
     private void IrARegistro()
     {

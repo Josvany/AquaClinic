@@ -102,6 +102,18 @@ app.MapPost("/auth/login", async (HttpContext ctx, IHttpClientFactory httpClient
     var email = form["email"].ToString();
     var password = form["password"].ToString();
 
+    // El modal de login envia via fetch y espera JSON (LoginDialog.razor);
+    // la pagina /login usa el POST tradicional y espera redirecciones.
+    // El header Fetch-Metadata (sec-fetch-* marca a todos los fetch del
+    // mismo origen con "cors"... se usa X-Requested-With, estandar simple.
+    var esFetch = string.Equals(ctx.Request.Headers["X-Requested-With"].ToString(), "fetch", StringComparison.OrdinalIgnoreCase);
+
+    // Respuesta JSON para el modal: el cliente decide (mostrar error o navegar)
+    IResult RedirigirOJson(string url)
+    {
+        return esFetch ? Results.Json(new { redirect = url }) : Results.Redirect(url);
+    }
+
     using var client = httpClientFactory.CreateClient("ApiAuth");
     var response = await client.PostAsJsonAsync(
         "api/usuarios/login",
@@ -115,14 +127,14 @@ app.MapPost("/auth/login", async (HttpContext ctx, IHttpClientFactory httpClient
             System.Net.HttpStatusCode.TooManyRequests => "ratelimit",
             _ => "api"
         };
-        return Results.Redirect($"/login?error={error}");
+        return RedirigirOJson($"/login?error={error}");
     }
 
     var sesion = await response.Content.ReadFromJsonAsync<SesionJwt>();
 
     if (sesion is null || string.IsNullOrEmpty(sesion.AccessToken))
     {
-        return Results.Redirect("/login?error=api");
+        return RedirigirOJson("/login?error=api");
     }
 
     // La sesion (tokens) vive en el SERVIDOR; al navegador solo se le entrega
@@ -141,7 +153,7 @@ app.MapPost("/auth/login", async (HttpContext ctx, IHttpClientFactory httpClient
     var esPersonal = sesion.Usuario.Roles.Any(r =>
         r is "Administrador" or "Recepcion" or "Esteticista");
 
-    return Results.Redirect(esPersonal ? "/citaoverview" : "/");
+    return RedirigirOJson(esPersonal ? "/citaoverview" : "/");
 });
 
 app.MapPost("/auth/register", async (HttpContext ctx, IHttpClientFactory httpClientFactory) =>
