@@ -49,8 +49,13 @@
                     <div class="ag-reserva-sugerencias-botones">
                         @foreach (var sugerida in _sugerencias)
                         {
+                            var etiqueta = EtiquetaDiaSugerida(sugerida);
                             <button type="button" class="ag-reserva-sugerencia" @onclick="@(async () => await ReAnclarAsync(sugerida))">
                                 @sugerida.ToString("hh\\:mm tt")
+                                @if (etiqueta is not null)
+                                {
+                                    <span class="ag-reserva-sugerencia-dia">@etiqueta</span>
+                                }
                             </button>
                         }
                     </div>
@@ -264,20 +269,60 @@
     }
 
     /// <summary>
-    /// Proximas horas (maximo 4) donde la cita completa cabe, buscando en pasos
-    /// de 15 min desde la hora elegida y, si el dia se agota (o ya paso), en los
-    /// dias siguientes dentro del rango de ocupaciones conocidas. De hoy solo se
-    /// sugieren horas que aun no pasan; si hoy no alcanza (ej. quedan 15 min
-    /// antes del cierre), la sugerencia salta a la apertura del dia siguiente.
+    /// Horas donde la cita completa cabe, en pasos de 15 min. Si la hora elegida
+    /// cae en un dia futuro, ademas de las horas DESPUES de la seleccion se
+    /// sugieren las horas ANTERIORES del mismo dia (maximo 4 antes y 4 despues),
+    /// siempre y cuando haya espacio. De hoy solo se sugieren horas que aun no
+    /// pasan; si hoy no alcanza (ej. quedan 15 min antes del cierre), la
+    /// sugerencia salta a la apertura del dia siguiente.
     /// </summary>
     private List<DateTime> CalcularSugerencias(int duracionMinutos)
     {
-        var sugerencias = new List<DateTime>();
-        var limite = _fechaInicio.Date.AddDays(7);
         var ocupaciones = OcupacionesActuales;
         var ahora = AhoraClinica;
 
-        for (var hora = _fechaInicio; hora.Date < limite && sugerencias.Count < 4; hora = hora.AddMinutes(PasoMinutos))
+        // Sin solapamiento (la reserva suave propia se excluye por _fechaInicio:
+        // su bloque puede abarcar toda la sesion, asi que no se compara por rango)
+        bool Libre(DateTime hora, DateTime fin) =>
+            !ocupaciones.Any(o =>
+                !(o.Estado == AgendaCalendario.Reservando && o.Inicio == _fechaInicio) &&
+                o.Inicio < fin && o.Fin > hora);
+
+        var anteriores = new List<DateTime>();
+
+        // Dia futuro: horas ANTERIORES del mismo dia (de la apertura hasta justo
+        // antes de la elegida). En el dia de hoy no se sugieren horas pasadas,
+        // por eso este barrido es solo para fechas posteriores a hoy.
+        if (_fechaInicio.Date > ahora.Date)
+        {
+            for (var hora = _fechaInicio.AddMinutes(-PasoMinutos);
+                 hora.Date == _fechaInicio.Date && anteriores.Count < 4;
+                 hora = hora.AddMinutes(-PasoMinutos))
+            {
+                if (hora.DayOfWeek == DayOfWeek.Sunday || hora.TimeOfDay < AperturaDe(hora.DayOfWeek))
+                {
+                    break; // ya se llego a la apertura (o el dia esta cerrado)
+                }
+
+                var fin = hora.AddMinutes(duracionMinutos);
+                if (fin.Date != hora.Date || fin.TimeOfDay > CierreDe(hora.DayOfWeek))
+                {
+                    continue; // mas tarde no cabe; probando una hora antes si
+                }
+
+                if (Libre(hora, fin))
+                {
+                    anteriores.Add(hora);
+                }
+            }
+
+            anteriores.Reverse(); // de la mas temprana a la mas cercana a la elegida
+        }
+
+        var posteriores = new List<DateTime>();
+        var limite = _fechaInicio.Date.AddDays(7);
+
+        for (var hora = _fechaInicio; hora.Date < limite && posteriores.Count < 4; hora = hora.AddMinutes(PasoMinutos))
         {
             // Dia ya pasado: saltar directo a la apertura del dia siguiente
             if (hora.Date < ahora.Date)
@@ -310,17 +355,28 @@
                 continue;
             }
 
-            if (ocupaciones.Any(o =>
-                    !(o.Estado == AgendaCalendario.Reservando && o.Inicio == _fechaInicio) &&
-                    o.Inicio < fin && o.Fin > hora))
+            if (!Libre(hora, fin))
             {
                 continue;
             }
 
-            sugerencias.Add(hora);
+            posteriores.Add(hora);
         }
 
-        return sugerencias;
+        anteriores.AddRange(posteriores);
+        return anteriores;
+    }
+
+    /// <summary>Aviso junto a una hora sugerida cuando NO es del mismo dia que la
+    /// seleccionada: "dia siguiente" o los dias de diferencia. Null si es el
+    /// mismo dia (no se rotula nada).</summary>
+    private string? EtiquetaDiaSugerida(DateTime sugerida)
+    {
+        var dias = (sugerida.Date - _fechaInicio.Date).Days;
+
+        if (dias <= 0) return null;
+
+        return dias == 1 ? "día siguiente" : $"{dias} días después";
     }
 
     /// <summary>Horario de atencion del dia (espejo del seed de HorariosClinica).</summary>

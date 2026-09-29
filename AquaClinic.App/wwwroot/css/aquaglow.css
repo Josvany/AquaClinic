@@ -1026,6 +1026,15 @@ footer.ag-footer {
         transform: translateY(-1px);
     }
 
+/* Aviso de que la hora sugerida ya cae en otro dia (dia siguiente, etc.) */
+.ag-reserva-sugerencia-dia {
+    margin-left: 0.4rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+    opacity: 0.85;
+    letter-spacing: 0.01em;
+}
+
 .rz-slot.ag-slot-libre::after {
     content: attr(data-ag-tooltip);
     position: absolute;
