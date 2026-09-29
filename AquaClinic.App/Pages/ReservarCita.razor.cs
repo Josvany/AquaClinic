@@ -17,6 +17,9 @@ namespace AquaClinic.App.Pages
         private DateTime _fecha = DateTime.Today;
         private string? _errorCarga;
 
+        [Inject]
+        private SeleccionReservaEstado SeleccionReserva { get; set; } = default!;
+
         // Seleccion en curso (reserva suave propia)
         private DateTime _seleccionInicio;
         private bool _tieneSeleccion;
@@ -27,6 +30,25 @@ namespace AquaClinic.App.Pages
 
         protected override async Task OnInitializedAsync()
         {
+            // Servicio sugerido desde fuera (ej. banner del index: /reservar?servicio=<id>).
+            // El modal lo preseleccionara al abrirse; si el id no existe en el catalogo
+            // el modal simplemente lo ignora.
+            try
+            {
+                var query = new Uri(Navigation.Uri).Query;
+                var params_ = System.Web.HttpUtility.ParseQueryString(query);
+                var servicioRaw = params_["servicio"];
+
+                if (Guid.TryParse(servicioRaw, out var servicioId) && servicioId != Guid.Empty)
+                {
+                    SeleccionReserva.EstablecerServicioSugerido(servicioId);
+                }
+            }
+            catch
+            {
+                // Query malformado: seguir sin preseleccion
+            }
+
             try
             {
                 await Agenda.ConectarAsync();

@@ -30,7 +30,7 @@
             <div class="ag-field">
                 <label>Servicio</label>
                 <RadzenDropDown Value="@_servicioId" Change="@(async (object? s) => await AlElegirServicioAsync((Guid)s))"
-                                Name="servicio" AllowFiltering="true" TextProperty="Nombre" ValueProperty="ServicioId"
+                                Name="servicio" AllowFiltering="true" TextProperty="EtiquetaDropdown" ValueProperty="ServicioId"
                                 Data="@_servicios" TValue="System.Guid" Placeholder="Elige un servicio" Style="width:100%;" />
                 <RadzenRequiredValidator Component="servicio" Text="Elige un servicio" Popup="false" />
                 @if (_error is not null)
@@ -165,6 +165,17 @@
                 _servicioId = preseleccion.ServicioId;
                 _servicioNombre = preseleccion.Nombre;
             }
+            else if (SeleccionReserva.ServicioSugeridoId is Guid sugerido)
+            {
+                // Servicio sugerido por id (banner del index): resolver contra el
+                // catalogo; si el id no existe se ignora y el modal queda sin preseleccion
+                var servicioSugerido = _servicios.FirstOrDefault(s => s.ServicioId == sugerido);
+                if (servicioSugerido is not null)
+                {
+                    _servicioId = servicioSugerido.ServicioId;
+                    _servicioNombre = servicioSugerido.Nombre;
+                }
+            }
 
             // Si hay sesion, precargar datos y no pedir contacto
             var usuario = await Usuarios.GetUsuarioActualAsync();
@@ -180,6 +191,13 @@
             if (_servicioId != Guid.Empty)
             {
                 ValidarEncaje();
+
+                // Igual que al elegir a mano: la reserva suave abarca la sesion
+                // completa (inicio + duracion del servicio), no solo el slot de 15 min
+                if (DuracionElegida > 0 && _error is null)
+                {
+                    await ReservaActualizada.InvokeAsync((_fechaInicio, DuracionElegida));
+                }
             }
         }
         catch (Exception)

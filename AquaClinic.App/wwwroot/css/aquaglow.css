@@ -626,6 +626,22 @@ footer.ag-footer {
     gap: 22px;
 }
 
+/* Encabezado de grupo: la especialidad a la que pertenecen los banners
+   que siguen (catalogo real agrupado en la portada) */
+.ag-banner-especialidad {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--color-teal-700);
+    margin: 18px 0 0;
+    padding-bottom: 8px;
+    border-bottom: 1.5px solid rgba(197, 160, 90, 0.45);
+}
+
+    .ag-banner-especialidad:first-child {
+        margin-top: 0;
+    }
+
 .ag-banner-servicio {
     position: relative;
     display: block;

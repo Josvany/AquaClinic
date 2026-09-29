@@ -1,5 +1,6 @@
 using AquaClinic.Application.Contracts.Persistence;
 using AquaClinic.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace AquaClinic.Persistence.Repositories
 {
@@ -13,6 +14,14 @@ namespace AquaClinic.Persistence.Repositories
         {
             var existe = _dbContext.Servicios.Any(s => s.Nombre == nombre);
             return Task.FromResult(existe);
+        }
+
+        public async Task<IReadOnlyList<Servicio>> GetActivosConEspecialidadAsync()
+        {
+            return await _dbContext.Servicios
+                .Include(s => s.Especialidad)
+                .Where(s => s.Activo)
+                .ToListAsync();
         }
     }
 }

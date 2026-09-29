@@ -18,8 +18,13 @@ namespace AquaClinic.Application.Features.Servicios.Queries.GetServiciosList
 
         public async Task<List<ServicioListVm>> Handle(GetServiciosListQuery request, CancellationToken cancellationToken)
         {
-            var allServicios = (await _servicioRepository.ListAllAsync()).OrderBy(x => x.Nombre);
-            return _mapper.Map<List<ServicioListVm>>(allServicios);
+            // Solo servicios activos del catalogo, con el nombre de su especialidad
+            // (la portada agrupa los banner-cards por especialidad)
+            var servicios = (await _servicioRepository.GetActivosConEspecialidadAsync())
+                .OrderBy(s => s.Especialidad.Nombre).ThenBy(s => s.Precio)
+                .ToList();
+
+            return _mapper.Map<List<ServicioListVm>>(servicios);
         }
     }
 }

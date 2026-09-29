@@ -31,9 +31,11 @@ namespace AquaClinic.App.Services
                     .Select(s => new ServicioPublicoVm
                     {
                         ServicioId = s.ServicioId,
-                        Nombre = $"{s.Nombre} — {s.Precio.ToString("C", new System.Globalization.CultureInfo("en-CA"))} ({s.DuracionMinutos} min)",
+                        Nombre = s.Nombre,
+                        Descripcion = s.Descripcion,
                         Precio = s.Precio,
-                        DuracionMinutos = s.DuracionMinutos
+                        DuracionMinutos = s.DuracionMinutos,
+                        EspecialidadNombre = s.EspecialidadNombre
                     }) ?? [];
             }
             catch (HttpRequestException)
@@ -103,9 +105,11 @@ namespace AquaClinic.App.Services
         {
             public Guid ServicioId { get; set; }
             public string Nombre { get; set; } = string.Empty;
+            public string? Descripcion { get; set; }
             public decimal Precio { get; set; }
             public int DuracionMinutos { get; set; }
             public string? ImagenUrl { get; set; }
+            public string? EspecialidadNombre { get; set; }
         }
     }
 }

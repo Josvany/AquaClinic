@@ -1,4 +1,5 @@
 ﻿@page "/"
+@inject IServiciosPublicosDataService Reservas
 
 <PageTitle>Aqua Skin & Glow Clinic</PageTitle>
 
@@ -33,34 +34,33 @@
         </div>
 
         <div class="ag-servicios-lista" data-ag-reveal-escalon>
-            <a class="ag-banner-servicio" href="/reservar">
-                <span class="ag-banner-marca" aria-hidden="true">r&eacute;flex</span>
-                <h3>Tratamientos faciales</h3>
-                <p>Limpieza profunda e hidrataci&oacute;n intensiva precedidas de un diagn&oacute;stico digital
-                   por imagen: poros, hidrataci&oacute;n y luminosidad medidos antes de tocar tu rostro.</p>
-                <span class="ag-banner-tarifa">desde $120 CAD</span>
-            </a>
-            <a class="ag-banner-servicio" href="/reservar">
-                <span class="ag-banner-marca" aria-hidden="true">regenera</span>
-                <h3>Cuidado avanzado de la piel</h3>
-                <p>Microneedling con PDRN de salm&oacute;n y peelings que estimulan col&aacute;geno para una
-                   reparaci&oacute;n celular profunda, con protocolo m&eacute;dico supervisado.</p>
-                <span class="ag-banner-tarifa">desde $260 CAD</span>
-            </a>
-            <a class="ag-banner-servicio" href="/reservar">
-                <span class="ag-banner-marca" aria-hidden="true">toxina</span>
-                <h3>Inyectables</h3>
-                <p>Toxina botul&iacute;nica aplicada para suavizar l&iacute;neas de expresi&oacute;n conservando
-                   naturalidad. Valoraci&oacute;n previa sin costo y seguimiento a los 14 d&iacute;as incluido.</p>
-                <span class="ag-banner-tarifa">$7.99 CAD la unidad</span>
-            </a>
-            <a class="ag-banner-servicio" href="/reservar">
-                <span class="ag-banner-marca" aria-hidden="true">marco</span>
-                <h3>Cejas</h3>
-                <p>Laminado y tinte de cejas con dise&ntilde;o personalizado seg&uacute;n la forma de tu rostro,
-                   no seg&uacute;n la tendencia del momento.</p>
-                <span class="ag-banner-tarifa">desde $65 CAD</span>
-            </a>
+            @foreach (var grupo in _serviciosPorEspecialidad)
+            {
+                <h3 class="ag-banner-especialidad">@grupo.Key</h3>
+
+                @foreach (var servicio in grupo)
+                {
+                    <a class="ag-banner-servicio" href="/reservar?servicio=@servicio.ServicioId">
+                        <span class="ag-banner-marca" aria-hidden="true">@PalabraMarca(servicio.Nombre)</span>
+                        <h3>@servicio.Nombre</h3>
+                        @if (!string.IsNullOrWhiteSpace(servicio.Descripcion))
+                        {
+                            <p>@servicio.Descripcion</p>
+                        }
+                        <span class="ag-banner-tarifa">@servicio.Precio.ToString("C", CulturaCad) &middot; @servicio.DuracionMinutos min</span>
+                    </a>
+                }
+            }
+
+            @if (!_serviciosPorEspecialidad.Any())
+            {
+                <div class="ag-panel">
+                    <p style="margin:0; color:var(--ag-texto-mudo);">
+                        El cat&aacute;logo no est&aacute; disponible en este momento. Intenta de nuevo en unos minutos
+                        o escr&iacute;benos por WhatsApp para agendar.
+                    </p>
+                </div>
+            }
         </div>
     </div>
 </section>
@@ -109,3 +109,40 @@
         <p>O escr&iacute;benos por WhatsApp si prefieres hablar con una persona.</p>
     </div>
 </section>
+
+@code {
+    private System.Globalization.CultureInfo CulturaCad =
+        System.Globalization.CultureInfo.GetCultureInfo("en-CA");
+
+    /// <summary>Catalogo real de la API, agrupado por especialidad (vacio si la API no responde).</summary>
+    private List<IGrouping<string, ServicioPublicoVm>> _serviciosPorEspecialidad = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var servicios = await Reservas.ObtenerServiciosAsync();
+
+            _serviciosPorEspecialidad = servicios
+                .GroupBy(s => s.EspecialidadNombre ?? "Otros servicios")
+                .OrderBy(g => g.Key)
+                .ToList();
+        }
+        catch
+        {
+            // Sin API: la portada muestra el aviso de catalogo no disponible
+        }
+    }
+
+    /// <summary>
+    /// Palabra script de la marca de agua del banner. Derivada del nombre del
+    /// servicio (1-2 palabras); si no hay nombre queda la inicial.
+    /// </summary>
+    private static string PalabraMarca(string nombre)
+    {
+        if (string.IsNullOrWhiteSpace(nombre)) return "aqua";
+
+        var partes = nombre.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return partes.Length >= 2 ? $"{partes[0]} {partes[1]}".ToLowerInvariant() : partes[0].ToLowerInvariant();
+    }
+}

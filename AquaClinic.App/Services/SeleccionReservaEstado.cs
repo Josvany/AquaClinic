@@ -13,12 +13,27 @@ namespace AquaClinic.App.Services
         /// <summary>Servicio elegido antes de abrir el calendario (null = sin elegir).</summary>
         public ServicioPublicoVm? ServicioElegido { get; private set; }
 
+        /// <summary>
+        /// Servicio sugerido por id (ej. desde un banner del index via query string).
+        /// El modal lo resuelve contra el catalogo; si el id no existe se ignora.
+        /// </summary>
+        public Guid? ServicioSugeridoId { get; private set; }
+
         /// <summary>Nueva hora de inicio elegida desde las sugerencias del modal.</summary>
         public DateTime? NuevoInicioLocal { get; private set; }
 
         public void EstablecerServicio(ServicioPublicoVm? servicio)
         {
             ServicioElegido = servicio;
+            ServicioSugeridoId = null;
+            NuevoInicioLocal = null;
+        }
+
+        /// <summary>Sugiere un servicio solo por id (sin VM; el modal lo resuelve).</summary>
+        public void EstablecerServicioSugerido(Guid servicioId)
+        {
+            ServicioSugeridoId = servicioId;
+            ServicioElegido = null;
             NuevoInicioLocal = null;
         }
 

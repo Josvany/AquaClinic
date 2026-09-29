@@ -22,6 +22,11 @@ namespace AquaClinic.Persistence.Repositories
             return await _dbContext.Set<T>().ToListAsync();
         }
 
+        public IQueryable<T> ListAllQueryable()
+        {
+            return _dbContext.Set<T>().AsQueryable();
+        }
+
         public async Task<T> AddAsync(T entity)
         {
             await _dbContext.Set<T>().AddAsync(entity);

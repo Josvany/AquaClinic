@@ -16,7 +16,10 @@ namespace AquaClinic.Application.Profiles
     {
         public MappingProfile()
         {
-            CreateMap<Servicio, ServicioListVm>().ReverseMap();
+            CreateMap<Servicio, ServicioListVm>()
+                .ForMember(d => d.EspecialidadNombre, o => o.MapFrom(s => s.Especialidad.Nombre))
+                .ReverseMap()
+                .ForMember(s => s.Especialidad, o => o.Ignore());
             CreateMap<Servicio, ServicioDetailVm>().ReverseMap();
             CreateMap<Especialidad, EspecialidadDto>().ReverseMap();
             CreateMap<Especialidad, EspecialidadListVm>().ReverseMap();
