@@ -1309,6 +1309,14 @@ footer.ag-footer {
         margin-bottom: 0;
     }
 
+/* En movil el dialogo es angosto: dos columnas dejan inputs de ~130px
+   (un correo no cabe). Los campos del invitado se apilan en una sola. */
+@media (max-width: 640px) {
+    .ag-reserva-dos-columnas {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* El aviso de "no cabe" vive dentro del modal: margenes compactos */
 .ag-reserva-modal .ag-nueva-cita-error {
     margin-bottom: 10px;
@@ -1889,6 +1897,23 @@ footer.ag-footer {
     line-height: 1.4;
 }
 
+/* Movil: en la vista semanal las 7 columnas quedan de ~40-45px y el texto del
+   bloque con padding 8px + nowrap SE DESBORDA fuera de la columna y de la
+   tarjeta (overflow visible). En pantallas angostas el texto se compacta y se
+   recorta DENTRO del bloque: nunca sale de su celda ni genera scroll lateral. */
+@media (max-width: 640px) {
+    .rz-scheduler .rz-event,
+    .rz-scheduler .rz-event-content {
+        overflow: hidden;
+        padding-left: 2px;
+        padding-right: 2px;
+    }
+
+    .rz-scheduler .rz-event .rz-event-content {
+        font-size: 0.66rem;
+    }
+}
+
 .rz-scheduler .rz-today {
     background-color: rgba(197, 160, 90, 0.18);
     border-radius: 8px;
@@ -1951,6 +1976,11 @@ footer.ag-footer {
 
     .ag-logo {
         text-align: center;
+        /* En columna el nowrap del logo fijaba el ancho minimo del nav en ~333px
+           (texto 309px + margin-right 24px) y desbordaba viewports de 360px.
+           El margen lateral es del layout en linea: aqui sobra. */
+        white-space: normal;
+        margin-right: 0;
     }
 
     .ag-nav-links {
