@@ -43,6 +43,16 @@ namespace AquaClinic.App.Services
             NuevoInicioLocal = nuevoInicioLocal;
         }
 
+        /// <summary>
+        /// Elimina la preseleccion de servicio (se consumio la sugerencia del index
+        /// o la cita ya se creo): el proximo modal abre sin servicio por defecto.
+        /// </summary>
+        public void LimpiarPreseleccion()
+        {
+            ServicioElegido = null;
+            ServicioSugeridoId = null;
+        }
+
         public void Reiniciar()
         {
             NuevoInicioLocal = null;

@@ -28,11 +28,17 @@ namespace AquaClinic.App.Pages
         // puede dispararse dos veces antes de que el primer await complete).
         private bool _abriendoModal;
 
+        // True cuando el request llego con ?servicio=<id>: la URL se limpia en el
+        // navegador apenas el circuito es interactivo (OnAfterRenderAsync), no antes.
+        private bool _limpiarUrlDeSugerencia;
+
         protected override async Task OnInitializedAsync()
         {
             // Servicio sugerido desde fuera (ej. banner del index: /reservar?servicio=<id>).
-            // El modal lo preseleccionara al abrirse; si el id no existe en el catalogo
-            // el modal simplemente lo ignora.
+            // Es de UN SOLO USO: se consume aqui; la URL se limpia despues, cuando la
+            // pagina ya es interactiva (ver OnAfterRenderAsync), para que una recarga
+            // no vuelva a preseleccionar el mismo servicio. Si el id no existe en el
+            // catalogo el modal simplemente lo ignora.
             try
             {
                 var query = new Uri(Navigation.Uri).Query;
@@ -42,6 +48,7 @@ namespace AquaClinic.App.Pages
                 if (Guid.TryParse(servicioRaw, out var servicioId) && servicioId != Guid.Empty)
                 {
                     SeleccionReserva.EstablecerServicioSugerido(servicioId);
+                    _limpiarUrlDeSugerencia = true;
                 }
             }
             catch
@@ -62,6 +69,29 @@ namespace AquaClinic.App.Pages
             {
                 _errorCarga = "No se pudo conectar con la API. Verifica que esté corriendo.";
             }
+        }
+
+        protected override Task OnAfterRenderAsync(bool firstRender)
+        {
+            // Quitar ?servicio= de la barra del navegador solo cuando el circuito ya
+            // es interactivo: llamar NavigateTo durante el prerender estatico lanza
+            // NavigationException. replace: true no deja entrada en el historial y una
+            // recarga posterior ya no preselecciona nada. Al ser navegacion dentro del
+            // mismo circuito, el estado de SeleccionReserva (con la preseleccion del
+            // modal) se conserva para esta visita.
+            if (firstRender && _limpiarUrlDeSugerencia)
+            {
+                _limpiarUrlDeSugerencia = false;
+
+                var uri = new Uri(Navigation.Uri);
+                if (uri.Query.Contains("servicio=", StringComparison.OrdinalIgnoreCase))
+                {
+                    var limpia = uri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.Unescaped);
+                    Navigation.NavigateTo(limpia, replace: true);
+                }
+            }
+
+            return Task.CompletedTask;
         }
 
         private async Task CargarAgendaAsync()
@@ -349,6 +379,11 @@ namespace AquaClinic.App.Pages
 
             if (exito)
             {
+                // La cita ya se creo: la proxima reserva abre el modal SIN servicio
+                // preseleccionado (ni el sugerido del index ni el de la cita recien
+                // agendada); el usuario elige de nuevo desde cero.
+                SeleccionReserva.LimpiarPreseleccion();
+
                 // La cita pudo haberse re-anclado a otra hora (sugerencias del
                 // modal): se quita el bloque "Reservando" que coincide con la
                 // hora FINAL usada por el modal, no necesariamente el inicial.
