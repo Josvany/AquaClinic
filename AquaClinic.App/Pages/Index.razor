@@ -33,23 +33,26 @@
                tratamiento correcto, en el orden correcto.</p>
         </div>
 
-        <div class="ag-servicios-lista" data-ag-reveal-escalon>
+        <div class="ag-servicios-lista">
             @foreach (var grupo in _serviciosPorEspecialidad)
             {
-                <h3 class="ag-banner-especialidad">@grupo.Key</h3>
-
-                @foreach (var servicio in grupo)
-                {
-                    <a class="ag-banner-servicio" href="/reservar?servicio=@servicio.ServicioId">
-                        <span class="ag-banner-marca" aria-hidden="true">@PalabraMarca(servicio.Nombre)</span>
-                        <h3>@servicio.Nombre</h3>
-                        @if (!string.IsNullOrWhiteSpace(servicio.Descripcion))
+                <div class="ag-banner-grupo" data-ag-reveal-escalon>
+                    <h3 class="ag-banner-especialidad">@grupo.Key</h3>
+                    <div class="ag-banner-grid">
+                        @foreach (var servicio in grupo)
                         {
-                            <p>@servicio.Descripcion</p>
+                            <a class="ag-banner-servicio" href="/reservar?servicio=@servicio.ServicioId">
+                                <span class="ag-banner-marca" aria-hidden="true">@PalabraMarca(servicio.Nombre)</span>
+                                <h3>@servicio.Nombre</h3>
+                                @if (!string.IsNullOrWhiteSpace(servicio.Descripcion))
+                                {
+                                    <p>@servicio.Descripcion</p>
+                                }
+                                <span class="ag-banner-tarifa">@servicio.Precio.ToString("C", CulturaCad) &middot; @servicio.DuracionMinutos min</span>
+                            </a>
                         }
-                        <span class="ag-banner-tarifa">@servicio.Precio.ToString("C", CulturaCad) &middot; @servicio.DuracionMinutos min</span>
-                    </a>
-                }
+                    </div>
+                </div>
             }
 
             @if (!_serviciosPorEspecialidad.Any())

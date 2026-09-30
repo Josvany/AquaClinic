@@ -29,6 +29,8 @@ bld/
 /graphify-out
 /.playwright-cli
 /.freebuff
+/brag-output
+/docs
 
 # Rider
 .idea/
