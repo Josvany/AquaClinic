@@ -6,8 +6,17 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using Radzen;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Cultura fija de la aplicacion: los formatos de fecha/numero no dependen del
+// sistema operativo del servidor (pruebas es-NI vs produccion en Canada).
+// es-NI mantiene los nombres de dia/mes en espanol que ya usa la UI;
+// al publicar para clientes angloparlantes, cambiar aqui a "en-CA".
+var culturaClinica = new CultureInfo("es-NI");
+CultureInfo.DefaultThreadCurrentCulture = culturaClinica;
+CultureInfo.DefaultThreadCurrentUICulture = culturaClinica;
 
 // Blazor Web App con render interactivo Server por pagina
 builder.Services.AddRazorComponents()

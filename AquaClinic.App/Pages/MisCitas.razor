@@ -1,4 +1,5 @@
 @page "/miscitas"
+@attribute [Authorize]
 @rendermode InteractiveServer
 @using AquaClinic.App.ViewModels
 @using Radzen.Blazor
@@ -55,7 +56,7 @@
                                     @cita.Fecha.ToString("dddd d 'de' MMMM 'de' yyyy, h:mm tt")
                                     @if (cita.Precio > 0)
                                     {
-                                        <span class="ag-miscitas-precio">&nbsp;&middot;&nbsp;@cita.Precio.ToString("C")</span>
+                                        <span class="ag-miscitas-precio">&nbsp;&middot;&nbsp;@cita.Precio.ToString("C", FormatoClinica.CulturaDinero)</span>
                                     }
                                 </p>
                                 @if (!string.IsNullOrWhiteSpace(cita.Notas))

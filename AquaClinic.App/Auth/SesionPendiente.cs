@@ -56,9 +56,23 @@ namespace AquaClinic.App.Auth
             return _sesiones.TryGetValue(ticket, out var sesion) ? sesion : null;
         }
 
-        public static SesionJwt? TomarUltima()
+        /// <summary>Reemplaza los tokens de una sesion existente (rotacion del refresh).</summary>
+        public static void Actualizar(string? ticket, string accessToken, string refreshToken, DateTime expiraUtc)
         {
-            return _sesiones.Values.OrderByDescending(s => s.ExpiraUtc).FirstOrDefault();
+            if (string.IsNullOrEmpty(ticket))
+            {
+                return;
+            }
+
+            if (_sesiones.TryGetValue(ticket, out var sesion))
+            {
+                _sesiones[ticket] = sesion with
+                {
+                    AccessToken = accessToken,
+                    RefreshToken = refreshToken,
+                    ExpiraUtc = expiraUtc
+                };
+            }
         }
 
         public static void Eliminar(string? ticket)

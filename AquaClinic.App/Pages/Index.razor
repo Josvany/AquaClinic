@@ -42,13 +42,13 @@
                         @foreach (var servicio in grupo)
                         {
                             <a class="ag-banner-servicio" href="/reservar?servicio=@servicio.ServicioId">
-                                <span class="ag-banner-marca" aria-hidden="true">@PalabraMarca(servicio.Nombre)</span>
+                                @* <span class="ag-banner-marca" aria-hidden="true">@PalabraMarca(servicio.Nombre)</span> *@
                                 <h3>@servicio.Nombre</h3>
                                 @if (!string.IsNullOrWhiteSpace(servicio.Descripcion))
                                 {
                                     <p>@servicio.Descripcion</p>
                                 }
-                                <span class="ag-banner-tarifa">@servicio.Precio.ToString("C", CulturaCad) &middot; @servicio.DuracionMinutos min</span>
+                                <span class="ag-banner-tarifa">@servicio.Precio.ToString("C", FormatoClinica.CulturaDinero) &middot; @servicio.DuracionMinutos min</span>
                             </a>
                         }
                     </div>
@@ -114,9 +114,6 @@
 </section>
 
 @code {
-    private System.Globalization.CultureInfo CulturaCad =
-        System.Globalization.CultureInfo.GetCultureInfo("en-CA");
-
     /// <summary>Catalogo real de la API, agrupado por especialidad (vacio si la API no responde).</summary>
     private List<IGrouping<string, ServicioPublicoVm>> _serviciosPorEspecialidad = [];
 

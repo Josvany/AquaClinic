@@ -20,7 +20,7 @@ namespace AquaClinic.App.ViewModels
         public string? EspecialidadNombre { get; set; }
 
         /// <summary>Etiqueta compuesta para el dropdown del modal: "Nombre — $XX (Y min)".</summary>
-        public string EtiquetaDropdown => $"{Nombre} — {Precio.ToString("C", new System.Globalization.CultureInfo("en-CA"))} ({DuracionMinutos} min)";
+        public string EtiquetaDropdown => $"{Nombre} — {Precio.ToString("C", FormatoClinica.CulturaDinero)} ({DuracionMinutos} min)";
     }
 
     /// <summary>Datos que el modal envia para crear la cita.</summary>

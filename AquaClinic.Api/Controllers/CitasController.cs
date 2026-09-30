@@ -1,5 +1,6 @@
 using AquaClinic.Api.Authorization;
 using AquaClinic.Api.Utility;
+using AquaClinic.Identity;
 using AquaClinic.Application.Features.Citas.Commands.CreateCita;
 using AquaClinic.Application.Features.Citas.Queries.GetAgendaSemana;
 using AquaClinic.Application.Features.Citas.Queries.GetCitaById;
@@ -9,6 +10,7 @@ using AquaClinic.Application.Features.Citas.Queries.GetCitasPaginadas;
 using AquaClinic.Application.Features.Citas.Queries.GetMisCitas;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace AquaClinic.Api.Controllers
 {
@@ -61,6 +63,20 @@ namespace AquaClinic.Api.Controllers
         [ProducesDefaultResponseType]
         public async Task<ActionResult<Guid>> CreateCita([FromBody] CreateCitaCommand command)
         {
+            // Control contra manipulacion de parametros: el identity del token manda
+            // sobre el UsuarioId del body. Un cliente autenticado solo puede crear
+            // citas para SI mismo (se ignora el UsuarioId recibido) y un visitante
+            // anonimo queda siempre como invitado. El personal (flujo del back office)
+            // si puede indicar a que cliente se le agenda.
+            var autenticado = User.Identity?.IsAuthenticated == true;
+            var esPersonal = autenticado && User.Claims.Any(c =>
+                c.Type == ClaimTypes.Role &&
+                c.Value is RolesClinica.Administrador or RolesClinica.Recepcion or RolesClinica.Esteticista);
+
+            command.UsuarioId = esPersonal
+                ? command.UsuarioId
+                : autenticado ? User.FindFirstValue(ClaimTypes.NameIdentifier) : null;
+
             try
             {
                 var citaId = await _mediator.Send(command);

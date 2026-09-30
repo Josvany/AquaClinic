@@ -1,5 +1,6 @@
 ﻿@page "/citadetails"
 @page "/citadetails/{citaid}"
+@attribute [Authorize]
 @rendermode InteractiveServer
 
 <h1 class="page-title">Detalles de @CitaDetailViewModel.Nombre</h1>
