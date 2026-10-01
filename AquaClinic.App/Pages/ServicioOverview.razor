@@ -1,0 +1,151 @@
+@page "/serviciooverview"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inject IServicioDataService ServicioDataService
+@inject DialogService Dialogs
+@inject NotificadorUi Notificador
+
+<PageTitle>Servicios — Administración</PageTitle>
+
+<section class="ag-citas-seccion">
+    <div class="ag-contenedor">
+        <div class="ag-citas-encabezado">
+            <div>
+                <span class="ag-label-caps">Catálogo</span>
+                <h1 class="page-title">Servicios</h1>
+                <p class="ag-citas-subtitulo">
+                    Los servicios activos aparecen en la portada y pueden agendarse.
+                    Eliminar un servicio solo lo desactiva: sale del catálogo y ya no
+                    se puede agendar, pero su historial de citas se conserva.
+                </p>
+            </div>
+            <div class="ag-citas-acciones">
+                <RadzenButton Text="Nuevo servicio" Icon="add_circle_outline"
+                              ButtonStyle="ButtonStyle.Primary" Click="@AbrirCrearAsync" />
+            </div>
+        </div>
+
+        @if (_errorCarga is not null)
+        {
+            <div class="alert alert-warning">@_errorCarga</div>
+        }
+        else if (_cargando)
+        {
+            <p><em>Cargando...</em></p>
+        }
+        else
+        {
+            <div class="ag-panel">
+                <RadzenDataGrid TItem="ServicioViewModel" Data="@_servicios"
+                                AllowPaging="true" PageSize="10" PagerPageSizeOptions="@(false)"
+                                AllowSorting="true" Width="100%">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="ServicioViewModel" Title="Servicio" Sortable="false">
+                            <Template Context="servicio">
+                                <strong>@servicio.Nombre</strong>
+                                @if (!string.IsNullOrWhiteSpace(servicio.Descripcion))
+                                {
+                                    <p class="ag-servicios-descripcion">@servicio.Descripcion</p>
+                                }
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="ServicioViewModel" Title="Especialidad">
+                            <Template Context="servicio">@servicio.EspecialidadNombre</Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="ServicioViewModel" Title="Duración" Width="110px">
+                            <Template Context="servicio">@servicio.DuracionMinutos min</Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="ServicioViewModel" Title="Precio" Width="120px">
+                            <Template Context="servicio">
+                                @servicio.Precio.ToString("C", FormatoClinica.CulturaDinero)
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="ServicioViewModel" Title="" Width="130px" Sortable="false">
+                            <Template Context="servicio">
+                                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small"
+                                              Click="@(() => AbrirEditarAsync(servicio))" />
+                                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small"
+                                              Click="@(() => ConfirmarEliminarAsync(servicio))" />
+                            </Template>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    private List<ServicioViewModel> _servicios = [];
+    private bool _cargando = true;
+    private string? _errorCarga;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarAsync();
+    }
+
+    private async Task CargarAsync()
+    {
+        _cargando = true;
+
+        try
+        {
+            _servicios = await ServicioDataService.ObtenerTodosAsync();
+            _errorCarga = null;
+        }
+        catch (HttpRequestException)
+        {
+            _errorCarga = "No se pudo conectar con la API. Verifica que esté corriendo.";
+        }
+        finally
+        {
+            _cargando = false;
+        }
+    }
+
+    private async Task AbrirCrearAsync()
+    {
+        await Dialogs.OpenAsync<ServicioFormDialog>("Nuevo servicio",
+            new Dictionary<string, object> { { "OnGuardado", EventCallback.Factory.Create(this, CargarAsync) } },
+            new DialogOptions { Width = "640px", ShowClose = true, CloseDialogOnEsc = true, CloseDialogOnOverlayClick = false, Draggable = false, CssClass = "ag-dialog" });
+    }
+
+    private async Task AbrirEditarAsync(ServicioViewModel servicio)
+    {
+        await Dialogs.OpenAsync<ServicioFormDialog>("Editar servicio",
+            new Dictionary<string, object>
+            {
+                { "ServicioId", servicio.ServicioId },
+                { "OnGuardado", EventCallback.Factory.Create(this, CargarAsync) }
+            },
+            new DialogOptions { Width = "640px", ShowClose = true, CloseDialogOnEsc = true, CloseDialogOnOverlayClick = false, Draggable = false, CssClass = "ag-dialog" });
+    }
+
+    private async Task ConfirmarEliminarAsync(ServicioViewModel servicio)
+    {
+        var confirmado = await Dialogs.Confirm(
+            $"¿Desactivar el servicio \"{servicio.Nombre}\"? Saldrá del catálogo y ya no se podrá agendar.",
+            "Eliminar servicio",
+            new ConfirmOptions { OkButtonText = "Desactivar", CancelButtonText = "Cancelar" }) == true;
+
+        if (!confirmado)
+        {
+            return;
+        }
+
+        var respuesta = await ServicioDataService.EliminarAsync(servicio.ServicioId);
+
+        if (respuesta.Success)
+        {
+            Notificador.Exito($"Servicio \"{servicio.Nombre}\" desactivado.");
+            await CargarAsync();
+        }
+        else
+        {
+            var detalle = respuesta.Message
+                + (string.IsNullOrEmpty(respuesta.ValidationErrors) ? "" : Environment.NewLine + respuesta.ValidationErrors);
+            Notificador.Error(detalle, "No se pudo desactivar");
+        }
+    }
+}

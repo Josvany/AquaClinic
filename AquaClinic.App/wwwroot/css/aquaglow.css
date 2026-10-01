@@ -1961,37 +1961,100 @@ footer.ag-footer {
 }
 
 @media (max-width: 640px) {
-    .ag-nav-inner {
-        flex-direction: column;
-        align-items: stretch;
-        padding: 12px 16px;
-    }
-
-    /* main.css le pone padding 17px 37px a todo <header>; aqui lo neutralizamos
-       en movil porque empuja el nav fuera de la pantalla (scroll horizontal) */
+    /* El header apilado ocupa ~150px: si fuera sticky se comeria la mitad de
+       la pantalla del calendario. En movil el nav NO es sticky. */
     .ag-nav {
+        position: static;
         padding: 0;
     }
 
-
-    .ag-logo {
+    .ag-nav-inner {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 18px 20px 16px;
+        gap: 0;
         text-align: center;
-        /* En columna el nowrap del logo fijaba el ancho minimo del nav en ~333px
-           (texto 309px + margin-right 24px) y desbordaba viewports de 360px.
-           El margen lateral es del layout en linea: aqui sobra. */
+    }
+
+    /* ---- Marca: AQUA en serif grande + "Skin & Glow Clinic" en caps bajo
+       el nombre. La marca es lo mas estable de la pagina: casi no cambia. */
+    .ag-logo {
+        font-size: 1.9rem;
+        line-height: 1.05;
         white-space: normal;
         margin-right: 0;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
     }
 
-    .ag-nav-links {
-        justify-content: center;
-        gap: 16px;
-    }
-
-        .ag-nav-links a.ag-nav-cta {
-            order: -1;
+        .ag-logo span {
+            font-family: var(--font-sans);
+            font-size: 0.6rem;
+            letter-spacing: 0.3em;
+            color: var(--color-teal-700);
+            text-transform: uppercase;
+            font-weight: 600;
         }
 
+        /* La filigrana dorada pasa de regla de 64px a 48px para acompañar */
+        .ag-logo span::after {
+            width: 48px;
+            margin-top: 8px;
+            margin-inline: auto;
+        }
+
+    /* ---- Enlaces: fila unica y silenciosa. La jerarquia del encabezado es
+       marca -> navegacion -> accion; los enlaces no compiten con el CTA. */
+    .ag-nav-links {
+        justify-content: center;
+        gap: 4px 22px;
+        margin-top: 14px;
+    }
+
+        .ag-nav-links a {
+            font-size: 0.72rem;
+            padding: 8px 2px;
+        }
+
+        /* El CTA ocupa su propia fila a ancho completo: es la accion
+           principal de la clinica y no compite dentro de la fila de enlaces. */
+        .ag-nav-links li.ag-nav-cta-item {
+            flex-basis: 100%;
+            display: block;
+        }
+
+            .ag-nav-links li.ag-nav-cta-item a.ag-nav-cta {
+                display: block;
+                text-align: center;
+                padding: 13px 24px;
+                margin-top: 10px;
+                font-size: 0.8rem;
+            }
+
+    /* ---- Login: baja de pildora con borde que grita a enlace subrayado.
+       No compite con el CTA ni ocupa una fila llamativa. */
+    .ag-nav-login {
+        border: none;
+        background: transparent;
+        padding: 12px 4px 2px;
+        margin-top: 2px;
+        text-transform: none;
+        letter-spacing: 0.04em;
+        font-size: 0.82rem;
+        text-decoration: underline;
+        text-underline-offset: 4px;
+        text-decoration-color: var(--color-gold-500);
+        text-decoration-thickness: 1px;
+    }
+
+        .ag-nav-login:hover {
+            background: transparent;
+        }
+
+    /* ---- Usuario autenticado: saludo + menu centrados, sin fila propia. */
     .ag-nav-user,
     .ag-nav-login {
         justify-self: center;
@@ -2000,8 +2063,14 @@ footer.ag-footer {
 
     .ag-nav-user {
         flex-direction: column;
-        gap: 8px;
+        gap: 6px;
         text-align: center;
+        margin-top: 10px;
+    }
+
+    .ag-saludo-item {
+        justify-content: center;
+        white-space: normal;
     }
 
     .rz-datepicker input {
@@ -3014,5 +3083,55 @@ button.ag-tipo-cliente-opcion {
 @media (max-width: 576px) {
     .ag-miscitas-item {
         flex-wrap: wrap;
+    }
+}
+
+/* ============================================================
+   CRUD de servicios (administracion del catalogo)
+   ============================================================ */
+
+.ag-servicios-descripcion {
+    margin: 2px 0 0;
+    font-size: 0.82rem;
+    color: var(--ag-texto-mudo);
+    max-width: 52ch;
+}
+
+/* Los spinners de RadzenNumeric (flechas subir/bajar) se dibujan como dos
+   pilulas montadas sobre el input y no aportan: se ocultan. El valor se
+   escribe directo y los limites Min/Max siguen validando. */
+.rz-numeric .rz-numeric-buttons,
+.rz-numeric .rz-numeric-button {
+    display: none !important;
+}
+
+.rz-numeric .rz-numeric-input {
+    width: 100%;
+}
+
+.ag-badge-activo,
+.ag-badge-inactivo {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+}
+
+.ag-badge-activo {
+    background: rgba(42, 107, 102, 0.12);
+    color: var(--color-teal-700);
+}
+
+.ag-badge-inactivo {
+    background: rgba(180, 35, 44, 0.1);
+    color: #b4232c;
+}
+
+/* Movil: acciones de la tabla apiladas y sin apretar la fila */
+@media (max-width: 640px) {
+    .ag-servicios-descripcion {
+        max-width: 100%;
     }
 }

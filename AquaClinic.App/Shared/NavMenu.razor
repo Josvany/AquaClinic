@@ -7,12 +7,12 @@
             <li><NavLink href="/acerca">Acerca de</NavLink></li>
             <AuthorizeView>
                 <NotAuthorized>
-                    <li><NavLink href="/reservar" class="ag-nav-cta">Reservar cita</NavLink></li>
+                    <li class="ag-nav-cta-item"><NavLink href="/reservar" class="ag-nav-cta">Reservar cita</NavLink></li>
                 </NotAuthorized>
                 <Authorized>
                     @if (!context.User.IsInRole("Administrador") && !context.User.IsInRole("Recepcion") && !context.User.IsInRole("Esteticista"))
                     {
-                        <li><NavLink href="/reservar" class="ag-nav-cta">Reservar cita</NavLink></li>
+                        <li class="ag-nav-cta-item"><NavLink href="/reservar" class="ag-nav-cta">Reservar cita</NavLink></li>
                     }
                 </Authorized>
             </AuthorizeView>
@@ -29,7 +29,7 @@
                                 </summary>
                                 <div class="ag-staff-menu">
                                     <NavLink href="/especialidadoverview"><i class="fa-solid fa-spa" aria-hidden="true"></i>Especialidades</NavLink>
-                                    <NavLink href="/nuevaespecialidad"><i class="fa-solid fa-plus" aria-hidden="true"></i>Nueva especialidad</NavLink>
+                                    <NavLink href="/serviciooverview"><i class="fa-solid fa-spa" aria-hidden="true"></i>Servicios</NavLink>
                                     <NavLink href="/perfil"><i class="fa-regular fa-id-card" aria-hidden="true"></i>Mi perfil</NavLink>
                                     <form action="logout" method="post">
                                         <AntiforgeryToken />

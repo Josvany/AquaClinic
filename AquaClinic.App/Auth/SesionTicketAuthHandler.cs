@@ -59,6 +59,17 @@ namespace AquaClinic.App.Auth
             }
         }
 
+        /// <summary>
+        /// Sin sesion el [Authorize] desafia este esquema: llevar al usuario a
+        /// /login en vez del 401 vacio (que dejaba la pagina en blanco; el
+        /// esquema no tiene LoginPath porque no emite cookies de sesion).
+        /// </summary>
+        protected override Task HandleChallengeAsync(AuthenticationProperties properties)
+        {
+            Response.Redirect("/login");
+            return Task.CompletedTask;
+        }
+
         private static bool TokenVencido(string accessToken)
         {
             try

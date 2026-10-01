@@ -58,6 +58,7 @@ builder.Services.AddScoped<IClient>(sp => new Client(sp.GetRequiredService<HttpC
 builder.Services.AddScoped<IUsuarioDataService, UsuarioDataService>();
 builder.Services.AddScoped<ICitaDataService, CitaDataService>();
 builder.Services.AddScoped<IEspecialidadDataService, EspecialidadDataService>();
+builder.Services.AddScoped<IServicioDataService, ServicioDataService>();
 
 // Notificaciones globales de la UI (toasts Radzen)
 builder.Services.AddScoped<NotificadorUi>();
