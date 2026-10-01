@@ -17,7 +17,6 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using System.Security.Claims;
 
 namespace AquaClinic.Api
 {
@@ -201,8 +200,8 @@ namespace AquaClinic.Api
                 {
                     UserName = email,
                     Email = email,
-                    Nombre = "Walner",
-                    Apellidos = "Solano"
+                    Nombre = "Aqua",
+                    Apellidos = "Aqua"
                 };
 
                 await userManager.CreateAsync(admin, password);

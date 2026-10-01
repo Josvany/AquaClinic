@@ -63,12 +63,91 @@
                 </Authorized>
             </AuthorizeView>
         </ul>
-        
+
         <div class="ag-nav-auth">
             <NavAuth @rendermode="InteractiveServer" />
         </div>
+
+        <button type="button"
+                class="ag-menu-boton"
+                aria-label="Abrir men&uacute;"
+                aria-expanded="false"
+                aria-controls="ag-menu-movil"
+                data-ag-menu-abrir>
+            <i class="fa-solid fa-bars" aria-hidden="true"></i>
+        </button>
     </nav>
 </header>
+
+<div id="ag-menu-movil" class="ag-menu-movil" hidden>
+    <div class="ag-menu-fondo" data-ag-menu-cerrar></div>
+    <aside class="ag-menu-panel" role="dialog" aria-modal="true" aria-label="Men&uacute; de navegaci&oacute;n">
+        <div class="ag-menu-panel-superior">
+            <span class="ag-menu-marca">Aqua <span>Skin & Glow Clinic</span></span>
+            <button type="button"
+                    class="ag-menu-cerrar"
+                    aria-label="Cerrar men&uacute;"
+                    data-ag-menu-cerrar>
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+        </div>
+
+        <nav class="ag-menu-panel-nav">
+            <ul class="ag-menu-links">
+                <li><NavLink href="/" Match="NavLinkMatch.All">Inicio</NavLink></li>
+                <li><NavLink href="/acerca">Acerca de</NavLink></li>
+                <AuthorizeView>
+                    <NotAuthorized>
+                        <li><NavLink href="/reservar" class="ag-nav-cta">Reservar cita</NavLink></li>
+                    </NotAuthorized>
+                    <Authorized>
+                        @if (!context.User.IsInRole("Administrador") && !context.User.IsInRole("Recepcion") && !context.User.IsInRole("Esteticista"))
+                        {
+                            <li><NavLink href="/reservar" class="ag-nav-cta">Reservar cita</NavLink></li>
+                        }
+                        else
+                        {
+                            <li><NavLink href="/citaoverview">Citas</NavLink></li>
+                        }
+
+                        @if (context.User.IsInRole("Administrador"))
+                        {
+                            <li class="ag-menu-seccion">Administraci&oacute;n</li>
+                            <li><NavLink href="/especialidadoverview"><i class="fa-solid fa-spa" aria-hidden="true"></i>Especialidades</NavLink></li>
+                            <li><NavLink href="/serviciooverview"><i class="fa-solid fa-spa" aria-hidden="true"></i>Servicios</NavLink></li>
+                        }
+                        else if (context.User.IsInRole("Recepcion") || context.User.IsInRole("Esteticista"))
+                        {
+                            <li class="ag-menu-seccion">Gesti&oacute;n</li>
+                            <li><NavLink href="/especialidadoverview"><i class="fa-solid fa-spa" aria-hidden="true"></i>Especialidades</NavLink></li>
+                            <li><NavLink href="/serviciooverview"><i class="fa-solid fa-spa" aria-hidden="true"></i>Servicios</NavLink></li>
+                        }
+
+                        <li class="ag-menu-seccion">Mi cuenta</li>
+                        <li><NavLink href="/perfil"><i class="fa-regular fa-id-card" aria-hidden="true"></i>Mi perfil</NavLink></li>
+                        <li>
+                            <form action="logout" method="post" class="ag-menu-form-logout">
+                                <AntiforgeryToken />
+                                <button type="submit" class="ag-staff-logout"><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>Cerrar sesion</button>
+                            </form>
+                        </li>
+                    </Authorized>
+                </AuthorizeView>
+            </ul>
+
+            <div class="ag-menu-auth">
+                <NavAuth @rendermode="InteractiveServer" />
+            </div>
+            <AuthorizeView>
+                <Authorized>
+                    <p class="ag-menu-saludo">
+                        <NavSaludo @rendermode="InteractiveServer" />
+                    </p>
+                </Authorized>
+            </AuthorizeView>
+        </nav>
+    </aside>
+</div>
 
 @code {
     [Inject]

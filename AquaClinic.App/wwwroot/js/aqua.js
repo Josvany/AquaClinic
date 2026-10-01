@@ -83,14 +83,74 @@
         });
     }
 
+    // ------------------------------------------------------------
+    // Menu movil: cajon lateral izquierdo. Es SSR estatico (sin circuito
+    // Blazor), asi que el estado vive en clases/atributos del DOM.
+    // ------------------------------------------------------------
+    function abrirMenu(contenedor, boton) {
+        contenedor.hidden = false;
+        boton.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function cerrarMenu(contenedor, boton) {
+        contenedor.hidden = true;
+        if (boton) boton.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+    }
+
+    // Referencia al menu actual; la delegacion en document sobrevive a los
+    // reemplazos de DOM de la navegacion enhanced sin re-suscribir listeners.
+    var menuActual = null;
+
+    function prepararMenuMovil() {
+        menuActual = document.getElementById('ag-menu-movil');
+    }
+
+    function actualizarMenu(cerrar) {
+        var contenedor = menuActual || document.getElementById('ag-menu-movil');
+        if (!contenedor) return;
+        var boton = document.querySelector('[data-ag-menu-abrir]');
+        if (cerrar) {
+            cerrarMenu(contenedor, boton);
+        } else {
+            abrirMenu(contenedor, boton);
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         iniciarContadores();
         prepararRevelado();
+        prepararMenuMovil();
     });
     // La navegacion "enhanced" de Blazor reemplaza el DOM: re-observar
     document.addEventListener('enhancedload', function () {
         iniciarContadores();
         prepararRevelado();
+        prepararMenuMovil();
+    });
+
+    // Delegacion: un solo listener para abrir/cerrar, Escape y navegacion
+    document.addEventListener('click', function (e) {
+        if (e.target.closest('[data-ag-menu-abrir]')) {
+            actualizarMenu(false);
+        } else if (e.target.closest('[data-ag-menu-cerrar]')) {
+            actualizarMenu(true);
+        } else if (menuActual && !menuActual.hidden && e.target.closest('.ag-menu-panel a, .ag-menu-panel button')) {
+            actualizarMenu(true);
+        }
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') actualizarMenu(true);
+    });
+
+    // Cerrar al navegar (Blazor enhanced) o al volver al historial
+    document.addEventListener('enhancedload', function () {
+        actualizarMenu(true);
+    });
+    window.addEventListener('pageshow', function (e) {
+        if (e.persisted) actualizarMenu(true);
     });
 
     // ------------------------------------------------

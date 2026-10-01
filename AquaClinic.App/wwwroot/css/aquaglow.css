@@ -1961,116 +1961,57 @@ footer.ag-footer {
 }
 
 @media (max-width: 640px) {
-    /* El header apilado ocupa ~150px: si fuera sticky se comeria la mitad de
-       la pantalla del calendario. En movil el nav NO es sticky. */
+    /* Header compacto: marca a la izquierda, hamburguesa a la derecha.
+       Todos los enlaces y accesos viven en el cajon lateral (ver "Menu movil"). */
     .ag-nav {
         position: static;
         padding: 0;
     }
 
     .ag-nav-inner {
-        flex-direction: column;
-        align-items: stretch;
-        padding: 18px 20px 16px;
-        gap: 0;
-        text-align: center;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 20px;
+        gap: 12px;
     }
 
-    /* ---- Marca: AQUA en serif grande + "Skin & Glow Clinic" en caps bajo
-       el nombre. La marca es lo mas estable de la pagina: casi no cambia. */
+    /* ---- Marca compacta en una linea: AQUA + caps al costado, sin filigrana. */
     .ag-logo {
-        font-size: 1.9rem;
-        line-height: 1.05;
-        white-space: normal;
+        font-size: 1.4rem;
+        line-height: 1.1;
+        white-space: nowrap;
         margin-right: 0;
-        text-align: center;
         display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 2px;
+        align-items: baseline;
+        gap: 8px;
     }
 
         .ag-logo span {
             font-family: var(--font-sans);
-            font-size: 0.6rem;
-            letter-spacing: 0.3em;
+            font-size: 0.52rem;
+            letter-spacing: 0.24em;
             color: var(--color-teal-700);
             text-transform: uppercase;
             font-weight: 600;
         }
 
-        /* La filigrana dorada pasa de regla de 64px a 48px para acompañar */
         .ag-logo span::after {
-            width: 48px;
-            margin-top: 8px;
-            margin-inline: auto;
+            display: none;
         }
 
-    /* ---- Enlaces: fila unica y silenciosa. La jerarquia del encabezado es
-       marca -> navegacion -> accion; los enlaces no compiten con el CTA. */
-    .ag-nav-links {
-        justify-content: center;
-        gap: 4px 22px;
-        margin-top: 14px;
+    /* ---- Todo lo horizontal migra al cajon: enlaces, CTA, login, saludo y
+       el menu de personal. Ocultarlos evita el apilado de ~150px que tapaba
+       media pantalla del calendario. */
+    .ag-nav-links,
+    .ag-nav-auth {
+        display: none;
     }
 
-        .ag-nav-links a {
-            font-size: 0.72rem;
-            padding: 8px 2px;
-        }
-
-        /* El CTA ocupa su propia fila a ancho completo: es la accion
-           principal de la clinica y no compite dentro de la fila de enlaces. */
-        .ag-nav-links li.ag-nav-cta-item {
-            flex-basis: 100%;
-            display: block;
-        }
-
-            .ag-nav-links li.ag-nav-cta-item a.ag-nav-cta {
-                display: block;
-                text-align: center;
-                padding: 13px 24px;
-                margin-top: 10px;
-                font-size: 0.8rem;
-            }
-
-    /* ---- Login: baja de pildora con borde que grita a enlace subrayado.
-       No compite con el CTA ni ocupa una fila llamativa. */
-    .ag-nav-login {
-        border: none;
-        background: transparent;
-        padding: 12px 4px 2px;
-        margin-top: 2px;
-        text-transform: none;
-        letter-spacing: 0.04em;
-        font-size: 0.82rem;
-        text-decoration: underline;
-        text-underline-offset: 4px;
-        text-decoration-color: var(--color-gold-500);
-        text-decoration-thickness: 1px;
-    }
-
-        .ag-nav-login:hover {
-            background: transparent;
-        }
-
-    /* ---- Usuario autenticado: saludo + menu centrados, sin fila propia. */
-    .ag-nav-user,
-    .ag-nav-login {
-        justify-self: center;
-        align-self: center;
-    }
-
-    .ag-nav-user {
-        flex-direction: column;
-        gap: 6px;
-        text-align: center;
-        margin-top: 10px;
-    }
-
-    .ag-saludo-item {
-        justify-content: center;
-        white-space: normal;
+    /* Especificidad .ag-nav para vencer al display:none base (definido
+       al final del archivo, despues de este media query) */
+    .ag-nav .ag-menu-boton {
+        display: inline-flex;
     }
 
     .rz-datepicker input {
@@ -3135,3 +3076,288 @@ button.ag-tipo-cliente-opcion {
         max-width: 100%;
     }
 }
+
+/* ============================================================
+   Menu movil: cajon lateral izquierdo (solo <= 640px)
+   En escritorio la navegacion es la barra horizontal de siempre:
+   ni el boton ni el cajon existen visualmente.
+   ============================================================ */
+
+/* Boton hamburguesa: oculto en escritorio, visible solo en el media query.
+   El estilo global de main.css `button` mete min-width/padding/margin: se
+   anulan aqui o el icono sale como una pill de 170px. */
+.ag-menu-boton {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 40px;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-teal-900);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+    .ag-menu-boton:hover,
+    .ag-menu-boton:active {
+        background: rgba(42, 107, 102, 0.08);
+        color: var(--color-gold-700);
+    }
+
+/* Contenedor del cajon: fijo a pantalla completa cuando esta abierto.
+   El atributo hidden lo mantiene fuera de tab y lectores al cerrarse. */
+.ag-menu-movil {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+}
+
+/* Fondo oscurecido: cierra el menu al tocarlo */
+.ag-menu-fondo {
+    position: absolute;
+    inset: 0;
+    background: rgba(20, 72, 69, 0.45);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+}
+
+/* Panel: entra deslizandose desde la izquierda */
+.ag-menu-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(320px, 86vw);
+    display: flex;
+    flex-direction: column;
+    background: var(--color-ivory);
+    box-shadow: 24px 0 48px rgba(20, 72, 69, 0.25);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    animation: ag-menu-entra 0.25s ease both;
+}
+
+@keyframes ag-menu-entra {
+    from {
+        transform: translateX(-100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ag-menu-panel {
+        animation: none;
+    }
+}
+
+.ag-menu-panel-superior {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(197, 160, 90, 0.35);
+}
+
+/* Marca condensada para el encabezado del panel */
+.ag-menu-marca {
+    font-family: var(--font-serif);
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--color-teal-900);
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+    .ag-menu-marca span {
+        font-family: var(--font-sans);
+        font-size: 0.52rem;
+        letter-spacing: 0.24em;
+        color: var(--color-teal-700);
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+
+.ag-menu-cerrar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-teal-900);
+    font-size: 1.15rem;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+    .ag-menu-cerrar:hover,
+    .ag-menu-cerrar:active {
+        background: rgba(42, 107, 102, 0.08);
+        color: var(--color-gold-700);
+    }
+
+.ag-menu-panel-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 18px 20px 28px;
+}
+
+/* El cajon reutiliza el subrayado animado; ahi no aporta nada y las
+   secciones quedan mejor con el active en color dorado plano */
+.ag-menu-links a::after {
+    display: none;
+}
+
+.ag-menu-links {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+    .ag-menu-links a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 13px 14px;
+        border-radius: var(--radius-md);
+        color: var(--color-teal-900);
+        text-decoration: none;
+        font-size: 0.95rem;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        transition: background 0.2s ease, color 0.2s ease;
+    }
+
+        .ag-menu-links a i {
+            width: 20px;
+            text-align: center;
+            color: var(--color-teal-700);
+            font-size: 1rem;
+        }
+
+        .ag-menu-links a:hover,
+        .ag-menu-links a.active {
+            background: rgba(42, 107, 102, 0.08);
+            color: var(--color-gold-700);
+        }
+
+            .ag-menu-links a:hover i,
+            .ag-menu-links a.active i {
+                color: var(--color-gold-700);
+            }
+
+        /* El CTA "Reservar cita" conserva su peso de accion principal */
+        .ag-menu-links a.ag-nav-cta {
+            justify-content: center;
+            margin-top: 10px;
+            padding: 13px 24px;
+            border-radius: var(--radius-pill);
+            background-image: var(--gradient-teal);
+            color: #fff;
+            font-weight: 600;
+            box-shadow: var(--shadow-cta);
+        }
+
+            .ag-menu-links a.ag-nav-cta:hover,
+            .ag-menu-links a.ag-nav-cta.active {
+                background-color: var(--color-teal-900);
+                background-image: var(--gradient-teal);
+                color: #fff;
+                border-radius: var(--radius-pill);
+                box-shadow: var(--shadow-cta);
+            }
+
+/* Encabezados de seccion dentro del cajon */
+.ag-menu-seccion {
+    margin-top: 16px;
+    padding: 0 14px 6px;
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ag-texto-mudo);
+}
+
+/* Login en el cajon: misma pill del escritorio a ancho completo.
+   Se anulan margin-left/min-width del estilo global de button. */
+.ag-menu-auth .ag-nav-login {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-width: 0;
+    margin: 16px 0 0;
+    padding: 13px 24px;
+}
+
+.ag-menu-saludo {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin: 18px 14px 0;
+    padding-top: 14px;
+    border-top: 1px solid rgba(197, 160, 90, 0.35);
+}
+
+/* Logout del cajon: mismos estilos que el del menu de personal */
+.ag-menu-form-logout {
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+}
+
+    .ag-menu-form-logout .ag-staff-logout,
+    .ag-menu-form-logout .ag-staff-logout:hover,
+    .ag-menu-form-logout .ag-staff-logout:focus {
+        width: 100%;
+        min-width: 0;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 12px;
+        text-align: left;
+        padding: 13px 14px;
+        border-radius: var(--radius-md);
+        background: transparent;
+        background-image: none;
+        border: none;
+        box-shadow: none;
+        color: var(--color-teal-900);
+        font-family: var(--font-sans);
+        font-size: 0.95rem;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        transform: none;
+    }
+
+        .ag-menu-form-logout .ag-staff-logout:hover,
+        .ag-menu-form-logout .ag-staff-logout:focus {
+            background: rgba(180, 35, 44, 0.07);
+            box-shadow: none;
+            color: #8c1a22;
+        }
+
+            .ag-menu-form-logout .ag-staff-logout:hover i {
+                color: #8c1a22;
+            }

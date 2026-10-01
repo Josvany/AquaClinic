@@ -1,5 +1,6 @@
 using AquaClinic.App.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using Radzen;
 
 namespace AquaClinic.App.Pages
@@ -16,6 +17,19 @@ namespace AquaClinic.App.Pages
         private List<OcupacionAgenda> _ocupaciones = [];
         private DateTime _fecha = DateTime.Today;
         private string? _errorCarga;
+
+        // ------------------- Modo movil (vista dia) ----------------------
+        // Un modulo JSInforma cambios de matchMedia("(max-width: 640px)").
+        // El prerender estatico asume escritorio (vista semana) para no
+        // divergir del HTML inicial; en el primer render interactivo el JS
+        // corrige el valor si toca.
+        private bool _esMovil;
+        private DotNetObjectReference<ReservarCita>? _dotNetRef;
+        private IJSObjectReference? _moduloMovil;
+        private const string AnchoMovil = "(max-width: 640px)";
+
+        [Inject]
+        private IJSRuntime JS { get; set; } = default!;
 
         [Inject]
         private SeleccionReservaEstado SeleccionReserva { get; set; } = default!;
@@ -71,28 +85,64 @@ namespace AquaClinic.App.Pages
             }
         }
 
-        protected override Task OnAfterRenderAsync(bool firstRender)
+        protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             // Quitar ?servicio= de la barra del navegador solo cuando el circuito ya
             // es interactivo: llamar NavigateTo durante el prerender estatico lanza
             // NavigationException. replace: true no deja entrada en el historial y una
-            // recarga posterior ya no preselecciona nada. Al ser navegacion dentro del
+            // recarga posterior ya no preselecciona el mismo servicio. Al ser navegacion dentro del
             // mismo circuito, el estado de SeleccionReserva (con la preseleccion del
             // modal) se conserva para esta visita.
-            if (firstRender && _limpiarUrlDeSugerencia)
+            if (firstRender)
             {
-                _limpiarUrlDeSugerencia = false;
+                await IniciarDeteccionMovilAsync();
 
-                var uri = new Uri(Navigation.Uri);
-                if (uri.Query.Contains("servicio=", StringComparison.OrdinalIgnoreCase))
+                if (_limpiarUrlDeSugerencia)
                 {
-                    var limpia = uri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.Unescaped);
-                    Navigation.NavigateTo(limpia, replace: true);
+                    _limpiarUrlDeSugerencia = false;
+
+                    var uri = new Uri(Navigation.Uri);
+                    if (uri.Query.Contains("servicio=", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var limpia = uri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.Unescaped);
+                        Navigation.NavigateTo(limpia, replace: true);
+                    }
                 }
             }
-
-            return Task.CompletedTask;
         }
+
+        // ------------------- Deteccion movil -------------------
+
+        private async Task IniciarDeteccionMovilAsync()
+        {
+            try
+            {
+                _dotNetRef = DotNetObjectReference.Create(this);
+                _moduloMovil = await JS.InvokeAsync<IJSObjectReference>("import", "./js/agenda-movil.js");
+                _esMovil = await _moduloMovil.InvokeAsync<bool>("iniciar", AnchoMovil, _dotNetRef);
+                if (_esMovil != _esMovilRenderizada)
+                {
+                    _esMovilRenderizada = _esMovil;
+                    StateHasChanged();
+                }
+            }
+            catch (JSException)
+            {
+                // Sin JS el fallback es escritorio: la vista semana sigue funcionando
+            }
+        }
+
+        private bool _esMovilRenderizada;
+
+        [JSInvokable]
+        public void AlCambiarAncho(bool esMovil)
+        {
+            if (_esMovil == esMovil) return;
+            _esMovil = esMovil;
+            StateHasChanged();
+        }
+
+        // ------------------- Agenda -------------------
 
         private async Task CargarAgendaAsync()
         {
@@ -178,9 +228,10 @@ namespace AquaClinic.App.Pages
         {
             var claseBase = args.Attributes.TryGetValue("class", out var c) ? c?.ToString() : null;
 
-            // Domingo cerrado o hora de hoy ya pasada: el slot se ve deshabilitado
-            // y no recibe clics (pointer-events: none), sin notificacion.
-            if (args.Start.DayOfWeek == DayOfWeek.Sunday || EsHoraPasada(args.Start))
+            // Domingo cerrado o dia vencido: el slot se ve deshabilitado y no
+            // recibe clics (pointer-events: none), sin notificacion. El dia se
+            // toma del INICIO del slot.
+            if (args.Start.Date.DayOfWeek == DayOfWeek.Sunday || EsDiaVencido(args.Start))
             {
                 args.Attributes["class"] = $"{claseBase} ag-slot-deshabilitado".Trim();
                 return;
@@ -202,11 +253,13 @@ namespace AquaClinic.App.Pages
             }
         }
 
-        /// <summary>Slot de HOY cuya hora ya paso (comparado con el momento actual
-        /// en la zona de la clinica, America/Vancouver): no reservable, igual que
-        /// los domingos. Los dias anteriores los cubre el guard de fechas pasadas.</summary>
-        private static bool EsHoraPasada(DateTime slotInicio) =>
-            slotInicio.Date == AgendaCalendario.HoyClinica && slotInicio <= AgendaCalendario.AhoraClinica;
+        /// <summary>Dia cuya jornada (hasta las 19:00) ya termino (comparado con el
+        /// momento actual en la zona de la clinica, America/Vancouver).
+        /// Los dias anteriores los cubre el guard de fechas pasadas.</summary>
+        private static bool EsDiaVencido(DateTime diaInicio) =>
+            diaInicio.Date == AgendaCalendario.HoyClinica
+                ? false // hoy nunca esta vencido: todavia puede quedar horario libre
+                : diaInicio.Date < AgendaCalendario.HoyClinica;
 
         private void OnAppointmentRender(Radzen.SchedulerAppointmentRenderEventArgs<OcupacionAgenda> args)
         {
@@ -349,8 +402,8 @@ namespace AquaClinic.App.Pages
             var resultado = await DialogService.OpenAsync<ReservaDialog>("Reservar cita",
                 new Dictionary<string, object>
                 {
-                    { "FechaInicioLocal", args.Start },
-                    { "FechaFinLocal", args.End },
+                    { "FechaInicioLocal", inicio },
+                    { "FechaFinLocal", fin },
                     { "Ocupaciones", _ocupaciones },
                     { "OcupacionesProvider", (Func<List<OcupacionAgenda>>)(() => _ocupaciones) },
                     { "ReservaConfirmada", EventCallback.Factory.Create(this, (Func<(bool, DateTime), Task>)(async t => await ReservaTerminadaAsync(t.Item1, t.Item2))) },
@@ -371,6 +424,20 @@ namespace AquaClinic.App.Pages
             await ReservaCanceladaAsync();
             _abriendoModal = false;
         }
+
+        /// <summary>Clic sobre un bloque "Ocupado"/"Reservando": sin accion (no
+        /// abre el modal). Igual que los slots ocupados, que no son reservables.</summary>
+        private void OnCitaSelectAsync(Radzen.SchedulerAppointmentSelectEventArgs<OcupacionAgenda> args)
+        {
+        }
+
+        // ---------- Flujo de reserva (dia pasado) ----------
+
+        /// <summary>Slot de HOY cuya hora ya paso (comparado con el momento actual
+        /// en la zona de la clinica, America/Vancouver): no reservable, igual que
+        /// los domingos. Los dias anteriores los cubre el guard de fechas pasadas.</summary>
+        private static bool EsHoraPasada(DateTime slotInicio) =>
+            slotInicio.Date == AgendaCalendario.HoyClinica && slotInicio <= AgendaCalendario.AhoraClinica;
 
         private async Task ReservaTerminadaAsync(bool exito, DateTime fechaLocal)
         {
@@ -454,6 +521,24 @@ namespace AquaClinic.App.Pages
             Agenda.ReservaSuave -= AlReservaSuave;
             Agenda.ReservaLiberada -= AlReservaLiberada;
             Agenda.CitaCreada -= AlCitaCreada;
+
+            if (_dotNetRef is not null)
+            {
+                try
+                {
+                    if (_moduloMovil is not null)
+                    {
+                        await _moduloMovil.InvokeVoidAsync("detener");
+                        await _moduloMovil.DisposeAsync();
+                    }
+                }
+                catch (JSDisconnectedException)
+                {
+                    // El circuito se cerro antes que el modulo: nada que hacer
+                }
+
+                _dotNetRef.Dispose();
+            }
 
             if (_tieneSeleccion)
             {
