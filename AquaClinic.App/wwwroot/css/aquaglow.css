@@ -1285,6 +1285,10 @@ footer.ag-footer {
     background: var(--color-gold-500);
 }
 
+.ag-leyenda-cerrado {
+    background: #7d8a86;
+}
+
 /* Bloques del scheduler por estado (la App pinta via clase del evento) */
 .ag-booking-scheduler .rzi-calendar,
 .ag-booking-scheduler .rz-scheduler-content {

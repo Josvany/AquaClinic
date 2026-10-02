@@ -78,7 +78,8 @@ namespace AquaClinic.App.Pages
                 Agenda.ReservaLiberada += AlReservaLiberada;
                 Agenda.CitaCreada += AlCitaCreada;
 
-                await CargarAgendaAsync();
+                // La agenda la pide el scheduler via LoadData (render inicial y
+                // navegacion); aqui solo se deja la conexion en vivo lista.
             }
             catch (HttpRequestException)
             {
@@ -145,37 +146,54 @@ namespace AquaClinic.App.Pages
 
         // ------------------- Agenda -------------------
 
-        private async Task CargarAgendaAsync()
+        /// <summary>
+        /// Consulta la agenda del rango indicado (fecha local de la clinica) y la
+        /// pinta. Sin rango explicito se usa la semana visible segun _fecha, que
+        /// LoadData mantiene alineada con la vista que el usuario esta viendo.
+        /// </summary>
+        private async Task CargarAgendaAsync(DateTime? rangoInicio = null, DateTime? rangoFin = null)
         {
-            // Radzen dibuja la semana segun su cultura (en esta instalacion
-            // domingo->sabado) y la API filtra por rango UTC. Se consulta con un
-            // dia de margen a cada lado para cubrir la semana visible sin depender
-            // de la convencion (domingo o lunes) del primer dia; Radzen ignora
-            // los bloques que caen fuera de la vista.
-            var inicio = _fecha.Date.AddDays(-((int)_fecha.DayOfWeek) - 1);
-            var ocupaciones = await Agenda.ObtenerAgendaAsync(inicio, inicio.AddDays(9));
+            try
+            {
+                // Radzen dibuja la semana segun su cultura (en esta instalacion
+                // domingo->sabado) y la API filtra por rango UTC. Cuando la vista
+                // entrega su rango exacto se consulta ese; en las recargas puntuales
+                // (sin rango) se consulta con un dia de margen a cada lado para cubrir
+                // la semana visible sin depender de la convencion (domingo o lunes)
+                // del primer dia; Radzen ignora los bloques que caen fuera de la vista.
+                var inicio = rangoInicio ?? _fecha.Date.AddDays(-((int)_fecha.DayOfWeek) - 1);
+                var fin = rangoFin ?? inicio.AddDays(9);
 
-            // Si un slot ya tiene cita confirmada, cualquier "Reservando" que se solape
-            // es residuo (la reserva suave se libera aparte en la API): la hora se
-            // muestra como ocupada, nunca como "en proceso de reserva".
-            _ocupaciones = ocupaciones
-                .Where(o => o.Estado != AgendaCalendario.Reservando ||
-                            !ocupaciones.Any(c => c.Estado == AgendaCalendario.Ocupado &&
-                                                  c.Inicio < o.Fin && c.Fin > o.Inicio))
-                .ToList();
+                var ocupaciones = await Agenda.ObtenerAgendaAsync(inicio, fin);
 
-            StateHasChanged();
+                // Si un slot ya tiene cita confirmada, cualquier "Reservando" que se solape
+                // es residuo (la reserva suave se libera aparte en la API): la hora se
+                // muestra como ocupada, nunca como "en proceso de reserva".
+                _ocupaciones = ocupaciones
+                    .Where(o => o.Estado != AgendaCalendario.Reservando ||
+                                !ocupaciones.Any(c => c.Estado == AgendaCalendario.Ocupado &&
+                                                      c.Inicio < o.Fin && c.Fin > o.Inicio))
+                    .ToList();
+
+                _errorCarga = null;
+                StateHasChanged();
+            }
+            catch (HttpRequestException)
+            {
+                _errorCarga = "No se pudo conectar con la API. Verifica que esté corriendo.";
+            }
         }
 
-        // ---------- Navegacion de semanas ----------
-        // Las flechas/Hoy de Radzen cambian la fecha interna del scheduler; sin
-        // este handler la pagina nunca pedia la agenda de la nueva semana y las
-        // citas futuras no aparecian al navegar.
-        private async Task OnFechaCambioAsync(DateTime fecha)
+        // ---------- Carga de la vista visible (navegacion de semanas) ----------
+        // Radzen invoca LoadData cuando necesita los datos de la vista visible: en
+        // el render inicial, al navegar (flechas/Today), al cambiar de vista y en
+        // Reload(); args trae el rango visible exacto. Con DateChange (hasta 6.x) la
+        // pagina pedia la agenda de la nueva semana; en 11.x ese parametro ya no
+        // existe y LoadData es el hook correcto.
+        private async Task OnAgendaLoadDataAsync(Radzen.SchedulerLoadDataEventArgs args)
         {
-            if (fecha.Date == _fecha.Date) return;
-            _fecha = fecha;
-            await CargarAgendaAsync();
+            _fecha = args.Start;
+            await CargarAgendaAsync(args.Start, args.End);
         }
 
         // ---------- Eventos en tiempo real ----------
@@ -266,9 +284,13 @@ namespace AquaClinic.App.Pages
         {
             // "Reservando": fondo dorado (el de Iniciar sesion), letras teal.
             // "Ocupado": fondo teal, letras en el dorado de Iniciar sesion.
-            args.Attributes["style"] = args.Data?.Estado == AgendaCalendario.Reservando
-                ? AgendaCalendario.EstiloReservando
-                : AgendaCalendario.EstiloOcupado;
+            // "Bloqueado": fondo gris, letras claras (horario cerrado de la clinica).
+            args.Attributes["style"] = args.Data?.Estado switch
+            {
+                AgendaCalendario.Reservando => AgendaCalendario.EstiloReservando,
+                AgendaCalendario.Bloqueado => AgendaCalendario.EstiloBloqueado,
+                _ => AgendaCalendario.EstiloOcupado
+            };
         }
 
         // ---------- Tooltip al pasar el mouse sobre una cita ----------
@@ -276,6 +298,16 @@ namespace AquaClinic.App.Pages
         private void AlMouseEnCita(Radzen.Blazor.SchedulerAppointmentMouseEventArgs<OcupacionAgenda> args)
         {
             if (args.Data is null) return;
+
+            // Los bloqueos de la clinica no son citas: no llevan tooltip de cita
+            // (horario + duracion). El bloque ya se lee como "Bloqueado" y, al ser
+            // tan alto, Radzen anclaba el tooltip sobre la cabecera de la pagina.
+            // Se cierra por si venia abierto de una cita contigua.
+            if (args.Data.Estado == AgendaCalendario.Bloqueado)
+            {
+                TooltipService.Close();
+                return;
+            }
 
             var cita = args.Data;
             var duracion = cita.Fin - cita.Inicio;
@@ -376,7 +408,14 @@ namespace AquaClinic.App.Pages
             if (tocaOcupacion)
             {
                 _abriendoModal = false;
-                Notificador.Advertencia(TextoUi.T("Ese horario no está disponible. Elige un slot libre."));
+
+                // Si lo que toca es un bloqueo de clinica el mensaje es distinto:
+                // no es "alguien lo tomo", la clinica esta cerrada ese dia/hora.
+                var tocaBloqueo = _ocupaciones.Any(o => o.Estado == AgendaCalendario.Bloqueado &&
+                                                        o.Inicio < fin && o.Fin > inicio);
+                Notificador.Advertencia(TextoUi.T(tocaBloqueo
+                    ? "La clínica está cerrada en ese horario. Elige otro disponible."
+                    : "Ese horario no está disponible. Elige un slot libre."));
                 return;
             }
 

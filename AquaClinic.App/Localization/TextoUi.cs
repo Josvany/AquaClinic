@@ -284,6 +284,8 @@ public static class TextoUi
         ["No puedes agendar en fechas pasadas. Elige hoy o un día posterior."] = "You cannot book in the past. Choose today or a later date.",
         ["Ese horario ya está ocupado. Elige otro disponible."] = "That time is already booked. Choose another available time.",
         ["Ese horario ya está ocupado. Elige otra hora."] = "That time is already booked. Choose another time.",
+        ["Cerrado"] = "Closed",
+        ["La clínica está cerrada en ese horario. Elige otro disponible."] = "The clinic is closed at that time. Choose another available time.",
         ["Duración:"] = "Duration:"
     };
 

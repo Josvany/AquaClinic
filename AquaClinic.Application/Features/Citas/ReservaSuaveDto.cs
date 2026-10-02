@@ -14,6 +14,9 @@ namespace AquaClinic.Application.Features.Citas
         Ocupado = 1,
 
         /// <summary>Otro usuario esta completando la reserva (transitorio).</summary>
-        Reservando = 2
+        Reservando = 2,
+
+        /// <summary>Bloqueo de la clinica: dia/hora cerrada, no reservable.</summary>
+        Bloqueado = 3
     }
 }

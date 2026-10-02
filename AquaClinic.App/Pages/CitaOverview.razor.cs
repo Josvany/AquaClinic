@@ -43,6 +43,7 @@ namespace AquaClinic.App.Pages
 
         private List<OcupacionAgenda> _eventos = [];
         private readonly List<OcupacionAgenda> _reservasEnProceso = [];
+        private List<OcupacionAgenda> _bloqueosClinica = [];
         private DateTime _fecha = DateTime.Today;
         private string? _errorCarga;
         private string? _errorExport;
@@ -153,11 +154,17 @@ namespace AquaClinic.App.Pages
 
         private async Task CargarReservasEnProcesoAsync()
         {
-            var inicio = AgendaCalendario.InicioDeSemana(_fecha);
-            var agenda = await Agenda.ObtenerAgendaAsync(inicio, inicio.AddDays(7));
+            // Rango amplio (mes anterior a 3 meses): las citas ya se cargan completas
+            // (GetAllCitas) y el scheduler navega semanas sin volver a consultar, asi
+            // que los bloqueos de clinica deben venir de una sola vez para verse en
+            // cualquier semana. Las reservas suaves vigentes son pocas y activas.
+            var inicio = AgendaCalendario.HoyClinica.AddMonths(-1);
+            var agenda = await Agenda.ObtenerAgendaAsync(inicio, inicio.AddMonths(4));
 
             _reservasEnProceso.Clear();
             _reservasEnProceso.AddRange(agenda.Where(o => o.Estado == AgendaCalendario.Reservando));
+
+            _bloqueosClinica = agenda.Where(o => o.Estado == AgendaCalendario.Bloqueado).ToList();
             ReconstruirEventos();
         }
 
@@ -185,6 +192,17 @@ namespace AquaClinic.App.Pages
                     Inicio = reserva.Inicio,
                     Fin = reserva.Fin,
                     Estado = AgendaCalendario.Reservando
+                });
+            }
+
+            foreach (var bloqueo in _bloqueosClinica)
+            {
+                bloques.Add(new OcupacionAgenda
+                {
+                    Text = TextoUi.T("Cerrado"),
+                    Inicio = bloqueo.Inicio,
+                    Fin = bloqueo.Fin,
+                    Estado = AgendaCalendario.Bloqueado
                 });
             }
 
@@ -237,9 +255,12 @@ namespace AquaClinic.App.Pages
 
         private void OnAppointmentRender(SchedulerAppointmentRenderEventArgs<OcupacionAgenda> args)
         {
-            args.Attributes["style"] = args.Data?.Estado == AgendaCalendario.Reservando
-                ? AgendaCalendario.EstiloReservando
-                : AgendaCalendario.EstiloOcupado;
+            args.Attributes["style"] = args.Data?.Estado switch
+            {
+                AgendaCalendario.Reservando => AgendaCalendario.EstiloReservando,
+                AgendaCalendario.Bloqueado => AgendaCalendario.EstiloBloqueado,
+                _ => AgendaCalendario.EstiloOcupado
+            };
         }
 
         // ---------- Acciones ----------

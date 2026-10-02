@@ -38,12 +38,26 @@ namespace AquaClinic.App.Services
         /// <summary>Seleccion en curso (reserva suave, se libera sola).</summary>
         public const string Reservando = "Reservando";
 
+        /// <summary>Bloqueo de la clinica: dia/hora cerrada, no reservable.</summary>
+        public const string Bloqueado = "Bloqueado";
+
         /// <summary>Fondo teal, letras doradas.</summary>
         public const string EstiloOcupado =
             "--rz-scheduler-event-background-color: var(--color-teal-500);" +
             "--rz-scheduler-event-color: var(--color-gold-500);" +
             "--rz-scheduler-event-line-height: 1.4;" +
             "background-color: var(--color-teal-500) !important;" +
+            "background-image: none !important;" +
+            "border: none !important;" +
+            "border-radius: 6px;" +
+            "font-weight: 600;";
+
+        /// <summary>Fondo gris neutro, letras claras: horario cerrado (no reservable).</summary>
+        public const string EstiloBloqueado =
+            "--rz-scheduler-event-background-color: #7d8a86;" +
+            "--rz-scheduler-event-color: #f7f6f3;" +
+            "--rz-scheduler-event-line-height: 1.4;" +
+            "background-color: #7d8a86 !important;" +
             "background-image: none !important;" +
             "border: none !important;" +
             "border-radius: 6px;" +

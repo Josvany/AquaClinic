@@ -78,6 +78,22 @@ namespace AquaClinic.Persistence.Migrations
                             FechaInicio = new DateTimeOffset(new DateTime(2026, 11, 2, 9, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, -8, 0, 0, 0)),
                             Motivo = "Vacaciones",
                             PersonalId = new Guid("01a0bc01-25c2-7148-a710-befdeeb20ef7")
+                        },
+                        new
+                        {
+                            BloqueoId = new Guid("01a0bc01-26c1-7c01-a9f3-5d21c4a7e001"),
+                            CreatedDate = new DateTime(2026, 8, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            FechaFin = new DateTimeOffset(new DateTime(2026, 10, 12, 18, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, -7, 0, 0, 0)),
+                            FechaInicio = new DateTimeOffset(new DateTime(2026, 10, 12, 9, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, -7, 0, 0, 0)),
+                            Motivo = "Día de Acción de Gracias (Canadá)"
+                        },
+                        new
+                        {
+                            BloqueoId = new Guid("01a0bc01-26c2-7c02-a9f3-5d21c4a7e002"),
+                            CreatedDate = new DateTime(2026, 8, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            FechaFin = new DateTimeOffset(new DateTime(2026, 10, 7, 13, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, -7, 0, 0, 0)),
+                            FechaInicio = new DateTimeOffset(new DateTime(2026, 10, 7, 9, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, -7, 0, 0, 0)),
+                            Motivo = "Capacitación del personal"
                         });
                 });
 
@@ -176,6 +192,43 @@ namespace AquaClinic.Persistence.Migrations
                             NombreInvitado = "Priya Sharma",
                             PersonalId = new Guid("01a0bc01-25c2-7148-a710-befdeeb20ef7"),
                             TelefonoInvitado = "+1 604-555-0303"
+                        },
+                        new
+                        {
+                            CitaId = new Guid("01a0bc01-26c3-7c03-a9f3-5d21c4a7e003"),
+                            CreatedDate = new DateTime(2026, 8, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            EmailInvitado = "valentina.cruz@example.com",
+                            Estado = 2,
+                            FechaFin = new DateTimeOffset(new DateTime(2026, 10, 6, 12, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, -7, 0, 0, 0)),
+                            FechaInicio = new DateTimeOffset(new DateTime(2026, 10, 6, 11, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, -7, 0, 0, 0)),
+                            NombreInvitado = "Valentina Cruz",
+                            Notas = "Prefiere productos sin fragancia.",
+                            PersonalId = new Guid("01a0bc01-25b2-7f49-a1e7-e4e7afb2645e"),
+                            TelefonoInvitado = "+1 604-555-0404"
+                        },
+                        new
+                        {
+                            CitaId = new Guid("01a0bc01-26c4-7c04-a9f3-5d21c4a7e004"),
+                            CreatedDate = new DateTime(2026, 8, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            EmailInvitado = "derek.chen@example.com",
+                            Estado = 1,
+                            FechaFin = new DateTimeOffset(new DateTime(2026, 10, 8, 16, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, -7, 0, 0, 0)),
+                            FechaInicio = new DateTimeOffset(new DateTime(2026, 10, 8, 15, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, -7, 0, 0, 0)),
+                            NombreInvitado = "Derek Chen",
+                            PersonalId = new Guid("01a0bc01-25a3-7f89-a190-15ac098e2d00"),
+                            TelefonoInvitado = "+1 604-555-0505"
+                        },
+                        new
+                        {
+                            CitaId = new Guid("01a0bc01-26c5-7c05-a9f3-5d21c4a7e005"),
+                            CreatedDate = new DateTime(2026, 8, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            EmailInvitado = "sofia.ramirez@example.com",
+                            Estado = 2,
+                            FechaFin = new DateTimeOffset(new DateTime(2026, 10, 10, 11, 30, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, -7, 0, 0, 0)),
+                            FechaInicio = new DateTimeOffset(new DateTime(2026, 10, 10, 10, 30, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, -7, 0, 0, 0)),
+                            NombreInvitado = "Sofía Ramírez",
+                            PersonalId = new Guid("01a0bc01-25c2-7148-a710-befdeeb20ef7"),
+                            TelefonoInvitado = "+1 604-555-0606"
                         });
                 });
 
@@ -207,6 +260,21 @@ namespace AquaClinic.Persistence.Migrations
                         new
                         {
                             CitaId = new Guid("01a0bc01-269a-77f7-a5f2-fbcbb5422872"),
+                            ServicioId = new Guid("01a0bc01-2583-7f61-a561-01f4cf10e04a")
+                        },
+                        new
+                        {
+                            CitaId = new Guid("01a0bc01-26c3-7c03-a9f3-5d21c4a7e003"),
+                            ServicioId = new Guid("01a0bc01-2514-7922-a163-24d411678c6f")
+                        },
+                        new
+                        {
+                            CitaId = new Guid("01a0bc01-26c4-7c04-a9f3-5d21c4a7e004"),
+                            ServicioId = new Guid("01a0bc01-2543-7a75-ad35-6cbe60d25a62")
+                        },
+                        new
+                        {
+                            CitaId = new Guid("01a0bc01-26c5-7c05-a9f3-5d21c4a7e005"),
                             ServicioId = new Guid("01a0bc01-2583-7f61-a561-01f4cf10e04a")
                         });
                 });

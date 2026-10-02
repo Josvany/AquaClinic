@@ -21,6 +21,8 @@
                     <span class="ag-leyenda ag-leyenda-ocupado"></span> @TextoUi.T("Ocupado")
                     &nbsp;&nbsp;
                     <span class="ag-leyenda ag-leyenda-reservando"></span> @TextoUi.T("Reservando")
+                    &nbsp;&nbsp;
+                    <span class="ag-leyenda ag-leyenda-cerrado"></span> @TextoUi.T("Cerrado")
                 </p>
             </div>
         </div>
@@ -36,7 +38,7 @@
                 {
                     <RadzenScheduler @ref="_scheduler" TItem="OcupacionAgenda" Data="@_ocupaciones"
                                      TextProperty="Estado" StartProperty="Inicio" EndProperty="Fin"
-                                     Date="@_fecha" DateChange="@(OnFechaCambioAsync)" Style="height: 72vh; min-height: 420px;"
+                                     LoadData="@(OnAgendaLoadDataAsync)" Style="height: 72vh; min-height: 420px;"
                                      SlotSelect="@(OnSlotSelectAsync)"
                                      AppointmentSelect="@(OnCitaSelectAsync)"
                                      AppointmentRender="@(OnAppointmentRender)"
@@ -50,7 +52,7 @@
                 {
                     <RadzenScheduler @ref="_scheduler" TItem="OcupacionAgenda" Data="@_ocupaciones"
                                      TextProperty="Estado" StartProperty="Inicio" EndProperty="Fin"
-                                     Date="@_fecha" DateChange="@(OnFechaCambioAsync)" Style="height: 78vh; min-height: 560px;"
+                                     LoadData="@(OnAgendaLoadDataAsync)" Style="height: 78vh; min-height: 560px;"
                                      SlotSelect="@(OnSlotSelectAsync)"
                                      AppointmentSelect="@(OnCitaSelectAsync)"
                                      AppointmentRender="@(OnAppointmentRender)"

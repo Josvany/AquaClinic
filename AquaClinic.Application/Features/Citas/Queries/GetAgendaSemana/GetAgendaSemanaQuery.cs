@@ -6,8 +6,9 @@ namespace AquaClinic.Application.Features.Citas.Queries.GetAgendaSemana
 {
     /// <summary>
     /// Agenda publica de una semana para el scheduler de reservas: slots ocupados
-    /// (citas activas) y en proceso de reserva (reservas suaves). No expone datos
-    /// de clientes, solo los rangos de tiempo.
+    /// (citas activas), en proceso de reserva (reservas suaves) y bloqueos de la
+    /// clinica (cierres no reservables). No expone datos de clientes, solo los
+    /// rangos de tiempo.
     /// </summary>
     public class GetAgendaSemanaQuery : IRequest<AgendaSemanaVm>
     {
@@ -73,6 +74,19 @@ namespace AquaClinic.Application.Features.Citas.Queries.GetAgendaSemana
                         Estado = nameof(EstadoSlot.Reservando)
                     });
                 }
+            }
+
+            // Bloqueos de toda la clinica (PersonalId = null): se muestran como
+            // rangos cerrados para que el cliente vea el dia/hora no disponible
+            // y no descubra el cierre recien al confirmar la cita.
+            foreach (var bloqueo in await _agendaRepository.GetBloqueosClinicaEntreAsync(inicioUtc, finUtc))
+            {
+                ocupaciones.Add(new OcupacionVm
+                {
+                    FechaInicio = bloqueo.FechaInicio,
+                    FechaFin = bloqueo.FechaFin,
+                    Estado = nameof(EstadoSlot.Bloqueado)
+                });
             }
 
             return new AgendaSemanaVm

@@ -331,6 +331,24 @@ namespace AquaClinic.Persistence
                 PersonalId = carolinaGuid,
                 CreatedDate = fechaAuditoria
             });
+            modelBuilder.Entity<Bloqueo>().HasData(new Bloqueo
+            {
+                BloqueoId = Guid.Parse("01a0bc01-26c1-7c01-a9f3-5d21c4a7e001"),
+                Motivo = "Día de Acción de Gracias (Canadá)",
+                FechaInicio = new DateTimeOffset(2026, 10, 12, 9, 0, 0, TimeSpan.FromHours(-7)),
+                FechaFin = new DateTimeOffset(2026, 10, 12, 18, 0, 0, TimeSpan.FromHours(-7)),
+                PersonalId = null,
+                CreatedDate = fechaAuditoria
+            });
+            modelBuilder.Entity<Bloqueo>().HasData(new Bloqueo
+            {
+                BloqueoId = Guid.Parse("01a0bc01-26c2-7c02-a9f3-5d21c4a7e002"),
+                Motivo = "Capacitación del personal",
+                FechaInicio = new DateTimeOffset(2026, 10, 7, 9, 0, 0, TimeSpan.FromHours(-7)),
+                FechaFin = new DateTimeOffset(2026, 10, 7, 13, 0, 0, TimeSpan.FromHours(-7)),
+                PersonalId = null,
+                CreatedDate = fechaAuditoria
+            });
 
             // ===== Citas de ejemplo (clientes invitados: UsuarioId = null) =====
             var cita1Guid = Guid.Parse("01a0bc01-267b-72d7-abd9-df8492b67a3e");
@@ -380,11 +398,62 @@ namespace AquaClinic.Persistence
                 CreatedDate = fechaAuditoria
             });
 
+            // Citas de la semana siguiente (la agenda y el scheduler muestran contenido)
+            var cita4Guid = Guid.Parse("01a0bc01-26c3-7c03-a9f3-5d21c4a7e003");
+            var cita5Guid = Guid.Parse("01a0bc01-26c4-7c04-a9f3-5d21c4a7e004");
+            var cita6Guid = Guid.Parse("01a0bc01-26c5-7c05-a9f3-5d21c4a7e005");
+
+            modelBuilder.Entity<Cita>().HasData(new Cita
+            {
+                CitaId = cita4Guid,
+                UsuarioId = null,
+                NombreInvitado = "Valentina Cruz",
+                EmailInvitado = "valentina.cruz@example.com",
+                TelefonoInvitado = "+1 604-555-0404",
+                PersonalId = mariaGuid,
+                FechaInicio = new DateTimeOffset(2026, 10, 6, 11, 0, 0, TimeSpan.FromHours(-7)),
+                FechaFin = new DateTimeOffset(2026, 10, 6, 12, 0, 0, TimeSpan.FromHours(-7)),
+                Estado = EstadoCita.Confirmada,
+                Notas = "Prefiere productos sin fragancia.",
+                CreatedDate = fechaAuditoria
+            });
+            modelBuilder.Entity<Cita>().HasData(new Cita
+            {
+                CitaId = cita5Guid,
+                UsuarioId = null,
+                NombreInvitado = "Derek Chen",
+                EmailInvitado = "derek.chen@example.com",
+                TelefonoInvitado = "+1 604-555-0505",
+                PersonalId = walnerGuid,
+                FechaInicio = new DateTimeOffset(2026, 10, 8, 15, 0, 0, TimeSpan.FromHours(-7)),
+                FechaFin = new DateTimeOffset(2026, 10, 8, 16, 0, 0, TimeSpan.FromHours(-7)),
+                Estado = EstadoCita.Pendiente,
+                Notas = null,
+                CreatedDate = fechaAuditoria
+            });
+            modelBuilder.Entity<Cita>().HasData(new Cita
+            {
+                CitaId = cita6Guid,
+                UsuarioId = null,
+                NombreInvitado = "Sofía Ramírez",
+                EmailInvitado = "sofia.ramirez@example.com",
+                TelefonoInvitado = "+1 604-555-0606",
+                PersonalId = carolinaGuid,
+                FechaInicio = new DateTimeOffset(2026, 10, 10, 10, 30, 0, TimeSpan.FromHours(-7)),
+                FechaFin = new DateTimeOffset(2026, 10, 10, 11, 30, 0, TimeSpan.FromHours(-7)),
+                Estado = EstadoCita.Confirmada,
+                Notas = null,
+                CreatedDate = fechaAuditoria
+            });
+
             // Un servicio por cita (el esquema permite N opcionales)
             modelBuilder.Entity<CitaServicio>().HasData(
                 new { CitaId = cita1Guid, ServicioId = Guid.Parse("01a0bc01-2514-7922-a163-24d411678c6f") },
                 new { CitaId = cita2Guid, ServicioId = Guid.Parse("01a0bc01-2543-7a75-ad35-6cbe60d25a62") },
-                new { CitaId = cita3Guid, ServicioId = Guid.Parse("01a0bc01-2583-7f61-a561-01f4cf10e04a") });
+                new { CitaId = cita3Guid, ServicioId = Guid.Parse("01a0bc01-2583-7f61-a561-01f4cf10e04a") },
+                new { CitaId = cita4Guid, ServicioId = Guid.Parse("01a0bc01-2514-7922-a163-24d411678c6f") },
+                new { CitaId = cita5Guid, ServicioId = Guid.Parse("01a0bc01-2543-7a75-ad35-6cbe60d25a62") },
+                new { CitaId = cita6Guid, ServicioId = Guid.Parse("01a0bc01-2583-7f61-a561-01f4cf10e04a") });
 
             // ===== Promociones (esquema de fidelidad) =====
             modelBuilder.Entity<Promocion>().HasData(new Promocion
