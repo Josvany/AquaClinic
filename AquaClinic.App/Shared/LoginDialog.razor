@@ -1,5 +1,5 @@
 <div class="ag-login-dialog">
-    <span class="ag-saludo">Bienvenido de nuevo</span>
+    <span class="ag-saludo">@TextoUi.T("Bienvenido de nuevo")</span>
 
     <!-- El submit se intercepta con fetch (js/aqua.js -> agLoginModal):
          si las credenciales fallan el modal NO se cierra, muestra el
@@ -11,18 +11,18 @@
             <span class="ag-login-error-texto"></span>
         </div>
         <div class="ag-field">
-            <label for="dialogUserName">Correo</label>
-            <input type="email" id="dialogUserName" name="email" required placeholder="tu@correo.com" />
+            <label for="dialogUserName">@TextoUi.T("Correo")</label>
+            <input type="email" id="dialogUserName" name="email" required placeholder="@TextoUi.T("tu@correo.com")" />
         </div>
         <div class="ag-field">
-            <label for="dialogPassword">Contrase&#241;a</label>
+            <label for="dialogPassword">@TextoUi.T("Contraseña")</label>
             <input type="password" id="dialogPassword" name="password" required minlength="8" />
         </div>
-        <button type="submit">Iniciar sesi&oacute;n</button>
+        <button type="submit">@TextoUi.T("Iniciar sesión")</button>
     </form>
 
     <p class="ag-login-alt">
-        <button type="button" class="ag-link" @onclick="IrARegistro">&#191;No tienes cuenta? Reg&#237;strate</button>
+        <button type="button" class="ag-link" @onclick="IrARegistro">@TextoUi.T("¿No tienes cuenta? Regístrate")</button>
     </p>
 </div>
 

@@ -3,27 +3,27 @@
 @rendermode InteractiveServer
 
 <div class="ag-contenedor" style="padding-top: 24px;">
-    <h1 class="page-title">Especialidades</h1>
+    <h1 class="page-title">@TextoUi.T("Especialidades")</h1>
 
-    <p class="mt-3"><input class="custom-checkbox" type="checkbox" id="incluirHistorial" @onchange="OnIncluirHistorialChanged" /> <label for="incluirHistorial">&iquest;Incluir citas pasadas?</label></p>
+    <p class="mt-3"><input class="custom-checkbox" type="checkbox" id="incluirHistorial" @onchange="OnIncluirHistorialChanged" /> <label for="incluirHistorial">@TextoUi.T("¿Incluir citas pasadas?")</label></p>
 
     @if (Especialidades == null)
     {
-        <p><em>Cargando...</em></p>
+        <p><em>@TextoUi.T("Cargando...")</em></p>
     }
     else
     {
         <table>
             <thead>
                 <tr>
-                    <th>Especialidad</th>
+                    <th>@TextoUi.T("Especialidad")</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var cat in Especialidades)
                 {
                     <tr>
-                        <td class="event-name">@cat.Nombre </td>
+                        <td class="event-name">@TextoUi.T(cat.Nombre)</td>
 
                     </tr>
                     <tr>
@@ -31,18 +31,18 @@
                             <table class="nested-table ms-auto me-auto">
                                 <thead>
                                     <tr>
-                                        <th>Nombre</th>
-                                        <th class="category-event-header">Fecha</th>
-                                        <th class="category-event-header">Doctor</th>
-                                        <th class="category-event-header">Precio</th>
+                                        <th>@TextoUi.T("Nombre")</th>
+                                        <th class="category-event-header">@TextoUi.T("Fecha")</th>
+                                        <th class="category-event-header">@TextoUi.T("Doctor")</th>
+                                        <th class="category-event-header">@TextoUi.T("Precio")</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach (var ev in cat.Citas)
                                     {
                                         <tr>
-                                            <td class="event-name">@ev.Nombre </td>
-                                            <td class="event-date">@ev.Fecha.ToShortDateString() </td>
+                                            <td class="event-name">@TextoUi.T(ev.Nombre)</td>
+                                            <td class="event-date">@ev.Fecha.ToString("d", System.Globalization.CultureInfo.CurrentCulture)</td>
                                             <td class="event-artist">@ev.Doctor</td>
                                             <td class="event-price">@ev.Precio</td>
                                         </tr>

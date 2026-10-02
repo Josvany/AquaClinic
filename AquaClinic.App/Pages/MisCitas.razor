@@ -8,29 +8,29 @@
     <div class="ag-contenedor">
         <div class="ag-citas-encabezado">
             <div>
-                <span class="ag-label-caps">Mi cuenta</span>
-                <h1 class="ag-citas-titulo">Mis citas</h1>
+                <span class="ag-label-caps">@TextoUi.T("Mi cuenta")</span>
+                <h1 class="ag-citas-titulo">@TextoUi.T("Mis citas")</h1>
                 <p class="ag-citas-subtitulo">
-                    Todas las citas que has agendado en la cl&iacute;nica, de la m&aacute;s reciente a la m&aacute;s antigua.
+                    @TextoUi.T("Todas las citas que has agendado en la clínica, de la más reciente a la más antigua.")
                 </p>
             </div>
         </div>
 
         @if (Cargando)
         {
-            <p><em>Cargando...</em></p>
+            <p><em>@TextoUi.T("Cargando...")</em></p>
         }
         else if (_error is not null)
         {
-            <div class="alert alert-danger">@_error</div>
+            <div class="alert alert-danger">@TextoUi.T(_error)</div>
         }
         else if (Citas.Count == 0)
         {
             <div class="ag-panel ag-miscitas-vacio">
                 <i class="fa-regular fa-calendar-check" aria-hidden="true"></i>
-                <h3>A&uacute;n no tienes citas</h3>
-                <p>Cuando agendes una cita aparecer&aacute; aqu&iacute; con su estado y detalle.</p>
-                <a href="/reservar" class="event-purchase-button btn">Reservar cita</a>
+                <h3>@TextoUi.T("Aún no tienes citas")</h3>
+                <p>@TextoUi.T("Cuando agendes una cita aparecerá aquí con su estado y detalle.")</p>
+                <a href="/reservar" class="event-purchase-button btn">@TextoUi.T("Reservar cita")</a>
             </div>
         }
         else
@@ -40,7 +40,7 @@
                                 AllowPaging="true" PageSize="5" PagerPageSizeOptions="@(false)"
                                 AllowSorting="false" Width="100%">
                     <Columns>
-                        <RadzenDataGridColumn TItem="MiCitaViewModel" Title="Fecha" Width="90px">
+                        <RadzenDataGridColumn TItem="MiCitaViewModel" Title="@TextoUi.T("Fecha")" Width="90px">
                             <Template Context="cita">
                                 <div class="ag-miscitas-fecha">
                                     <span class="ag-miscitas-fecha-dia">@cita.Fecha.ToString("dd")</span>
@@ -48,12 +48,12 @@
                                 </div>
                             </Template>
                         </RadzenDataGridColumn>
-                        <RadzenDataGridColumn TItem="MiCitaViewModel" Title="Servicio">
+                        <RadzenDataGridColumn TItem="MiCitaViewModel" Title="@TextoUi.T("Servicio")">
                             <Template Context="cita">
                                 <h3 class="ag-miscitas-servicio">@cita.Servicio</h3>
                                 <p class="ag-miscitas-detalle">
                                     <i class="fa-regular fa-clock" aria-hidden="true"></i>
-                                    @cita.Fecha.ToString("dddd d 'de' MMMM 'de' yyyy, h:mm tt")
+                                    @cita.Fecha.ToString("f", System.Globalization.CultureInfo.CurrentCulture)
                                     @if (cita.Precio > 0)
                                     {
                                         <span class="ag-miscitas-precio">&nbsp;&middot;&nbsp;@cita.Precio.ToString("C", FormatoClinica.CulturaDinero)</span>
@@ -65,7 +65,7 @@
                                 }
                             </Template>
                         </RadzenDataGridColumn>
-                        <RadzenDataGridColumn TItem="MiCitaViewModel" Title="Estado" Width="120px" TextAlign="TextAlign.Center" CssClass="ag-miscitas-col-estado">
+                        <RadzenDataGridColumn TItem="MiCitaViewModel" Title="@TextoUi.T("Estado")" Width="120px" TextAlign="TextAlign.Center" CssClass="ag-miscitas-col-estado">
                             <Template Context="cita">
                                 <span class="ag-miscitas-estado ag-miscitas-estado-@cita.Estado.ToLower()">@TraducirEstado(cita.Estado)</span>
                             </Template>
@@ -78,12 +78,5 @@
 </section>
 
 @code {
-    private static string TraducirEstado(string estado) => estado switch
-    {
-        "Pendiente" => "Pendiente",
-        "Confirmada" => "Confirmada",
-        "Cancelada" => "Cancelada",
-        "Completada" => "Completada",
-        _ => estado
-    };
+    private static string TraducirEstado(string estado) => TextoUi.T(estado);
 }

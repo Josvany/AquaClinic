@@ -1,4 +1,5 @@
 using AquaClinic.App.Contracts;
+using AquaClinic.App.Localization;
 using AquaClinic.App.Services;
 using AquaClinic.App.ViewModels;
 using Microsoft.AspNetCore.Components;
@@ -111,7 +112,7 @@ namespace AquaClinic.App.Pages
             catch (Exception)
             {
                 _error = "No se pudo cargar el catálogo de servicios. Intenta de nuevo.";
-                Notificador.Error(_error, "No hay conexión");
+                Notificador.Error(TextoUi.T(_error), TextoUi.T("No hay conexión"));
             }
 
             // Marcar las horas ya ocupadas de la fecha inicial del dialogo.
@@ -386,19 +387,22 @@ namespace AquaClinic.App.Pages
                     // (evento CitaCreada -> ReservaLiberada): ya no hay que soltarla.
                     _reservaInicio = null;
 
-                    Notificador.Exito($"Cita agendada para el {inicioLocal:dddd d 'de' MMMM} a las {_hora.Texto}.");
+                    Notificador.Exito(string.Format(
+                        TextoUi.T("Cita agendada para el {0} a las {1}."),
+                        inicioLocal.ToString("D", System.Globalization.CultureInfo.CurrentCulture),
+                        _hora.Texto));
                     await CitaCreada.InvokeAsync(true);
                     Dialogs.Close();
                     return;
                 }
 
                 _error = resultado.Message ?? "No se pudo crear la cita.";
-                Notificador.Error(_error);
+                Notificador.Error(TextoUi.T(_error));
             }
             catch (HttpRequestException)
             {
                 _error = "No se pudo conectar con la API. Verifica tu conexión.";
-                Notificador.Error(_error);
+                Notificador.Error(TextoUi.T(_error));
             }
             finally
             {

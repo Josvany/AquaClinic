@@ -5,33 +5,31 @@
 @inject DialogService Dialogs
 @inject NotificadorUi Notificador
 
-<PageTitle>Servicios — Administración</PageTitle>
+<PageTitle>@TextoUi.T("Servicios") — @TextoUi.T("Administración")</PageTitle>
 
 <section class="ag-citas-seccion">
     <div class="ag-contenedor">
         <div class="ag-citas-encabezado">
             <div>
-                <span class="ag-label-caps">Catálogo</span>
-                <h1 class="page-title">Servicios</h1>
+                <span class="ag-label-caps">@TextoUi.T("Catálogo")</span>
+                <h1 class="page-title">@TextoUi.T("Servicios")</h1>
                 <p class="ag-citas-subtitulo">
-                    Los servicios activos aparecen en la portada y pueden agendarse.
-                    Eliminar un servicio solo lo desactiva: sale del catálogo y ya no
-                    se puede agendar, pero su historial de citas se conserva.
+                    @TextoUi.T("Los servicios activos aparecen en la portada y pueden agendarse. Eliminar un servicio solo lo desactiva: sale del catálogo y ya no se puede agendar, pero su historial de citas se conserva.")
                 </p>
             </div>
             <div class="ag-citas-acciones">
-                <RadzenButton Text="Nuevo servicio" Icon="add_circle_outline"
+                <RadzenButton Text="@TextoUi.T("Nuevo servicio")" Icon="add_circle_outline"
                               ButtonStyle="ButtonStyle.Primary" Click="@AbrirCrearAsync" />
             </div>
         </div>
 
         @if (_errorCarga is not null)
         {
-            <div class="alert alert-warning">@_errorCarga</div>
+            <div class="alert alert-warning">@TextoUi.T(_errorCarga)</div>
         }
         else if (_cargando)
         {
-            <p><em>Cargando...</em></p>
+            <p><em>@TextoUi.T("Cargando...")</em></p>
         }
         else
         {
@@ -40,22 +38,22 @@
                                 AllowPaging="true" PageSize="10" PagerPageSizeOptions="@(false)"
                                 AllowSorting="true" Width="100%">
                     <Columns>
-                        <RadzenDataGridColumn TItem="ServicioViewModel" Title="Servicio" Sortable="false">
+                        <RadzenDataGridColumn TItem="ServicioViewModel" Title="@TextoUi.T("Servicio")" Sortable="false">
                             <Template Context="servicio">
                                 <strong>@servicio.Nombre</strong>
                                 @if (!string.IsNullOrWhiteSpace(servicio.Descripcion))
                                 {
-                                    <p class="ag-servicios-descripcion">@servicio.Descripcion</p>
+                                    <p class="ag-servicios-descripcion">@TextoUi.T(servicio.Descripcion)</p>
                                 }
                             </Template>
                         </RadzenDataGridColumn>
-                        <RadzenDataGridColumn TItem="ServicioViewModel" Title="Especialidad">
-                            <Template Context="servicio">@servicio.EspecialidadNombre</Template>
+                        <RadzenDataGridColumn TItem="ServicioViewModel" Title="@TextoUi.T("Especialidad")">
+                            <Template Context="servicio">@TextoUi.T(servicio.EspecialidadNombre)</Template>
                         </RadzenDataGridColumn>
-                        <RadzenDataGridColumn TItem="ServicioViewModel" Title="Duración" Width="110px">
+                        <RadzenDataGridColumn TItem="ServicioViewModel" Title="@TextoUi.T("Duración")" Width="110px">
                             <Template Context="servicio">@servicio.DuracionMinutos min</Template>
                         </RadzenDataGridColumn>
-                        <RadzenDataGridColumn TItem="ServicioViewModel" Title="Precio" Width="120px">
+                        <RadzenDataGridColumn TItem="ServicioViewModel" Title="@TextoUi.T("Precio")" Width="120px">
                             <Template Context="servicio">
                                 @servicio.Precio.ToString("C", FormatoClinica.CulturaDinero)
                             </Template>
@@ -106,14 +104,14 @@
 
     private async Task AbrirCrearAsync()
     {
-        await Dialogs.OpenAsync<ServicioFormDialog>("Nuevo servicio",
+        await Dialogs.OpenAsync<ServicioFormDialog>(TextoUi.T("Nuevo servicio"),
             new Dictionary<string, object> { { "OnGuardado", EventCallback.Factory.Create(this, CargarAsync) } },
             new DialogOptions { Width = "640px", ShowClose = true, CloseDialogOnEsc = true, CloseDialogOnOverlayClick = false, Draggable = false, CssClass = "ag-dialog" });
     }
 
     private async Task AbrirEditarAsync(ServicioViewModel servicio)
     {
-        await Dialogs.OpenAsync<ServicioFormDialog>("Editar servicio",
+        await Dialogs.OpenAsync<ServicioFormDialog>(TextoUi.T("Editar servicio"),
             new Dictionary<string, object>
             {
                 { "ServicioId", servicio.ServicioId },
@@ -125,9 +123,9 @@
     private async Task ConfirmarEliminarAsync(ServicioViewModel servicio)
     {
         var confirmado = await Dialogs.Confirm(
-            $"¿Desactivar el servicio \"{servicio.Nombre}\"? Saldrá del catálogo y ya no se podrá agendar.",
-            "Eliminar servicio",
-            new ConfirmOptions { OkButtonText = "Desactivar", CancelButtonText = "Cancelar" }) == true;
+            string.Format(TextoUi.T("¿Desactivar el servicio \"{0}\"? Saldrá del catálogo y ya no se podrá agendar."), servicio.Nombre),
+            TextoUi.T("Desactivar servicio"),
+            new ConfirmOptions { OkButtonText = TextoUi.T("Desactivar"), CancelButtonText = TextoUi.T("Cancelar") }) == true;
 
         if (!confirmado)
         {
@@ -138,14 +136,14 @@
 
         if (respuesta.Success)
         {
-            Notificador.Exito($"Servicio \"{servicio.Nombre}\" desactivado.");
+            Notificador.Exito(string.Format(TextoUi.T("Servicio \"{0}\" desactivado."), servicio.Nombre));
             await CargarAsync();
         }
         else
         {
             var detalle = respuesta.Message
                 + (string.IsNullOrEmpty(respuesta.ValidationErrors) ? "" : Environment.NewLine + respuesta.ValidationErrors);
-            Notificador.Error(detalle, "No se pudo desactivar");
+            Notificador.Error(TextoUi.T(detalle), TextoUi.T("No se pudo desactivar"));
         }
     }
 }

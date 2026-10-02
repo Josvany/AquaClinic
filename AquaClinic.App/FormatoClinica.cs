@@ -4,9 +4,8 @@ namespace AquaClinic.App
 {
     /// <summary>
     /// Formato regional unico de la clinica: la moneda se muestra siempre en CAD
-    /// (en-CA -> "$250.00") sin importar la cultura del sistema operativo del
-    /// servidor (es-NI en pruebas locales, en-CA en produccion). La cultura de
-    /// la UI (nombres de dia/mes) se fija en los Program.cs de App y Api.
+    /// (en-CA -> "$250.00"), incluso cuando la interfaz se cambia a español.
+    /// La cultura de interfaz determina los formatos de fecha y hora.
     /// </summary>
     public static class FormatoClinica
     {

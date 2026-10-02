@@ -1,4 +1,5 @@
 using AquaClinic.App.Contracts;
+using AquaClinic.App.Localization;
 using AquaClinic.App.Services;
 using AquaClinic.App.ViewModels;
 using Microsoft.AspNetCore.Components;
@@ -51,8 +52,8 @@ namespace AquaClinic.App.Pages
         private bool HayReservasEnProceso => _reservasEnProceso.Count > 0;
 
         private string TextoReservasEnProceso => _reservasEnProceso.Count > 1
-            ? $"Reservando ({_reservasEnProceso.Count})"
-            : "Reservando";
+            ? $"{TextoUi.T("Reservando")} ({_reservasEnProceso.Count})"
+            : TextoUi.T("Reservando");
 
         protected override async Task OnInitializedAsync()
         {
@@ -249,7 +250,7 @@ namespace AquaClinic.App.Pages
         /// </summary>
         protected async Task AddNewCita()
         {
-            await DialogService.OpenAsync<NuevaCitaDialog>("Nueva cita",
+            await DialogService.OpenAsync<NuevaCitaDialog>(TextoUi.T("Nueva cita"),
                 new Dictionary<string, object>
                 {
                     { "CitaCreada", EventCallback.Factory.Create<bool>(this, async creada => await AlCrearCitaAsync(creada)) }
@@ -276,7 +277,7 @@ namespace AquaClinic.App.Pages
 
         protected async Task ExportCitas()
         {
-            if (await JSRuntime.InvokeAsync<bool>("confirm", "¿Desea exportar esta lista a Excel?"))
+            if (await JSRuntime.InvokeAsync<bool>("confirm", TextoUi.T("¿Desea exportar esta lista a Excel?")))
             {
                 try
                 {

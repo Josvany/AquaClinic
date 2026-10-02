@@ -2,7 +2,7 @@
 @attribute [Authorize]
 @rendermode InteractiveServer
 
-<h3 class="mb-5">Nueva especialidad</h3>
+<h3 class="mb-5">@TextoUi.T("Nueva especialidad")</h3>
 
 @Message
 
@@ -12,12 +12,12 @@
     <ValidationSummary></ValidationSummary>
     
     <div class="row mb-3 ms-2">
-        <label for="nombre" class="col-sm-3 form-label">Nombre:</label>
+        <label for="nombre" class="col-sm-3 form-label">@TextoUi.T("Nombre:")</label>
         <div class="col-sm-5">
-            <InputText id="nombre" class="form-control" @bind-Value="@EspecialidadViewModel.Nombre" placeholder="Ingrese el nombre"></InputText>
+            <InputText id="nombre" class="form-control" @bind-Value="@EspecialidadViewModel.Nombre" placeholder="@TextoUi.T("Ingrese el nombre")"></InputText>
             <ValidationMessage For="@(() => EspecialidadViewModel.Nombre)" />
         </div>
     </div>
 
-    <button type="submit" class="submit-button mt-3">Guardar especialidad</button>
+    <button type="submit" class="submit-button mt-3">@TextoUi.T("Guardar especialidad")</button>
 </EditForm>

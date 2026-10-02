@@ -1,0 +1,23 @@
+@using System.Globalization
+@inject NavigationManager Navigation
+
+<form class="ag-language-switch" action="/culture" method="post" aria-label="@TextoUi.T("Idioma")">
+    <AntiforgeryToken />
+    <input type="hidden" name="returnUrl" value="@ReturnUrl" />
+    <button type="submit" name="culture" value="en-CA" lang="en-CA"
+            aria-label="@TextoUi.T("English (Canada)")"
+            aria-pressed="@(Culture == "en-CA")">
+        EN
+    </button>
+    <span aria-hidden="true">/</span>
+    <button type="submit" name="culture" value="es-ES" lang="es"
+            aria-label="@TextoUi.T("Español")"
+            aria-pressed="@(Culture == "es-ES")">
+        ES
+    </button>
+</form>
+
+@code {
+    private string Culture => CultureInfo.CurrentUICulture.Name;
+    private string ReturnUrl => "/" + Navigation.ToBaseRelativePath(Navigation.Uri);
+}

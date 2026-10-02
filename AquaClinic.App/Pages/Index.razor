@@ -6,18 +6,17 @@
 <section class="ag-hero">
     <div class="ag-hero-grid">
         <div>
-            <span class="ag-label-caps" style="display:block; margin-bottom: 14px;">Aqua Skin &amp; Glow Clinic &middot; Langley, BC</span>
-            <h1>Tu piel, le&iacute;da con ciencia y tratada con <em>calma</em></h1>
+            <span class="ag-label-caps" style="display:block; margin-bottom: 14px;">Aqua Skin &amp; Glow Clinic &middot; Langley, BC, Canada</span>
+            <h1>@((MarkupString)TextoUi.T("Tu piel, leída con ciencia y tratada con <em>calma</em>"))</h1>
             <p class="ag-hero-lead">
-                Diagn&oacute;stico facial con an&aacute;lisis digital, tratamientos aplicados por profesionales
-                certificados y un plan de cuidado que se adapta a tu piel, no al rev&eacute;s.
+                @TextoUi.T("Diagnóstico facial con análisis digital, tratamientos aplicados por profesionales certificados y un plan de cuidado que se adapta a tu piel, no al revés.")
             </p>
             <div class="ag-acciones">
-                <a class="ag-btn" href="/reservar">Agenda tu an&aacute;lisis de piel</a>
-                <a class="ag-btn ag-btn-contorno" href="#servicios">Ver tratamientos</a>
+                <a class="ag-btn" href="/reservar">@TextoUi.T("Agenda tu análisis de piel")</a>
+                <a class="ag-btn ag-btn-contorno" href="#servicios">@TextoUi.T("Ver tratamientos")</a>
             </div>
         </div>
-        <div class="ag-hero-media" aria-hidden="true">Fotograf&iacute;a del consultorio</div>
+        <div class="ag-hero-media" aria-hidden="true">@TextoUi.T("Fotografía del consultorio")</div>
     </div>
     <div class="ag-ola" aria-hidden="true"></div>
 </section>
@@ -26,27 +25,26 @@
     <div class="ag-contenedor">
         <div class="ag-seccion-intro" data-ag-reveal>
             <div>
-                <span class="ag-label-caps" style="display:block; margin-bottom: 10px;">Nuestros tratamientos</span>
-                <h2 class="ag-seccion-titulo">Cuatro tratamientos, una misma piel</h2>
+                <span class="ag-label-caps" style="display:block; margin-bottom: 10px;">@TextoUi.T("Nuestros tratamientos")</span>
+                <h2 class="ag-seccion-titulo">@TextoUi.T("Cuatro tratamientos, una misma piel")</h2>
             </div>
-            <p>Cada plan comienza con el an&aacute;lisis digital de tu piel. A partir de ah&iacute; elegimos juntos el
-               tratamiento correcto, en el orden correcto.</p>
+            <p>@TextoUi.T("Cada plan comienza con el análisis digital de tu piel. A partir de ahí elegimos juntos el tratamiento correcto, en el orden correcto.")</p>
         </div>
 
         <div class="ag-servicios-lista">
             @foreach (var grupo in _serviciosPorEspecialidad)
             {
                 <div class="ag-banner-grupo" data-ag-reveal-escalon>
-                    <h3 class="ag-banner-especialidad">@grupo.Key</h3>
+                    <h3 class="ag-banner-especialidad">@TextoUi.T(grupo.Key)</h3>
                     <div class="ag-banner-grid">
                         @foreach (var servicio in grupo)
                         {
                             <a class="ag-banner-servicio" href="/reservar?servicio=@servicio.ServicioId">
                                 @* <span class="ag-banner-marca" aria-hidden="true">@PalabraMarca(servicio.Nombre)</span> *@
-                                <h3>@servicio.Nombre</h3>
+                                <h3>@TextoUi.T(servicio.Nombre)</h3>
                                 @if (!string.IsNullOrWhiteSpace(servicio.Descripcion))
                                 {
-                                    <p>@servicio.Descripcion</p>
+                                    <p>@TextoUi.T(servicio.Descripcion)</p>
                                 }
                                 <span class="ag-banner-tarifa">@servicio.Precio.ToString("C", FormatoClinica.CulturaDinero) &middot; @servicio.DuracionMinutos min</span>
                             </a>
@@ -59,8 +57,7 @@
             {
                 <div class="ag-panel">
                     <p style="margin:0; color:var(--ag-texto-mudo);">
-                        El cat&aacute;logo no est&aacute; disponible en este momento. Intenta de nuevo en unos minutos
-                        o escr&iacute;benos por WhatsApp para agendar.
+                        @TextoUi.T("El catálogo no está disponible en este momento. Intenta de nuevo en unos minutos o escríbenos por WhatsApp para agendar.")
                     </p>
                 </div>
             }
@@ -70,9 +67,9 @@
 
 <section class="ag-banda" data-ag-reveal>
     <div class="ag-banda-grid">
-        <div><strong data-cuenta="2400">2400</strong><span>an&aacute;lisis de piel realizados</span></div>
-        <div><strong data-cuenta="97">97</strong><span>% de pacientes que repiten</span></div>
-        <div><strong data-cuenta="14">14</strong><span>a&ntilde;os de experiencia</span></div>
+        <div><strong data-cuenta="2400">2400</strong><span>@TextoUi.T("análisis de piel realizados")</span></div>
+        <div><strong data-cuenta="97">97</strong><span>@TextoUi.T("% de pacientes que repiten")</span></div>
+        <div><strong data-cuenta="14">14</strong><span>@TextoUi.T("años de experiencia")</span></div>
     </div>
 </section>
 
@@ -80,25 +77,22 @@
     <div class="ag-contenedor">
         <div class="ag-seccion-intro" style="margin-bottom:0;" data-ag-reveal>
             <div>
-                <span class="ag-label-caps" style="display:block; margin-bottom: 10px;">Testimonios reales</span>
-                <h2 class="ag-seccion-titulo" style="margin-bottom: 48px;">Lo que dicen quienes ya vinieron</h2>
+                <span class="ag-label-caps" style="display:block; margin-bottom: 10px;">@TextoUi.T("Testimonios reales")</span>
+                <h2 class="ag-seccion-titulo" style="margin-bottom: 48px;">@TextoUi.T("Lo que dicen quienes ya vinieron")</h2>
             </div>
         </div>
         <div class="ag-testimonios-grid" data-ag-reveal-escalon>
             <figure class="ag-testimonio">
-                <p>&ldquo;El an&aacute;lisis me mostr&oacute; cosas que ning&uacute;n espejo me hab&iacute;a
-                   ense&ntilde;ado. El tratamiento facial fue distinto a todo lo que hab&iacute;a probado.&rdquo;</p>
-                <footer>Mariana R. &mdash; tratamiento facial mensual</footer>
+                <p>“@TextoUi.T("El análisis me mostró cosas que ningún espejo me había enseñado. El tratamiento facial fue distinto a todo lo que había probado.")”</p>
+                <footer>@TextoUi.T("Mariana R. — tratamiento facial mensual")</footer>
             </figure>
             <figure class="ag-testimonio">
-                <p>&ldquo;Me daba miedo la toxina botul&iacute;nica. Aplicaron tan poco y tan bien que nadie not&oacute;
-                   nada&hellip; excepto que me ve&iacute;a descansada.&rdquo;</p>
-                <footer>Carla V. &mdash; inyectables</footer>
+                <p>“@TextoUi.T("Me daba miedo la toxina botulínica. Aplicaron tan poco y tan bien que nadie notó nada… excepto que me veía descansada.")”</p>
+                <footer>@TextoUi.T("Carla V. — inyectables")</footer>
             </figure>
             <figure class="ag-testimonio">
-                <p>&ldquo;Reserv&eacute; desde el celular en dos minutos, me recordaron por WhatsApp y llegu&eacute;
-                   sin esperar. As&iacute; deber&iacute;a ser siempre.&rdquo;</p>
-                <footer>Luc&iacute;a M. &mdash; cuidado avanzado de la piel</footer>
+                <p>“@TextoUi.T("Reservé desde el celular en dos minutos, me recordaron por WhatsApp y llegué sin esperar. Así debería ser siempre.")”</p>
+                <footer>@TextoUi.T("Lucía M. — cuidado avanzado de la piel")</footer>
             </figure>
         </div>
     </div>
@@ -106,10 +100,10 @@
 
 <section class="ag-cta-final" data-ag-reveal>
     <div class="ag-contenedor">
-        <span class="ag-label-caps" style="display:block; margin-bottom: 10px;">Reserva en minutos</span>
-        <h2>Empieza por conocer tu piel</h2>
-        <a class="ag-btn" href="/reservar">Reservar cita ahora</a>
-        <p>O escr&iacute;benos por WhatsApp si prefieres hablar con una persona.</p>
+        <span class="ag-label-caps" style="display:block; margin-bottom: 10px;">@TextoUi.T("Reserva en minutos")</span>
+        <h2>@TextoUi.T("Empieza por conocer tu piel")</h2>
+        <a class="ag-btn" href="/reservar">@TextoUi.T("Reservar cita ahora")</a>
+        <p>@TextoUi.T("O escríbenos por WhatsApp si prefieres hablar con una persona.")</p>
     </div>
 </section>
 

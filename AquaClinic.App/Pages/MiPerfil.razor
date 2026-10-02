@@ -2,28 +2,28 @@
 @attribute [Authorize]
 @rendermode InteractiveServer
 
-<PageTitle>Mi perfil</PageTitle>
+<PageTitle>@TextoUi.T("Mi perfil")</PageTitle>
 
 <div class="ag-contenedor ag-perfil" style="padding-top: 24px;">
-    <h1 class="page-title">Mi perfil</h1>
+    <h1 class="page-title">@TextoUi.T("Mi perfil")</h1>
 
     @if (Cargando)
     {
-        <p><em>Cargando...</em></p>
+        <p><em>@TextoUi.T("Cargando...")</em></p>
     }
     else if (Usuario == null)
     {
-        <div class="alert alert-warning">No se pudo cargar el perfil. Verifica que la API est&#233; corriendo.</div>
+        <div class="alert alert-warning">@TextoUi.T("No se pudo cargar el perfil. Verifica que la API esté corriendo.")</div>
     }
     else
     {
         @if (!string.IsNullOrEmpty(MensajeExito))
         {
-            <div class="alert alert-success">@MensajeExito</div>
+            <div class="alert alert-success">@TextoUi.T(MensajeExito)</div>
         }
         @if (!string.IsNullOrEmpty(MensajeError))
         {
-            <div class="alert alert-danger">@MensajeError</div>
+            <div class="alert alert-danger">@TextoUi.T(MensajeError)</div>
         }
 
         <div class="ag-panel" style="max-width: 720px;">
@@ -31,43 +31,43 @@
                 <DataAnnotationsValidator />
 
                 <div class="row mb-3">
-                    <label class="col-sm-3 col-form-label">Correo:</label>
+                    <label class="col-sm-3 col-form-label">@TextoUi.T("Correo:")</label>
                     <div class="col-sm-9">
                         <input class="form-control" value="@Usuario.Email" readonly />
                     </div>
                 </div>
 
                 <div class="row mb-3">
-                    <label class="col-sm-3 col-form-label">Nombre:</label>
+                    <label class="col-sm-3 col-form-label">@TextoUi.T("Nombre:")</label>
                     <div class="col-sm-9">
                         <InputText class="form-control" @bind-Value="Usuario.Nombre" />
                     </div>
                 </div>
 
                 <div class="row mb-3">
-                    <label class="col-sm-3 col-form-label">Apellidos:</label>
+                    <label class="col-sm-3 col-form-label">@TextoUi.T("Apellidos:")</label>
                     <div class="col-sm-9">
                         <InputText class="form-control" @bind-Value="Usuario.Apellidos" />
                     </div>
                 </div>
 
                 <div class="row mb-3">
-                    <label class="col-sm-3 col-form-label">Tel&#233;fono:</label>
+                    <label class="col-sm-3 col-form-label">@TextoUi.T("Teléfono:")</label>
                     <div class="col-sm-9">
                         <InputText class="form-control" @bind-Value="Usuario.Telefono" />
                     </div>
                 </div>
 
                 <div class="row mb-3">
-                    <label class="col-sm-3 col-form-label">Roles:</label>
+                    <label class="col-sm-3 col-form-label">@TextoUi.T("Roles:")</label>
                     <div class="col-sm-9">
                         <span class="badge bg-info">@string.Join(", ", Usuario.Roles)</span>
                     </div>
                 </div>
 
                 <div class="ag-perfil-acciones">
-                    <button type="submit" class="submit-button">Guardar cambios</button>
-                    <a href="/cambiarpassword" class="ag-perfil-btn-secundario">Cambiar contrase&#241;a</a>
+                    <button type="submit" class="submit-button">@TextoUi.T("Guardar cambios")</button>
+                    <a href="/cambiarpassword" class="ag-perfil-btn-secundario">@TextoUi.T("Cambiar contraseña")</a>
                 </div>
             </EditForm>
         </div>

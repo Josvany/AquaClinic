@@ -2,11 +2,11 @@
 @attribute [Authorize]
 @rendermode InteractiveServer
 
-<h3 class="mb-5">Consultas del mes</h3>
+<h3 class="mb-5">@TextoUi.T("Consultas del mes")</h3>
 
 <div class="row">
     <div class="col-2">
-        <span>Seleccione el mes</span>
+        <span>@TextoUi.T("Seleccione el mes")</span>
         <select class="form-select" @bind="@SelectedMonth">
             <option value=""></option>
             @foreach (var month in MonthList)
@@ -16,7 +16,7 @@
         </select>
     </div>
     <div class="col-2">
-        <span>Seleccione el año</span>
+        <span>@TextoUi.T("Seleccione el año")</span>
         <select class="form-select" @bind="@SelectedYear">
             <option value=""></option>
             @foreach (var year in YearList)
@@ -28,28 +28,28 @@
 </div>
 
 
-<button @onclick="GetConsultas" class="mt-4">Consultar</button>
+<button @onclick="GetConsultas" class="mt-4">@TextoUi.T("Consultar")</button>
 
 <br />
 
 @if (consultasList == null)
 {
-    <p><em>Sin datos</em></p>
+    <p><em>@TextoUi.T("Sin datos")</em></p>
 }
 else
 {
     <table class="ticket-sales-table">
         <thead>
             <tr>
-                <th>Fecha</th>
-                <th>Total</th>
+                <th>@TextoUi.T("Fecha")</th>
+                <th>@TextoUi.T("Total")</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var order in consultasList)
             {
                 <tr>
-                    <td>@order.FechaSolicitada</td>
+                    <td>@order.FechaSolicitada.ToString("d", System.Globalization.CultureInfo.CurrentCulture)</td>
                     <td>@order.TotalConsulta</td>
                 </tr>
             }

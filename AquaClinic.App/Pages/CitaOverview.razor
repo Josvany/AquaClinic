@@ -9,34 +9,33 @@
     <div class="ag-contenedor ag-contenedor-ancho">
         <div class="ag-citas-encabezado">
             <div>
-                <span class="ag-label-caps">Agenda interna</span>
-                <h1 class="ag-citas-titulo">Citas</h1>
+                <span class="ag-label-caps">@TextoUi.T("Agenda interna")</span>
+                <h1 class="ag-citas-titulo">@TextoUi.T("Citas")</h1>
                 <p class="ag-citas-subtitulo">
-                    Calendario de la cl&iacute;nica: las citas agendadas y, en dorado, los horarios
-                    que se est&aacute;n reservando en este momento.
+                    @TextoUi.T("Calendario de la clínica: las citas agendadas y, en dorado, los horarios que se están reservando en este momento.")
                 </p>
             </div>
 
             <div class="ag-citas-acciones">
-                <RadzenButton Text="Nueva cita" Icon="add_circle_outline"
+                <RadzenButton Text="@TextoUi.T("Nueva cita")" Icon="add_circle_outline"
                               ButtonStyle="ButtonStyle.Primary" Click="@AddNewCita" />
-                <RadzenButton Text="Exportar citas" Icon="file_download"
+                <RadzenButton Text="@TextoUi.T("Exportar citas")" Icon="file_download"
                               ButtonStyle="ButtonStyle.Secondary" Click="@ExportCitas" />
             </div>
         </div>
 
         @if (_errorCarga is not null)
         {
-            <div class="alert alert-danger">@_errorCarga</div>
+            <div class="alert alert-danger">@TextoUi.T(_errorCarga)</div>
         }
         else
         {
             <div class="ag-panel ag-citas-calendario">
                 <div class="ag-citas-barra">
                     <p class="ag-reserva-leyenda">
-                        <span class="ag-leyenda ag-leyenda-ocupado"></span> Cita agendada
+                        <span class="ag-leyenda ag-leyenda-ocupado"></span> @TextoUi.T("Cita agendada")
                         &nbsp;&nbsp;
-                        <span class="ag-leyenda ag-leyenda-reservando"></span> Reservando
+                        <span class="ag-leyenda ag-leyenda-reservando"></span> @TextoUi.T("Reservando")
                     </p>
 
                     @if (HayReservasEnProceso)
@@ -60,8 +59,8 @@
 
             <div class="ag-citas-lista">
                 <div class="ag-citas-lista-encabezado">
-                    <h3>Citas agendadas</h3>
-                    <span class="ag-label-caps">@_totalCitas cita(s)</span>
+                    <h3>@TextoUi.T("Citas agendadas")</h3>
+                    <span class="ag-label-caps">@_totalCitas @TextoUi.T("cita(s)")</span>
                 </div>
 
                 <RadzenDataGrid @ref="_grid" TItem="CitaListViewModel" Data="@_citas"
@@ -82,16 +81,16 @@
                                 }
                             </Template>
                         </RadzenDataGridColumn>
-                        <RadzenDataGridColumn TItem="CitaListViewModel" Property="Nombre" Title="Cliente" />
-                        <RadzenDataGridColumn TItem="CitaListViewModel" Property="Fecha" Title="Fecha">
+                        <RadzenDataGridColumn TItem="CitaListViewModel" Property="Nombre" Title="@TextoUi.T("Cliente")" />
+                        <RadzenDataGridColumn TItem="CitaListViewModel" Property="Fecha" Title="@TextoUi.T("Fecha")">
                             <Template Context="cita">
-                                <span class="event-date">@cita.Fecha.ToString("dddd d 'de' MMMM 'de' yyyy, h:mm tt")</span>
+                                <span class="event-date">@cita.Fecha.ToString("f", System.Globalization.CultureInfo.CurrentCulture)</span>
                             </Template>
                         </RadzenDataGridColumn>
                         <RadzenDataGridColumn TItem="CitaListViewModel" Sortable="false" Width="90px" TextAlign="TextAlign.Center">
                             <Template Context="cita">
                                 <a href="@($"citadetails/{cita.CitaId}")" class="event-purchase-button btn"
-                                   title="Editar cita">
+                                   title="@TextoUi.T("Editar cita")">
                                     <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
                                 </a>
                             </Template>
@@ -103,7 +102,7 @@
 
         @if (_errorExport is not null)
         {
-            <div class="alert alert-warning mt-3">@_errorExport</div>
+            <div class="alert alert-warning mt-3">@TextoUi.T(_errorExport)</div>
         }
     </div>
 </section>

@@ -1,4 +1,5 @@
 using AquaClinic.App.Services;
+using AquaClinic.App.Localization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Radzen;
@@ -293,10 +294,10 @@ namespace AquaClinic.App.Pages
             builder.AddContent(3, cita.Text);
             builder.CloseElement();
             builder.OpenElement(4, "span");
-            builder.AddContent(5, $"{cita.Inicio:dd/MM/yyyy hh:mm tt} – {cita.Fin:hh:mm tt}");
+            builder.AddContent(5, $"{cita.Inicio.ToString("g", System.Globalization.CultureInfo.CurrentCulture)} – {cita.Fin.ToString("t", System.Globalization.CultureInfo.CurrentCulture)}");
             builder.CloseElement();
             builder.OpenElement(6, "span");
-            builder.AddContent(7, $"Duración: {FormatoDuracion(duracion)}");
+            builder.AddContent(7, $"{TextoUi.T("Duración:")} {FormatoDuracion(duracion)}");
             builder.CloseElement();
             builder.CloseElement();
         };
@@ -344,7 +345,7 @@ namespace AquaClinic.App.Pages
             if (inicio.Date < AgendaCalendario.HoyClinica)
             {
                 _abriendoModal = false;
-                Notificador.Advertencia("No puedes reservar en fechas pasadas. Elige hoy o un día posterior.");
+                Notificador.Advertencia(TextoUi.T("No puedes reservar en fechas pasadas. Elige hoy o un día posterior."));
                 return;
             }
 
@@ -375,7 +376,7 @@ namespace AquaClinic.App.Pages
             if (tocaOcupacion)
             {
                 _abriendoModal = false;
-                Notificador.Advertencia("Ese horario no está disponible. Elige un slot libre.");
+                Notificador.Advertencia(TextoUi.T("Ese horario no está disponible. Elige un slot libre."));
                 return;
             }
 
@@ -384,7 +385,7 @@ namespace AquaClinic.App.Pages
             if (!ok)
             {
                 _abriendoModal = false;
-                Notificador.Advertencia("Alguien está reservando ese horario en este momento. Elige otro disponible.");
+                Notificador.Advertencia(TextoUi.T("Alguien está reservando ese horario en este momento. Elige otro disponible."));
                 await CargarAgendaAsync();
                 return;
             }

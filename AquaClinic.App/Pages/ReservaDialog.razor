@@ -10,32 +10,32 @@
     @if (_enviada)
     {
         <div class="ag-booking-confirmacion">
-            <h3>&#161;Cita recibida!</h3>
+            <h3>@TextoUi.T("¡Cita recibida!")</h3>
             <p>
-                Te esperamos el <strong>@_fechaInicio.ToString("dddd, d 'de' MMMM 'de' yyyy")</strong>
-                a las <strong>@_fechaInicio.ToString("hh\\:mm tt")</strong>.
+                @TextoUi.T("Te esperamos el") <strong>@_fechaInicio.ToString("D", System.Globalization.CultureInfo.CurrentCulture)</strong>
+                @TextoUi.T("a las") <strong>@_fechaInicio.ToString("t", System.Globalization.CultureInfo.CurrentCulture)</strong>.
             </p>
-            <p style="font-size:0.92rem; color:var(--ag-tinta);">@_servicioNombre</p>
-            <RadzenButton Text="Listo" Click="@(async () => await OnConfirmarAsync(true))" ButtonStyle="ButtonStyle.Primary" Style="width:100%;" />
+            <p style="font-size:0.92rem; color:var(--ag-tinta);">@TextoUi.T(_servicioNombre)</p>
+            <RadzenButton Text="@TextoUi.T("Listo")" Click="@(async () => await OnConfirmarAsync(true))" ButtonStyle="ButtonStyle.Primary" Style="width:100%;" />
         </div>
     }
     else
     {
         <p class="ag-reserva-modal-fecha">
             <i class="fa-regular fa-calendar-check" aria-hidden="true"></i>
-            @_fechaInicio.ToString("dddd, d 'de' MMMM 'de' yyyy · hh\\:mm tt")
+            @_fechaInicio.ToString("f", System.Globalization.CultureInfo.CurrentCulture)
         </p>
 
         <RadzenTemplateForm TItem="object" Data="@_modelo" Submit="@Enviar">
             <div class="ag-field">
-                <label>Servicio</label>
+                <label>@TextoUi.T("Servicio")</label>
                 <RadzenDropDown Value="@_servicioId" Change="@(async (object? s) => await AlElegirServicioAsync((Guid)s))"
                                 Name="servicio" AllowFiltering="true" TextProperty="EtiquetaDropdown" ValueProperty="ServicioId"
-                                Data="@_servicios" TValue="System.Guid" Placeholder="Elige un servicio" Style="width:100%;" />
-                <RadzenRequiredValidator Component="servicio" Text="Elige un servicio" Popup="false" />
+                                Data="@_servicios" TValue="System.Guid" Placeholder="@TextoUi.T("Elige un servicio")" Style="width:100%;" />
+                <RadzenRequiredValidator Component="servicio" Text="@TextoUi.T("Elige un servicio")" Popup="false" />
                 @if (_error is not null)
                 {
-                    <div class="ag-nueva-cita-error">@_error</div>
+                    <div class="ag-nueva-cita-error">@TextoUi.T(_error)</div>
                 }
             </div>
 
@@ -44,7 +44,7 @@
                 <div class="ag-reserva-sugerencias">
                     <p>
                         <i class="fa-solid fa-lightbulb" aria-hidden="true"></i>
-                        No cabe completa desde las @_fechaInicio.ToString("hh\\:mm tt"). Horas libres donde s&iacute; cabe:
+                        @TextoUi.T("No cabe completa desde las") @_fechaInicio.ToString("t", System.Globalization.CultureInfo.CurrentCulture). @TextoUi.T("Horas libres donde sí cabe:")
                     </p>
                     <RadzenRow class="ag-reserva-sugerencias-fila">
                         @foreach (var sugerida in _sugerencias)
@@ -52,7 +52,7 @@
                             var etiqueta = EtiquetaDiaSugerida(sugerida);
                             <RadzenColumn Size="4">
                                 <button type="button" class="ag-reserva-sugerencia" @onclick="@(async () => await ReAnclarAsync(sugerida))">
-                                    @sugerida.ToString("hh\\:mm tt")
+                                    @sugerida.ToString("t", System.Globalization.CultureInfo.CurrentCulture)
                                     @if (etiqueta is not null)
                                     {
                                         <span class="ag-reserva-sugerencia-dia">@etiqueta</span>
@@ -68,34 +68,34 @@
             {
                 <div class="ag-reserva-dos-columnas">
                     <div class="ag-field">
-                        <label>Nombre completo</label>
-                        <RadzenTextBox @bind-Value="_nombre" Name="nombre" Placeholder="Tu nombre" />
-                        <RadzenRequiredValidator Component="nombre" Text="Escribe tu nombre" Popup="false" />
+                        <label>@TextoUi.T("Nombre completo")</label>
+                        <RadzenTextBox @bind-Value="_nombre" Name="nombre" Placeholder="@TextoUi.T("Tu nombre")" />
+                        <RadzenRequiredValidator Component="nombre" Text="@TextoUi.T("Escribe tu nombre")" Popup="false" />
                     </div>
 
                     <div class="ag-field">
-                        <label>Correo</label>
-                        <RadzenTextBox @bind-Value="_correo" Name="correo" Placeholder="tu@correo.com" />
-                        <RadzenRequiredValidator Component="correo" Text="Escribe tu correo" Popup="false" />
-                        <RadzenEmailValidator Component="correo" Text="Revisa el formato del correo" Popup="false" />
+                        <label>@TextoUi.T("Correo")</label>
+                        <RadzenTextBox @bind-Value="_correo" Name="correo" Placeholder="@TextoUi.T("tu@correo.com")" />
+                        <RadzenRequiredValidator Component="correo" Text="@TextoUi.T("Escribe tu correo")" Popup="false" />
+                        <RadzenEmailValidator Component="correo" Text="@TextoUi.T("Revisa el formato del correo")" Popup="false" />
                     </div>
 
                     <div class="ag-field">
-                        <label>Tel&eacute;fono (opcional)</label>
+                        <label>@TextoUi.T("Teléfono (opcional)")</label>
                         <RadzenTextBox @bind-Value="_telefono" Name="telefono" Placeholder="+1 604 ..." />
                     </div>
 
                     <div class="ag-field">
-                        <label>Notas (opcional)</label>
-                        <RadzenTextArea @bind-Value="_notas" Name="notas" Rows="2" Placeholder="Alergias, preferencias, ..." />
+                        <label>@TextoUi.T("Notas (opcional)")</label>
+                        <RadzenTextArea @bind-Value="_notas" Name="notas" Rows="2" Placeholder="@TextoUi.T("Alergias, preferencias, ...")" />
                     </div>
                 </div>
             }
 
             <div class="ag-reserva-acciones">
-                <RadzenButton ButtonType="ButtonType.Submit" Text="Confirmar cita"
+                <RadzenButton ButtonType="ButtonType.Submit" Text="@TextoUi.T("Confirmar cita")"
                               ButtonStyle="ButtonStyle.Primary" Disabled="@_enviando" />
-                <RadzenButton Text="Cancelar" Click="@OnCancelarAsync"
+                <RadzenButton Text="@TextoUi.T("Cancelar")" Click="@OnCancelarAsync"
                               ButtonStyle="ButtonStyle.Secondary" Disabled="@_enviando" />
             </div>
         </RadzenTemplateForm>
@@ -203,7 +203,7 @@
         catch (Exception)
         {
             _error = "No se pudo cargar el catálogo de servicios. Intenta de nuevo.";
-            Notificador.Error(_error, "No hay conexión");
+            Notificador.Error(TextoUi.T(_error), TextoUi.T("No hay conexión"));
         }
     }
 
@@ -261,8 +261,8 @@
     {
         _sugerencias = CalcularSugerencias(DuracionElegida);
         _error = _sugerencias.Count > 0
-            ? $"\"{_servicioNombre}\" dura {DuracionElegida} min y no cabe completa en ese horario. Elige una hora sugerida:"
-            : $"\"{_servicioNombre}\" dura {DuracionElegida} min y no cabe completa en ese horario, y no hay horas libres en los próximos días.";
+            ? string.Format(TextoUi.T("\"{0}\" dura {1} min y no cabe completa en ese horario. Elige una hora sugerida:"), _servicioNombre, DuracionElegida)
+            : string.Format(TextoUi.T("\"{0}\" dura {1} min y no cabe completa en ese horario, y no hay horas libres en los próximos días."), _servicioNombre, DuracionElegida);
         return _error;
     }
 
@@ -485,18 +485,21 @@
             {
                 _servicioNombre = _servicios.FirstOrDefault(s => s.ServicioId == _servicioId)?.Nombre ?? "Servicio";
                 _enviada = true;
-                Notificador.Exito($"Cita agendada para el {_fechaInicio:dddd d 'de' MMMM} a las {_fechaInicio:hh\\:mm tt}.");
+                Notificador.Exito(string.Format(
+                    TextoUi.T("Cita agendada para el {0} a las {1}."),
+                    _fechaInicio.ToString("D", System.Globalization.CultureInfo.CurrentCulture),
+                    _fechaInicio.ToString("t", System.Globalization.CultureInfo.CurrentCulture)));
                 StateHasChanged();
                 return;
             }
 
             _error = resultado.Message ?? "No se pudo crear la cita.";
-            Notificador.Error(_error);
+            Notificador.Error(TextoUi.T(_error));
         }
         catch (HttpRequestException)
         {
             _error = "No se pudo conectar con la API. Verifica tu conexión.";
-            Notificador.Error(_error);
+            Notificador.Error(TextoUi.T(_error));
         }
         finally
         {

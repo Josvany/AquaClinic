@@ -5,18 +5,23 @@ using AquaClinic.App.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Localization;
 using Radzen;
 using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Cultura fija de la aplicacion: los formatos de fecha/numero no dependen del
-// sistema operativo del servidor (pruebas es-NI vs produccion en Canada).
-// es-NI mantiene los nombres de dia/mes en espanol que ya usa la UI;
-// al publicar para clientes angloparlantes, cambiar aqui a "en-CA".
-var culturaClinica = new CultureInfo("es-NI");
-CultureInfo.DefaultThreadCurrentCulture = culturaClinica;
-CultureInfo.DefaultThreadCurrentUICulture = culturaClinica;
+var culturaPredeterminada = new CultureInfo("en-CA");
+CultureInfo.DefaultThreadCurrentCulture = culturaPredeterminada;
+CultureInfo.DefaultThreadCurrentUICulture = culturaPredeterminada;
+
+var culturasSoportadas = new[] { "en-CA", "es-ES" };
+var opcionesLocalizacion = new RequestLocalizationOptions()
+    .SetDefaultCulture("en-CA")
+    .AddSupportedCultures(culturasSoportadas)
+    .AddSupportedUICultures(culturasSoportadas);
+opcionesLocalizacion.RequestCultureProviders = [new CookieRequestCultureProvider()];
+builder.Services.AddLocalization();
 
 // Blazor Web App con render interactivo Server por pagina
 builder.Services.AddRazorComponents()
@@ -93,6 +98,7 @@ builder.Services.AddHttpClient("ApiAuth", client => client.BaseAddress = new Uri
 
 var app = builder.Build();
 
+app.UseRequestLocalization(opcionesLocalizacion);
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAuthentication();
@@ -230,6 +236,36 @@ app.MapPost("/logout", async (HttpContext ctx, IHttpClientFactory httpClientFact
     ctx.Response.Cookies.Delete(SesionPendiente.NombreCookie);
 
     return Results.LocalRedirect("/");
+});
+
+app.MapPost("/culture", async (HttpContext ctx) =>
+{
+    var form = await ctx.Request.ReadFormAsync();
+    var culture = form["culture"].ToString();
+    if (culture is not ("en-CA" or "es-ES"))
+    {
+        return Results.BadRequest();
+    }
+
+    ctx.Response.Cookies.Append(
+        CookieRequestCultureProvider.DefaultCookieName,
+        CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
+        new CookieOptions
+        {
+            Expires = DateTimeOffset.UtcNow.AddYears(1),
+            IsEssential = true,
+            Path = "/",
+            SameSite = SameSiteMode.Lax,
+            Secure = ctx.Request.IsHttps
+        });
+
+    var returnUrl = form["returnUrl"].ToString();
+    if (string.IsNullOrWhiteSpace(returnUrl) || !returnUrl.StartsWith('/') || returnUrl.StartsWith("//"))
+    {
+        returnUrl = "/";
+    }
+
+    return Results.LocalRedirect(returnUrl);
 });
 
 app.MapRazorComponents<App>()

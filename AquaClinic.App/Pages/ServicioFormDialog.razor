@@ -6,18 +6,18 @@
 <div class="ag-reserva-modal">
     @if (_cargando)
     {
-        <p><em>Cargando servicio...</em></p>
+        <p><em>@TextoUi.T("Cargando servicio...")</em></p>
     }
     else
     {
         <div class="ag-reserva-form">
             <div class="ag-field">
-                <label for="servicio-nombre">Nombre</label>
+                <label for="servicio-nombre">@TextoUi.T("Nombre")</label>
                 <RadzenTextBox @bind-Value="_nombre" Name="nombre" InputId="servicio-nombre" Placeholder="Ej. Limpieza facial profunda" />
             </div>
 
             <div class="ag-field">
-                <label for="servicio-especialidad">Especialidad</label>
+                <label for="servicio-especialidad">@TextoUi.T("Especialidad")</label>
                 <RadzenDropDown @bind-Value="_especialidadId"
                                 Name="especialidad" TextProperty="Nombre" ValueProperty="EspecialidadId"
                                 Data="_especialidades" TValue="System.Guid"
@@ -26,36 +26,36 @@
 
             <div class="ag-reserva-dos-columnas">
                 <div class="ag-field">
-                    <label for="servicio-precio">Precio (CAD)</label>
+                    <label for="servicio-precio">@TextoUi.T("Precio (CAD)")</label>
                     <RadzenNumeric TValue="decimal" @bind-Value="_precio" Name="precio" InputId="servicio-precio" Min="0.01m" Max="10000" />
                 </div>
 
                 <div class="ag-field">
-                    <label for="servicio-duracion">Duración (minutos)</label>
+                    <label for="servicio-duracion">@TextoUi.T("Duración (minutos)")</label>
                     <RadzenNumeric TValue="int" @bind-Value="_duracionMinutos" Name="duracion" InputId="servicio-duracion" Min="5" Max="600" Step="5" />
                 </div>
             </div>
 
             <div class="ag-field">
-                <label for="servicio-descripcion">Descripción (opcional)</label>
-                <RadzenTextArea @bind-Value="_descripcion" Name="descripcion" Rows="2" Placeholder="Qué incluye el tratamiento..." />
+                <label for="servicio-descripcion">@TextoUi.T("Descripción (opcional)")</label>
+                <RadzenTextArea @bind-Value="_descripcion" Name="descripcion" Rows="2" Placeholder="@TextoUi.T("Qué incluye el tratamiento...")" />
             </div>
 
             <div class="ag-field">
-                <label for="servicio-imagen">URL de imagen (opcional)</label>
+                <label for="servicio-imagen">@TextoUi.T("URL de imagen (opcional)")</label>
                 <RadzenTextBox @bind-Value="_imagenUrl" Name="imagen" InputId="servicio-imagen" Placeholder="https://..." />
             </div>
 
             @if (_error is not null)
             {
-                <div class="ag-nueva-cita-error" style="white-space: pre-line;">@_error</div>
+                <div class="ag-nueva-cita-error" style="white-space: pre-line;">@TextoUi.T(_error)</div>
             }
 
             <div class="ag-reserva-acciones">
-                <RadzenButton Text="@(_esEditando ? "Guardar cambios" : "Crear servicio")"
+                <RadzenButton Text="@(_esEditando ? TextoUi.T("Guardar cambios") : TextoUi.T("Crear servicio"))"
                               ButtonStyle="ButtonStyle.Primary" Disabled="_guardando"
                               Click="@GuardarAsync" />
-                <RadzenButton Text="Cancelar" Click="@CancelarAsync"
+                <RadzenButton Text="@TextoUi.T("Cancelar")" Click="@CancelarAsync"
                               ButtonStyle="ButtonStyle.Secondary" Disabled="_guardando" />
             </div>
         </div>
@@ -194,7 +194,10 @@
                 }
             }
 
-            Notificador.Exito(_esEditando ? $"Servicio \"{vm.Nombre}\" actualizado." : $"Servicio \"{vm.Nombre}\" creado.");
+            var mensaje = _esEditando
+                ? string.Format(TextoUi.T("Servicio \"{0}\" actualizado."), vm.Nombre)
+                : string.Format(TextoUi.T("Servicio \"{0}\" creado."), vm.Nombre);
+            Notificador.Exito(mensaje);
             await OnGuardado.InvokeAsync();
             Dialogs.Close(true);
         }

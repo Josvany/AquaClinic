@@ -11,10 +11,8 @@ Log.Information("AquaClinic API iniciando");
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Cultura fija de la aplicacion: los formatos de fecha/numero no dependen del
-// sistema operativo del servidor (pruebas es-NI vs produccion en Canada).
-// Debe mantenerse igual que en AquaClinic.App/Program.cs.
-var culturaClinica = new CultureInfo("es-NI");
+// Cultura predeterminada canadiense; las citas siguen usando America/Vancouver.
+var culturaClinica = new CultureInfo("en-CA");
 CultureInfo.DefaultThreadCurrentCulture = culturaClinica;
 CultureInfo.DefaultThreadCurrentUICulture = culturaClinica;
 

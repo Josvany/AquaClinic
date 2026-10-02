@@ -6,21 +6,21 @@
 @inject NavigationManager Navigation
 @inject NotificadorUi Notificador
 
-<PageTitle>Reservar cita — Aqua Skin & Glow</PageTitle>
+<PageTitle>@TextoUi.T("Reservar cita") — Aqua Skin & Glow</PageTitle>
 
 <section class="ag-section ag-reserva-seccion">
     <div class="ag-reserva-contenedor">
         <div class="ag-seccion-intro">
             <div>
-                <span class="ag-label-caps" style="display:block; margin-bottom: 10px;">Agenda tu visita</span>
-                <h2 class="ag-seccion-titulo">Reserva tu cita</h2>
+                <span class="ag-label-caps" style="display:block; margin-bottom: 10px;">@TextoUi.T("Agenda tu visita")</span>
+                <h2 class="ag-seccion-titulo">@TextoUi.T("Reserva tu cita")</h2>
             </div>
             <div class="ag-reserva-intro-derecha">
-                <p>Haz clic en un horario libre para reservar; se actualiza en tiempo real.</p>
+                <p>@TextoUi.T("Haz clic en un horario libre para reservar; se actualiza en tiempo real.")</p>
                 <p class="ag-reserva-leyenda">
-                    <span class="ag-leyenda ag-leyenda-ocupado"></span> Ocupado
+                    <span class="ag-leyenda ag-leyenda-ocupado"></span> @TextoUi.T("Ocupado")
                     &nbsp;&nbsp;
-                    <span class="ag-leyenda ag-leyenda-reservando"></span> Reservando
+                    <span class="ag-leyenda ag-leyenda-reservando"></span> @TextoUi.T("Reservando")
                 </p>
             </div>
         </div>
@@ -28,7 +28,7 @@
         <div class="ag-booking-card ag-booking-scheduler">
             @if (_errorCarga is not null)
             {
-                <div class="alert alert-warning">@_errorCarga</div>
+                <div class="alert alert-warning">@TextoUi.T(_errorCarga)</div>
             }
             else
             {
@@ -65,10 +65,9 @@
         </div>
 
         <div class="ag-reserva-nota">
-            <h3>Antes de tu visita</h3>
+            <h3>@TextoUi.T("Antes de tu visita")</h3>
             <p>
-                No necesitas crear una cuenta: con tu nombre y correo basta para agendar. Si el tratamiento
-                lo requiere, la valoraci&oacute;n previa va incluida en tu primera cita.
+                @TextoUi.T("No necesitas crear una cuenta: con tu nombre y correo basta para agendar. Si el tratamiento lo requiere, la valoración previa va incluida en tu primera cita.")
             </p>
         </div>
     </div>

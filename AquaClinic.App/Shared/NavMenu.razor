@@ -3,16 +3,23 @@
         <a class="ag-logo" href="/">Aqua <span>Skin & Glow Clinic </span></a>
 
         <ul class="ag-nav-links">
-            <li><NavLink href="/" Match="NavLinkMatch.All">Inicio</NavLink></li>
-            <li><NavLink href="/acerca">Acerca de</NavLink></li>
+            <li><NavLink href="/" Match="NavLinkMatch.All">@TextoUi.T("Inicio")</NavLink></li>
+            <li><NavLink href="/acerca">@TextoUi.T("Acerca de")</NavLink></li>
+            <li>
+                <a class="ag-nav-location" href="https://maps.google.com/?q=Aqua+Skin+and+Glow+Clinic%2C+Langley%2C+BC"
+                   target="_blank" rel="noopener noreferrer" aria-label="@TextoUi.T("Ubicación de la clínica")">
+                    <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
+                    @TextoUi.T("Langley, BC")
+                </a>
+            </li>
             <AuthorizeView>
                 <NotAuthorized>
-                    <li class="ag-nav-cta-item"><NavLink href="/reservar" class="ag-nav-cta">Reservar cita</NavLink></li>
+                    <li class="ag-nav-cta-item"><NavLink href="/reservar" class="ag-nav-cta">@TextoUi.T("Reservar cita")</NavLink></li>
                 </NotAuthorized>
                 <Authorized>
                     @if (!context.User.IsInRole("Administrador") && !context.User.IsInRole("Recepcion") && !context.User.IsInRole("Esteticista"))
                     {
-                        <li class="ag-nav-cta-item"><NavLink href="/reservar" class="ag-nav-cta">Reservar cita</NavLink></li>
+                        <li class="ag-nav-cta-item"><NavLink href="/reservar" class="ag-nav-cta">@TextoUi.T("Reservar cita")</NavLink></li>
                     }
                 </Authorized>
             </AuthorizeView>
@@ -21,19 +28,19 @@
                 <Authorized>
                     @if (context.User.IsInRole("Administrador") || context.User.IsInRole("Recepcion") || context.User.IsInRole("Esteticista"))
                     {
-                        <li><NavLink href="/citaoverview">Citas</NavLink></li>                        
+                        <li><NavLink href="/citaoverview">@TextoUi.T("Citas")</NavLink></li>
                         <li class="ag-nav-staff">
                             <details>
-                                <summary aria-label="Menú de administración">
+                                <summary aria-label="@TextoUi.T("Menú de administración")">
                                     <i class="fa-solid fa-user-gear" aria-hidden="true"></i>
                                 </summary>
                                 <div class="ag-staff-menu">
-                                    <NavLink href="/especialidadoverview"><i class="fa-solid fa-spa" aria-hidden="true"></i>Especialidades</NavLink>
-                                    <NavLink href="/serviciooverview"><i class="fa-solid fa-spa" aria-hidden="true"></i>Servicios</NavLink>
-                                    <NavLink href="/perfil"><i class="fa-regular fa-id-card" aria-hidden="true"></i>Mi perfil</NavLink>
+                                    <NavLink href="/especialidadoverview"><i class="fa-solid fa-spa" aria-hidden="true"></i>@TextoUi.T("Especialidades")</NavLink>
+                                    <NavLink href="/serviciooverview"><i class="fa-solid fa-spa" aria-hidden="true"></i>@TextoUi.T("Servicios")</NavLink>
+                                    <NavLink href="/perfil"><i class="fa-regular fa-id-card" aria-hidden="true"></i>@TextoUi.T("Mi perfil")</NavLink>
                                     <form action="logout" method="post">
                                         <AntiforgeryToken />
-                                        <button type="submit" class="ag-staff-logout"><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>Cerrar sesion</button>
+                                        <button type="submit" class="ag-staff-logout"><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>@TextoUi.T("Cerrar sesión")</button>
                                     </form>
                                 </div>
                             </details>
@@ -43,15 +50,15 @@
                     {
                         <li class="ag-nav-staff">
                             <details>
-                                <summary aria-label="Menú de usuario">
+                                <summary aria-label="@TextoUi.T("Menú de usuario")">
                                     <i class="fa-solid fa-user" aria-hidden="true"></i>
                                 </summary>
                                 <div class="ag-staff-menu">
-                                    <NavLink href="/miscitas"><i class="fa-regular fa-calendar-check" aria-hidden="true"></i>Mis citas</NavLink>
-                                    <NavLink href="/perfil"><i class="fa-regular fa-id-card" aria-hidden="true"></i>Mi perfil</NavLink>
+                                    <NavLink href="/miscitas"><i class="fa-regular fa-calendar-check" aria-hidden="true"></i>@TextoUi.T("Mis citas")</NavLink>
+                                    <NavLink href="/perfil"><i class="fa-regular fa-id-card" aria-hidden="true"></i>@TextoUi.T("Mi perfil")</NavLink>
                                     <form action="logout" method="post">
                                         <AntiforgeryToken />
-                                        <button type="submit" class="ag-staff-logout"><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>Cerrar sesion</button>
+                                        <button type="submit" class="ag-staff-logout"><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>@TextoUi.T("Cerrar sesión")</button>
                                     </form>
                                 </div>
                             </details>
@@ -64,13 +71,16 @@
             </AuthorizeView>
         </ul>
 
-        <div class="ag-nav-auth">
-            <NavAuth @rendermode="InteractiveServer" />
+        <div class="ag-nav-tools">
+            <LanguageSwitcher />
+            <div class="ag-nav-auth">
+                <NavAuth @rendermode="InteractiveServer" />
+            </div>
         </div>
 
         <button type="button"
                 class="ag-menu-boton"
-                aria-label="Abrir men&uacute;"
+                aria-label="@TextoUi.T("Abrir menú")"
                 aria-expanded="false"
                 aria-controls="ag-menu-movil"
                 data-ag-menu-abrir>
@@ -81,12 +91,12 @@
 
 <div id="ag-menu-movil" class="ag-menu-movil" hidden>
     <div class="ag-menu-fondo" data-ag-menu-cerrar></div>
-    <aside class="ag-menu-panel" role="dialog" aria-modal="true" aria-label="Men&uacute; de navegaci&oacute;n">
+    <aside class="ag-menu-panel" role="dialog" aria-modal="true" aria-label="@TextoUi.T("Menú de navegación")">
         <div class="ag-menu-panel-superior">
             <span class="ag-menu-marca">Aqua <span>Skin & Glow Clinic</span></span>
             <button type="button"
                     class="ag-menu-cerrar"
-                    aria-label="Cerrar men&uacute;"
+                    aria-label="@TextoUi.T("Cerrar menú")"
                     data-ag-menu-cerrar>
                 <i class="fa-solid fa-xmark" aria-hidden="true"></i>
             </button>
@@ -94,41 +104,47 @@
 
         <nav class="ag-menu-panel-nav">
             <ul class="ag-menu-links">
-                <li><NavLink href="/" Match="NavLinkMatch.All">Inicio</NavLink></li>
-                <li><NavLink href="/acerca">Acerca de</NavLink></li>
+                <li><NavLink href="/" Match="NavLinkMatch.All">@TextoUi.T("Inicio")</NavLink></li>
+                <li><NavLink href="/acerca">@TextoUi.T("Acerca de")</NavLink></li>
+                <li>
+                    <a href="https://maps.google.com/?q=Aqua+Skin+and+Glow+Clinic%2C+Langley%2C+BC"
+                       target="_blank" rel="noopener noreferrer">
+                        <i class="fa-solid fa-location-dot" aria-hidden="true"></i>@TextoUi.T("Langley, BC")
+                    </a>
+                </li>
                 <AuthorizeView>
                     <NotAuthorized>
-                        <li><NavLink href="/reservar" class="ag-nav-cta">Reservar cita</NavLink></li>
+                        <li><NavLink href="/reservar" class="ag-nav-cta">@TextoUi.T("Reservar cita")</NavLink></li>
                     </NotAuthorized>
                     <Authorized>
                         @if (!context.User.IsInRole("Administrador") && !context.User.IsInRole("Recepcion") && !context.User.IsInRole("Esteticista"))
                         {
-                            <li><NavLink href="/reservar" class="ag-nav-cta">Reservar cita</NavLink></li>
+                            <li><NavLink href="/reservar" class="ag-nav-cta">@TextoUi.T("Reservar cita")</NavLink></li>
                         }
                         else
                         {
-                            <li><NavLink href="/citaoverview">Citas</NavLink></li>
+                            <li><NavLink href="/citaoverview">@TextoUi.T("Citas")</NavLink></li>
                         }
 
                         @if (context.User.IsInRole("Administrador"))
                         {
-                            <li class="ag-menu-seccion">Administraci&oacute;n</li>
-                            <li><NavLink href="/especialidadoverview"><i class="fa-solid fa-spa" aria-hidden="true"></i>Especialidades</NavLink></li>
-                            <li><NavLink href="/serviciooverview"><i class="fa-solid fa-spa" aria-hidden="true"></i>Servicios</NavLink></li>
+                            <li class="ag-menu-seccion">@TextoUi.T("Administración")</li>
+                            <li><NavLink href="/especialidadoverview"><i class="fa-solid fa-spa" aria-hidden="true"></i>@TextoUi.T("Especialidades")</NavLink></li>
+                            <li><NavLink href="/serviciooverview"><i class="fa-solid fa-spa" aria-hidden="true"></i>@TextoUi.T("Servicios")</NavLink></li>
                         }
                         else if (context.User.IsInRole("Recepcion") || context.User.IsInRole("Esteticista"))
                         {
-                            <li class="ag-menu-seccion">Gesti&oacute;n</li>
-                            <li><NavLink href="/especialidadoverview"><i class="fa-solid fa-spa" aria-hidden="true"></i>Especialidades</NavLink></li>
-                            <li><NavLink href="/serviciooverview"><i class="fa-solid fa-spa" aria-hidden="true"></i>Servicios</NavLink></li>
+                            <li class="ag-menu-seccion">@TextoUi.T("Gestión")</li>
+                            <li><NavLink href="/especialidadoverview"><i class="fa-solid fa-spa" aria-hidden="true"></i>@TextoUi.T("Especialidades")</NavLink></li>
+                            <li><NavLink href="/serviciooverview"><i class="fa-solid fa-spa" aria-hidden="true"></i>@TextoUi.T("Servicios")</NavLink></li>
                         }
 
-                        <li class="ag-menu-seccion">Mi cuenta</li>
-                        <li><NavLink href="/perfil"><i class="fa-regular fa-id-card" aria-hidden="true"></i>Mi perfil</NavLink></li>
+                        <li class="ag-menu-seccion">@TextoUi.T("Mi cuenta")</li>
+                        <li><NavLink href="/perfil"><i class="fa-regular fa-id-card" aria-hidden="true"></i>@TextoUi.T("Mi perfil")</NavLink></li>
                         <li>
                             <form action="logout" method="post" class="ag-menu-form-logout">
                                 <AntiforgeryToken />
-                                <button type="submit" class="ag-staff-logout"><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>Cerrar sesion</button>
+                                <button type="submit" class="ag-staff-logout"><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>@TextoUi.T("Cerrar sesión")</button>
                             </form>
                         </li>
                     </Authorized>
@@ -138,6 +154,7 @@
             <div class="ag-menu-auth">
                 <NavAuth @rendermode="InteractiveServer" />
             </div>
+            <LanguageSwitcher />
             <AuthorizeView>
                 <Authorized>
                     <p class="ag-menu-saludo">

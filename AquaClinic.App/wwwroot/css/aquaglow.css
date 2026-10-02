@@ -217,28 +217,32 @@ footer.ag-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: clamp(1rem, 2.5vw, 2.5rem);
+    gap: clamp(1rem, 2vw, 2rem);
     flex-wrap: nowrap;
-    padding: 16px 28px;
-    max-width: 1200px;
+    padding: 18px 32px;
+    max-width: 1680px;
     margin: 0 auto;
 }
 
-/* El contenedor de login/registro nunca baja a una segunda linea */
+/* Keep navigation, language and account controls on one calm horizontal line. */
+.ag-nav-tools {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: clamp(12px, 1.5vw, 24px);
+    flex: 0 0 auto;
+}
+
 .ag-nav-auth {
     flex-shrink: 0;
     white-space: nowrap;
 }
 
-/* El logo ocupa su propio bloque y empuja los links hacia el centro-derecha,
-   garantizando aire entre la clinica y "Inicio" */
 .ag-logo {
-    margin-right: clamp(1.5rem, 4vw, 3.5rem);
-}
-
-.ag-logo {
+    flex: 0 0 auto;
+    margin-right: 0;
     font-family: var(--font-serif);
-    font-size: 1.5rem;
+    font-size: clamp(1.2rem, 1.5vw, 1.5rem);
     font-weight: 600;
     letter-spacing: var(--tracking-wide);
     color: var(--color-teal-900);
@@ -263,12 +267,16 @@ footer.ag-footer {
 
 .ag-nav-links {
     display: flex;
-    gap: 26px;
+    flex: 1 1 auto;
+    justify-content: center;
+    gap: clamp(14px, 1.6vw, 26px);
     align-items: center;
     list-style: none;
     margin: 0;
     padding: 0;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    min-width: 0;
+    white-space: nowrap;
 }
 
     .ag-nav-links li {
@@ -1953,10 +1961,18 @@ footer.ag-footer {
 /* Rango intermedio (tablet vertical): el nav no cabe en una linea y
    sin esto desborda la pantalla (scroll horizontal). El colapso total
    a columna llega en 640px. */
-@media (max-width: 880px) and (min-width: 641px) {
+@media (max-width: 1280px) {
     .ag-nav-inner {
-        flex-wrap: wrap;
-        row-gap: 6px;
+        justify-content: space-between;
+    }
+
+    .ag-nav-links,
+    .ag-nav-tools {
+        display: none;
+    }
+
+    .ag-nav .ag-menu-boton {
+        display: inline-flex;
     }
 }
 
@@ -2003,17 +2019,6 @@ footer.ag-footer {
     /* ---- Todo lo horizontal migra al cajon: enlaces, CTA, login, saludo y
        el menu de personal. Ocultarlos evita el apilado de ~150px que tapaba
        media pantalla del calendario. */
-    .ag-nav-links,
-    .ag-nav-auth {
-        display: none;
-    }
-
-    /* Especificidad .ag-nav para vencer al display:none base (definido
-       al final del archivo, despues de este media query) */
-    .ag-nav .ag-menu-boton {
-        display: inline-flex;
-    }
-
     .rz-datepicker input {
         font-size: 0.85rem !important;
     }
@@ -3078,12 +3083,11 @@ button.ag-tipo-cliente-opcion {
 }
 
 /* ============================================================
-   Menu movil: cajon lateral izquierdo (solo <= 640px)
-   En escritorio la navegacion es la barra horizontal de siempre:
-   ni el boton ni el cajon existen visualmente.
+   Menu compacto: cajon lateral izquierdo para anchos de tablet y movil.
+   En escritorio se conserva la barra horizontal.
    ============================================================ */
 
-/* Boton hamburguesa: oculto en escritorio, visible solo en el media query.
+/* Boton hamburguesa: oculto en escritorio, visible bajo 1280px.
    El estilo global de main.css `button` mete min-width/padding/margin: se
    anulan aqui o el icono sale como una pill de 170px. */
 .ag-menu-boton {
@@ -3361,3 +3365,66 @@ button.ag-tipo-cliente-opcion {
             .ag-menu-form-logout .ag-staff-logout:hover i {
                 color: #8c1a22;
             }
+
+.ag-nav-location {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--ag-texto-mudo) !important;
+    font-size: 0.75rem !important;
+    letter-spacing: 0.025em !important;
+    text-transform: none !important;
+    white-space: nowrap;
+}
+
+.ag-nav-location i {
+    color: var(--color-gold-700);
+}
+
+.ag-language-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin: 0;
+    color: var(--ag-texto-mudo);
+    font-size: 0.75rem;
+}
+
+.ag-language-switch button,
+.ag-language-switch button:hover,
+.ag-language-switch button:focus-visible {
+    min-width: 34px;
+    width: auto;
+    height: 34px;
+    margin: 0;
+    padding: 0 7px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: transparent;
+    background-image: none;
+    box-shadow: none;
+    color: var(--ag-texto-mudo);
+    font-family: var(--font-sans);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transform: none;
+}
+
+.ag-language-switch button[aria-pressed="true"] {
+    border-color: rgba(197, 160, 90, 0.55);
+    background: rgba(197, 160, 90, 0.1);
+    color: var(--color-teal-900);
+}
+
+.ag-language-switch button:hover,
+.ag-language-switch button:focus-visible {
+    border-color: var(--color-gold-500);
+    color: var(--color-teal-900);
+}
+
+.ag-menu-panel-nav > .ag-language-switch {
+    align-self: flex-start;
+    margin: 14px 0 0 14px;
+}
