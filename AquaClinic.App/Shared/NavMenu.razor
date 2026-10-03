@@ -37,6 +37,7 @@
                                 <div class="ag-staff-menu">
                                     <NavLink href="/especialidadoverview"><i class="fa-solid fa-spa" aria-hidden="true"></i>@TextoUi.T("Especialidades")</NavLink>
                                     <NavLink href="/serviciooverview"><i class="fa-solid fa-spa" aria-hidden="true"></i>@TextoUi.T("Servicios")</NavLink>
+                                    <NavLink href="/bloqueooverview"><i class="fa-solid fa-calendar-xmark" aria-hidden="true"></i>@TextoUi.T("Bloqueos")</NavLink>
                                     <NavLink href="/perfil"><i class="fa-regular fa-id-card" aria-hidden="true"></i>@TextoUi.T("Mi perfil")</NavLink>
                                     <form action="logout" method="post">
                                         <AntiforgeryToken />
@@ -131,12 +132,14 @@
                             <li class="ag-menu-seccion">@TextoUi.T("Administración")</li>
                             <li><NavLink href="/especialidadoverview"><i class="fa-solid fa-spa" aria-hidden="true"></i>@TextoUi.T("Especialidades")</NavLink></li>
                             <li><NavLink href="/serviciooverview"><i class="fa-solid fa-spa" aria-hidden="true"></i>@TextoUi.T("Servicios")</NavLink></li>
+                            <li><NavLink href="/bloqueooverview"><i class="fa-solid fa-calendar-xmark" aria-hidden="true"></i>@TextoUi.T("Bloqueos")</NavLink></li>
                         }
                         else if (context.User.IsInRole("Recepcion") || context.User.IsInRole("Esteticista"))
                         {
                             <li class="ag-menu-seccion">@TextoUi.T("Gestión")</li>
                             <li><NavLink href="/especialidadoverview"><i class="fa-solid fa-spa" aria-hidden="true"></i>@TextoUi.T("Especialidades")</NavLink></li>
                             <li><NavLink href="/serviciooverview"><i class="fa-solid fa-spa" aria-hidden="true"></i>@TextoUi.T("Servicios")</NavLink></li>
+                            <li><NavLink href="/bloqueooverview"><i class="fa-solid fa-calendar-xmark" aria-hidden="true"></i>@TextoUi.T("Bloqueos")</NavLink></li>
                         }
 
                         <li class="ag-menu-seccion">@TextoUi.T("Mi cuenta")</li>

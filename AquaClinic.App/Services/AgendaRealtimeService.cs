@@ -130,6 +130,48 @@ namespace AquaClinic.App.Services
                 }
             }
         }
+
+        // ---------- Conversiones de zona ----------
+        // La API habla UTC y los calendarios de la App trabajan en hora local de la
+        // CLINICA (America/Vancouver), la misma conversion que hace Application
+        // (CitaFechas). No usar TimeZoneInfo.Local: la maquina del servidor puede estar
+        // en otra zona y entonces los instantes no coinciden con los de la API (la
+        // reserva suave no se liberaba al confirmar y el slot seguia mostrandose como
+        // "Reservando").
+
+        /// <summary>Zona de la clinica; la local si el SO no la tiene registrada.</summary>
+        public static readonly TimeZoneInfo ZonaClinica = BuscarZonaClinica();
+
+        private static TimeZoneInfo BuscarZonaClinica()
+        {
+            try
+            {
+                return TimeZoneInfo.FindSystemTimeZoneById("America/Vancouver");
+            }
+            catch (TimeZoneNotFoundException)
+            {
+                return TimeZoneInfo.Local;
+            }
+            catch (InvalidTimeZoneException)
+            {
+                return TimeZoneInfo.Local;
+            }
+        }
+
+        /// <summary>Instante UTC de la API &#8594; hora local de la clinica.</summary>
+        public static DateTime ALocal(DateTimeOffset utc)
+        {
+            return TimeZoneInfo.ConvertTime(utc, ZonaClinica).DateTime;
+        }
+
+        /// <summary>Hora local de la clinica &#8594; instante UTC para la API.</summary>
+        public static DateTimeOffset AUtc(DateTime local)
+        {
+            // DateTimeKind.Local exigiria que el offset coincida con la zona de la
+            // maquina; la hora es "local de la clinica", asi que va sin zona.
+            var sinZona = DateTime.SpecifyKind(local, DateTimeKind.Unspecified);
+            return new DateTimeOffset(sinZona, ZonaClinica.GetUtcOffset(sinZona)).ToUniversalTime();
+        }
     }
 
     /// <summary>
@@ -232,42 +274,12 @@ namespace AquaClinic.App.Services
         }
 
         // ---------- Conversiones de zona ----------
-        // La API habla UTC y los slots del scheduler son hora local de la CLINICA
-        // (America/Vancouver), la misma conversion que hace Application (CitaFechas).
-        // No usar TimeZoneInfo.Local: la maquina del servidor puede estar en otra zona
-        // y entonces los instantes no coinciden con los de la API (la reserva suave
-        // no se liberaba al confirmar y el slot seguia mostrandose como "Reservando").
+        // Viven en AgendaCalendario porque las comparten los calendarios y el CRUD
+        // de bloqueos (tabla y formulario en hora local de la clinica).
 
-        private static readonly TimeZoneInfo ZonaClinica = BuscarZonaClinica();
+        private static DateTime ALocal(DateTimeOffset utc) => AgendaCalendario.ALocal(utc);
 
-        private static TimeZoneInfo BuscarZonaClinica()
-        {
-            try
-            {
-                return TimeZoneInfo.FindSystemTimeZoneById("America/Vancouver");
-            }
-            catch (TimeZoneNotFoundException)
-            {
-                return TimeZoneInfo.Local;
-            }
-            catch (InvalidTimeZoneException)
-            {
-                return TimeZoneInfo.Local;
-            }
-        }
-
-        private static DateTime ALocal(DateTimeOffset utc)
-        {
-            return TimeZoneInfo.ConvertTime(utc, ZonaClinica).DateTime;
-        }
-
-        private static DateTimeOffset AUtc(DateTime local)
-        {
-            // DateTimeKind.Local exigiria que el offset coincida con la zona de la
-            // maquina; la hora es "local de la clinica", asi que va sin zona.
-            var sinZona = DateTime.SpecifyKind(local, DateTimeKind.Unspecified);
-            return new DateTimeOffset(sinZona, ZonaClinica.GetUtcOffset(sinZona)).ToUniversalTime();
-        }
+        private static DateTimeOffset AUtc(DateTime local) => AgendaCalendario.AUtc(local);
 
         /// <summary>DTO crudo de la API (fechas UTC con offset).</summary>
         private sealed class OcupacionApiDto

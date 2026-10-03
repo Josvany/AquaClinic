@@ -1,0 +1,169 @@
+@inject IBloqueoDataService BloqueoDataService
+@inject NotificadorUi Notificador
+@inject DialogService Dialogs
+
+<div class="ag-reserva-modal">
+    <div class="ag-reserva-form">
+        <div class="ag-field">
+            <label for="bloqueo-motivo">@TextoUi.T("Motivo")</label>
+            <RadzenTextBox @bind-Value="_motivo" Name="motivo" InputId="bloqueo-motivo" MaxLength="100"
+                           Placeholder="@TextoUi.T("Ej. Día feriado, capacitación del equipo...")" />
+        </div>
+
+        <div class="ag-reserva-dos-columnas">
+            <div class="ag-field">
+                <label for="bloqueo-inicio">@TextoUi.T("Desde")</label>
+                <RadzenDatePicker TValue="DateTime?" @bind-Value="_inicio" Name="inicio" InputId="bloqueo-inicio"
+                                  ShowTime="true" ShowSeconds="false" HourFormat="HH:mm" DateFormat="dd/MM/yyyy"
+                                  Style="width:100%;" />
+            </div>
+
+            <div class="ag-field">
+                <label for="bloqueo-fin">@TextoUi.T("Hasta")</label>
+                <RadzenDatePicker TValue="DateTime?" @bind-Value="_fin" Name="fin" InputId="bloqueo-fin"
+                                  ShowTime="true" ShowSeconds="false" HourFormat="HH:mm" DateFormat="dd/MM/yyyy"
+                                  Style="width:100%;" />
+            </div>
+        </div>
+
+        <small class="ag-nueva-cita-aviso">@TextoUi.T("El horario se interpreta en la zona de la clínica (America/Vancouver).")</small>
+
+        @if (_error is not null)
+        {
+            <div class="ag-nueva-cita-error" style="white-space: pre-line;">@TextoUi.T(_error)</div>
+        }
+
+        <div class="ag-reserva-acciones">
+            <RadzenButton Text="@(_esEditando ? TextoUi.T("Guardar cambios") : TextoUi.T("Crear bloqueo"))"
+                          ButtonStyle="ButtonStyle.Primary" Disabled="_guardando"
+                          Click="@GuardarAsync" />
+            <RadzenButton Text="@TextoUi.T("Cancelar")" Click="@CancelarAsync"
+                          ButtonStyle="ButtonStyle.Secondary" Disabled="_guardando" />
+        </div>
+    </div>
+</div>
+
+@code {
+    /// <summary>Null = crear; con valor = editar ese bloqueo.</summary>
+    [Parameter] public BloqueoViewModel? Bloqueo { get; set; }
+
+    /// <summary>La pagina lo invoca cuando el dialogo guardo cambios.</summary>
+    [Parameter] public EventCallback OnGuardado { get; set; }
+
+    private string _motivo = string.Empty;
+    private DateTime? _inicio;
+    private DateTime? _fin;
+    private bool _guardando;
+    private string? _error;
+
+    private bool _esEditando => Bloqueo is not null && Bloqueo.BloqueoId != Guid.Empty;
+    private Guid _bloqueoOriginal;
+
+    protected override void OnInitialized()
+    {
+        if (_esEditando && Bloqueo is not null)
+        {
+            _bloqueoOriginal = Bloqueo.BloqueoId;
+            _motivo = Bloqueo.Motivo;
+            _inicio = Bloqueo.Inicio;
+            _fin = Bloqueo.Fin;
+        }
+    }
+
+    private async Task GuardarAsync()
+    {
+        // Validacion explicita y visible: los mismos requisitos que aplica la API
+        var errores = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(_motivo))
+        {
+            errores.Add("El motivo es obligatorio.");
+        }
+        else if (_motivo.Trim().Length > 100)
+        {
+            errores.Add("El motivo no debe exceder 100 caracteres.");
+        }
+
+        if (_inicio is null)
+        {
+            errores.Add("Indica la fecha y hora de inicio.");
+        }
+
+        if (_fin is null)
+        {
+            errores.Add("Indica la fecha y hora de fin.");
+        }
+
+        if (_inicio is not null && _fin is not null && _fin <= _inicio)
+        {
+            errores.Add("La fecha de fin debe ser posterior a la fecha de inicio.");
+        }
+
+        if (errores.Count > 0)
+        {
+            _error = string.Join(Environment.NewLine, errores);
+            return;
+        }
+
+        _guardando = true;
+        _error = null;
+
+        try
+        {
+            var vm = new BloqueoViewModel
+            {
+                BloqueoId = _esEditando ? _bloqueoOriginal : Guid.Empty,
+                Motivo = _motivo.Trim(),
+                Inicio = _inicio!.Value,
+                Fin = _fin!.Value
+            };
+
+            if (_esEditando)
+            {
+                var r = await BloqueoDataService.ActualizarAsync(vm);
+
+                if (!r.Success)
+                {
+                    _error = CombinarError(r.Message, r.ValidationErrors);
+                    return;
+                }
+            }
+            else
+            {
+                var r = await BloqueoDataService.CrearAsync(vm);
+
+                if (!r.Success)
+                {
+                    _error = CombinarError(r.Message, r.ValidationErrors);
+                    return;
+                }
+            }
+
+            var mensaje = _esEditando
+                ? string.Format(TextoUi.T("Bloqueo \"{0}\" actualizado."), vm.Motivo)
+                : string.Format(TextoUi.T("Bloqueo \"{0}\" creado."), vm.Motivo);
+            Notificador.Exito(mensaje);
+            await OnGuardado.InvokeAsync();
+            Dialogs.Close(true);
+        }
+        catch (HttpRequestException)
+        {
+            _error = "No se pudo conectar con la API. Verifica tu conexión.";
+        }
+        finally
+        {
+            _guardando = false;
+        }
+    }
+
+    private static string CombinarError(string message, string? validationErrors)
+    {
+        return message + (string.IsNullOrEmpty(validationErrors) ? "" : Environment.NewLine + validationErrors.TrimEnd());
+    }
+
+    private async Task CancelarAsync()
+    {
+        Dialogs.Close(false);
+        await Task.CompletedTask;
+    }
+}

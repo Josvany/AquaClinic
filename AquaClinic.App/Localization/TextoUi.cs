@@ -85,6 +85,27 @@ public static class TextoUi
         ["Total"] = "Total",
         ["Duración"] = "Duration",
         ["Servicios"] = "Services",
+        ["Bloqueos"] = "Closures",
+        ["Agenda"] = "Schedule",
+        ["Motivo"] = "Reason",
+        ["Desde"] = "From",
+        ["Hasta"] = "To",
+        ["Nuevo bloqueo"] = "New closure",
+        ["Editar bloqueo"] = "Edit closure",
+        ["Eliminar bloqueo"] = "Delete closure",
+        ["Crear bloqueo"] = "Create closure",
+        ["Ej. Día feriado, capacitación del equipo..."] = "E.g. Public holiday, team training...",
+        ["El horario se interpreta en la zona de la clínica (America/Vancouver)."] = "Times are interpreted in the clinic's time zone (America/Vancouver).",
+        ["El motivo es obligatorio."] = "A reason is required.",
+        ["El motivo no debe exceder 100 caracteres."] = "The reason cannot exceed 100 characters.",
+        ["Indica la fecha y hora de inicio."] = "Enter a start date and time.",
+        ["Indica la fecha y hora de fin."] = "Enter an end date and time.",
+        ["La fecha de fin debe ser posterior a la fecha de inicio."] = "The end date must be after the start date.",
+        ["Bloqueo \"{0}\" creado."] = "Closure \"{0}\" created.",
+        ["Bloqueo \"{0}\" actualizado."] = "Closure \"{0}\" updated.",
+        ["Bloqueo \"{0}\" eliminado."] = "Closure \"{0}\" deleted.",
+        ["¿Eliminar el bloqueo \"{0}\"? El horario volverá a estar disponible para agendar."] = "Delete closure \"{0}\"? The time slot will become available for booking again.",
+        ["No se pudo eliminar"] = "Could not delete",
         ["Catálogo"] = "Service list",
         ["Los servicios activos aparecen en la portada y pueden agendarse. Eliminar un servicio solo lo desactiva: sale del catálogo y ya no se puede agendar, pero su historial de citas se conserva."] = "Active services appear on the home page and can be booked. Deactivating a service removes it from the list, but keeps its appointment history.",
         ["Nuevo servicio"] = "New service",
@@ -286,7 +307,8 @@ public static class TextoUi
         ["Ese horario ya está ocupado. Elige otra hora."] = "That time is already booked. Choose another time.",
         ["Cerrado"] = "Closed",
         ["La clínica está cerrada en ese horario. Elige otro disponible."] = "The clinic is closed at that time. Choose another available time.",
-        ["Duración:"] = "Duration:"
+        ["Duración:"] = "Duration:",
+        ["Los bloqueos cierran la agenda de toda la clínica (feriados, vacaciones, capacitaciones). Los clientes no pueden reservar dentro de ese rango y en las agendas aparece como \"Cerrado\"."] = "Closures block the whole clinic's schedule (holidays, vacations, training). Clients cannot book within that range and the agendas show it as \"Closed\"."
     };
 
     public static string T(string? texto)

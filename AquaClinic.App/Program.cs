@@ -64,6 +64,7 @@ builder.Services.AddScoped<IUsuarioDataService, UsuarioDataService>();
 builder.Services.AddScoped<ICitaDataService, CitaDataService>();
 builder.Services.AddScoped<IEspecialidadDataService, EspecialidadDataService>();
 builder.Services.AddScoped<IServicioDataService, ServicioDataService>();
+builder.Services.AddScoped<IBloqueoDataService, BloqueoDataService>();
 
 // Notificaciones globales de la UI (toasts Radzen)
 builder.Services.AddScoped<NotificadorUi>();

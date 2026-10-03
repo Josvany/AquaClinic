@@ -1,4 +1,7 @@
 ﻿using AutoMapper;
+using AquaClinic.Application.Features.Bloqueos.Commands.CreateBloqueo;
+using AquaClinic.Application.Features.Bloqueos.Commands.UpdateBloqueo;
+using AquaClinic.Application.Features.Bloqueos.Queries.GetBloqueosList;
 using AquaClinic.Application.Features.Especialidades.Commands.CreateEspecialidad;
 using AquaClinic.Application.Features.Especialidades.Queries.GetEspecialidadesList;
 using AquaClinic.Application.Features.Especialidades.Queries.GetEspecialidadesListWithServicios;
@@ -31,6 +34,11 @@ namespace AquaClinic.Application.Profiles
 
             CreateMap<Servicio, CreateServicioCommand>().ReverseMap();
             CreateMap<Servicio, UpdateServicioCommand>().ReverseMap();
+
+            // Bloqueos de la clinica (CRUD administrativo)
+            CreateMap<Bloqueo, BloqueoListVm>().ReverseMap();
+            CreateMap<Bloqueo, CreateBloqueoCommand>().ReverseMap();
+            CreateMap<Bloqueo, UpdateBloqueoCommand>().ReverseMap();
 
             // Usuarios (perfil del cliente)
             CreateMap<Usuario, UsuarioVm>();

@@ -1,0 +1,144 @@
+@page "/bloqueooverview"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inject IBloqueoDataService BloqueoDataService
+@inject DialogService Dialogs
+@inject NotificadorUi Notificador
+
+<PageTitle>@TextoUi.T("Bloqueos") — @TextoUi.T("Administración")</PageTitle>
+
+<section class="ag-citas-seccion">
+    <div class="ag-contenedor">
+        <div class="ag-citas-encabezado">
+            <div>
+                <span class="ag-label-caps">@TextoUi.T("Agenda")</span>
+                <h1 class="page-title">@TextoUi.T("Bloqueos")</h1>
+                <p class="ag-citas-subtitulo">
+                    @TextoUi.T("Los bloqueos cierran la agenda de toda la clínica (feriados, vacaciones, capacitaciones). Los clientes no pueden reservar dentro de ese rango y en las agendas aparece como \"Cerrado\".")
+                </p>
+            </div>
+            <div class="ag-citas-acciones">
+                <RadzenButton Text="@TextoUi.T("Nuevo bloqueo")" Icon="add_circle_outline"
+                              ButtonStyle="ButtonStyle.Primary" Click="@AbrirCrearAsync" />
+            </div>
+        </div>
+
+        @if (_errorCarga is not null)
+        {
+            <div class="alert alert-warning">@TextoUi.T(_errorCarga)</div>
+        }
+        else if (_cargando)
+        {
+            <p><em>@TextoUi.T("Cargando...")</em></p>
+        }
+        else
+        {
+            <div class="ag-panel">
+                <RadzenDataGrid TItem="BloqueoViewModel" Data="@_bloqueos"
+                                AllowPaging="true" PageSize="10" PagerPageSizeOptions="@(false)"
+                                AllowSorting="true" Width="100%">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="BloqueoViewModel" Title="@TextoUi.T("Motivo")" Sortable="false">
+                            <Template Context="bloqueo">
+                                <strong>@bloqueo.Motivo</strong>
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="BloqueoViewModel" Title="@TextoUi.T("Desde")" Width="220px">
+                            <Template Context="bloqueo">
+                                @bloqueo.Inicio.ToString("g", System.Globalization.CultureInfo.CurrentCulture)
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="BloqueoViewModel" Title="@TextoUi.T("Hasta")" Width="220px">
+                            <Template Context="bloqueo">
+                                @bloqueo.Fin.ToString("g", System.Globalization.CultureInfo.CurrentCulture)
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="BloqueoViewModel" Title="" Width="130px" Sortable="false">
+                            <Template Context="bloqueo">
+                                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small"
+                                              Click="@(() => AbrirEditarAsync(bloqueo))" />
+                                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small"
+                                              Click="@(() => ConfirmarEliminarAsync(bloqueo))" />
+                            </Template>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    private List<BloqueoViewModel> _bloqueos = [];
+    private bool _cargando = true;
+    private string? _errorCarga;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarAsync();
+    }
+
+    private async Task CargarAsync()
+    {
+        _cargando = true;
+
+        try
+        {
+            _bloqueos = await BloqueoDataService.ObtenerTodosAsync();
+            _errorCarga = null;
+        }
+        catch (HttpRequestException)
+        {
+            _errorCarga = "No se pudo conectar con la API. Verifica que esté corriendo.";
+        }
+        finally
+        {
+            _cargando = false;
+        }
+    }
+
+    private async Task AbrirCrearAsync()
+    {
+        await Dialogs.OpenAsync<BloqueoFormDialog>(TextoUi.T("Nuevo bloqueo"),
+            new Dictionary<string, object> { { "OnGuardado", EventCallback.Factory.Create(this, CargarAsync) } },
+            new DialogOptions { Width = "640px", ShowClose = true, CloseDialogOnEsc = true, CloseDialogOnOverlayClick = false, Draggable = false, CssClass = "ag-dialog" });
+    }
+
+    private async Task AbrirEditarAsync(BloqueoViewModel bloqueo)
+    {
+        await Dialogs.OpenAsync<BloqueoFormDialog>(TextoUi.T("Editar bloqueo"),
+            new Dictionary<string, object>
+            {
+                { "Bloqueo", bloqueo },
+                { "OnGuardado", EventCallback.Factory.Create(this, CargarAsync) }
+            },
+            new DialogOptions { Width = "640px", ShowClose = true, CloseDialogOnEsc = true, CloseDialogOnOverlayClick = false, Draggable = false, CssClass = "ag-dialog" });
+    }
+
+    private async Task ConfirmarEliminarAsync(BloqueoViewModel bloqueo)
+    {
+        var confirmado = await Dialogs.Confirm(
+            string.Format(TextoUi.T("¿Eliminar el bloqueo \"{0}\"? El horario volverá a estar disponible para agendar."), bloqueo.Motivo),
+            TextoUi.T("Eliminar bloqueo"),
+            new ConfirmOptions { OkButtonText = TextoUi.T("Eliminar"), CancelButtonText = TextoUi.T("Cancelar") }) == true;
+
+        if (!confirmado)
+        {
+            return;
+        }
+
+        var respuesta = await BloqueoDataService.EliminarAsync(bloqueo.BloqueoId);
+
+        if (respuesta.Success)
+        {
+            Notificador.Exito(string.Format(TextoUi.T("Bloqueo \"{0}\" eliminado."), bloqueo.Motivo));
+            await CargarAsync();
+        }
+        else
+        {
+            var detalle = respuesta.Message
+                + (string.IsNullOrEmpty(respuesta.ValidationErrors) ? "" : Environment.NewLine + respuesta.ValidationErrors);
+            Notificador.Error(TextoUi.T(detalle), TextoUi.T("No se pudo eliminar"));
+        }
+    }
+}

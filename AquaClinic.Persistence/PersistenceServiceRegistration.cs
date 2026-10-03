@@ -19,6 +19,7 @@ namespace AquaClinic.Persistence
             services.AddScoped<IEspecialidadRepository, EspecialidadRepository>();
             services.AddScoped<ICitaRepository, CitaRepository>();
             services.AddScoped<IAgendaRepository, AgendaRepository>();
+            services.AddScoped<IBloqueoRepository, BloqueoRepository>();
             services.AddScoped<IEmailPendienteRepository, EmailPendienteRepository>();
             services.AddScoped<IMovimientoServicioRepository, MovimientoServicioRepository>();
 

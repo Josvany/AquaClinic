@@ -21,6 +21,12 @@ namespace AquaClinic.Api.Authorization
         public const string CitasVer = "citas:ver";
         public const string CitasGestionar = "citas:gestionar";
 
+        // ===== Bloqueos de la agenda (cierres de la clinica) =====
+        public const string BloqueosVer = "bloqueos:ver";
+        public const string BloqueosCrear = "bloqueos:crear";
+        public const string BloqueosEditar = "bloqueos:editar";
+        public const string BloqueosEliminar = "bloqueos:eliminar";
+
         // ===== Citas propias del cliente =====
         public const string MisCitasVer = "miscitas:ver";
     }
