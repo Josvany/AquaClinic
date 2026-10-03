@@ -1795,6 +1795,32 @@ footer.ag-footer {
     font-size: 0.78rem;
 }
 
+/* Botones de navegación ‹ › del panel del DatePicker: mismas pastillas
+   claras que los botones del calendario de citas (‹ › Hoy), no el
+   círculo oscuro que trae el tema de Radzen. */
+.rz-calendar .rz-calendar-prev,
+.rz-calendar .rz-calendar-next {
+    background-image: none !important;
+    background-color: #eaf3f2 !important;
+    color: var(--color-teal-900) !important;
+    border: 1px solid var(--color-mist) !important;
+    border-radius: var(--radius-pill) !important;
+    box-shadow: none !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 6px 12px !important;
+    line-height: 1 !important;
+}
+
+    .rz-calendar .rz-calendar-prev:hover,
+    .rz-calendar .rz-calendar-prev:focus,
+    .rz-calendar .rz-calendar-next:hover,
+    .rz-calendar .rz-calendar-next:focus {
+        background-color: #d8e9e7 !important;
+        border-color: rgba(42, 107, 102, 0.35) !important;
+        color: var(--color-teal-900) !important;
+    }
+
 /* Scheduler (calendario de citas) */
 .rz-scheduler {
     border: 1px solid rgba(197, 160, 90, 0.4);

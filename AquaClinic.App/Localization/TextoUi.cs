@@ -308,7 +308,8 @@ public static class TextoUi
         ["Cerrado"] = "Closed",
         ["La clínica está cerrada en ese horario. Elige otro disponible."] = "The clinic is closed at that time. Choose another available time.",
         ["Duración:"] = "Duration:",
-        ["Los bloqueos cierran la agenda de toda la clínica (feriados, vacaciones, capacitaciones). Los clientes no pueden reservar dentro de ese rango y en las agendas aparece como \"Cerrado\"."] = "Closures block the whole clinic's schedule (holidays, vacations, training). Clients cannot book within that range and the agendas show it as \"Closed\"."
+        ["Los bloqueos cierran la agenda de toda la clínica (feriados, vacaciones, capacitaciones). Los clientes no pueden reservar dentro de ese rango y en las agendas aparece como \"Cerrado\"."] = "Closures block the whole clinic's schedule (holidays, vacations, training). Clients cannot book within that range and the agendas show it as \"Closed\".",
+        ["La hora elegida ya pasó. Elige una hora disponible."] = "The selected time has already passed. Choose an available time."
     };
 
     public static string T(string? texto)

@@ -71,9 +71,12 @@ namespace AquaClinic.App.Pages
             public TimeSpan Hora { get; init; }
             public string Texto { get; set; } = string.Empty;
 
-            /// <summary>Ya hay una cita confirmada que se solapa con esta hora.</summary>
-            public bool Ocupada { get; set; }
-        }
+        /// <summary>Ya hay una cita confirmada que se solapa con esta hora.</summary>
+        public bool Ocupada { get; set; }
+
+        /// <summary>La hora ya paso del dia actual (solo aplica para hoy): no es seleccionable.</summary>
+        public bool Pasada { get; set; }
+    }
 
         /// <summary>Duracion de la cita segun el servicio elegido (60 min por defecto).</summary>
         private int DuracionSeleccionada =>
@@ -90,7 +93,7 @@ namespace AquaClinic.App.Pages
 
         protected override async Task OnInitializedAsync()
         {
-            _fecha = AgendaCalendario.HoyClinica.AddDays(1);
+            _fecha = AgendaCalendario.HoyClinica;
             _horas = ConstruirHoras();
 
             try
@@ -210,6 +213,8 @@ namespace AquaClinic.App.Pages
             }
 
             var minutos = DuracionSeleccionada;
+            var esHoy = _fecha.Value.Date == AgendaCalendario.HoyClinica;
+            var ahora = AgendaCalendario.AhoraClinica;
 
             foreach (var hora in _horas)
             {
@@ -219,6 +224,9 @@ namespace AquaClinic.App.Pages
                 {
                     hora.Texto += " (ocupada)";
                 }
+
+                // Hoy: las horas que ya pasaron no se pueden elegir.
+                hora.Pasada = esHoy && _fecha.Value.Date.Add(hora.Hora) < ahora;
             }
         }
 
@@ -243,6 +251,13 @@ namespace AquaClinic.App.Pages
             {
                 var inicio = _fecha.Value.Date.Add(_hora.Hora);
                 var minutos = DuracionSeleccionada;
+
+                // No reservar en una hora que ya paso (la seleccion pudo quedar
+                // ligada mientras el dialogo seguia abierto).
+                if (inicio < AgendaCalendario.AhoraClinica)
+                {
+                    return;
+                }
 
                 // No reservar sobre un horario con cita confirmada.
                 if (HorarioOcupado(inicio, minutos))
@@ -339,6 +354,14 @@ namespace AquaClinic.App.Pages
             }
 
             var inicioLocal = _fecha.Value.Date.Add(_hora.Hora);
+
+            // Doble verificacion: la hora pudo quedar seleccionada y pasar mientras
+            // se llenaba el dialogo.
+            if (inicioLocal < AgendaCalendario.AhoraClinica)
+            {
+                _error = "La hora elegida ya pasó. Elige una hora disponible.";
+                return;
+            }
 
             // Doble verificacion (la agenda pudo cambiar mientras se llenaba el dialogo).
             if (HorarioOcupado(inicioLocal, DuracionSeleccionada))

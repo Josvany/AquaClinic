@@ -73,7 +73,7 @@
         <div class="ag-field">
             <label>@TextoUi.T("Hora")</label>
             <RadzenDropDown Value="@_hora" Change="@(async (object? h) => await AlCambiarHoraAsync(h as OpcionHora))"
-                            Data="@_horas" TextProperty="Texto"
+                            Data="@_horas" TextProperty="Texto" DisabledProperty="Pasada"
                             TValue="OpcionHora" Placeholder="Elige una hora" Style="width:100%;" />
             @if (_horas.Any(h => h.Ocupada))
             {
