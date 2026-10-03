@@ -18,22 +18,16 @@ namespace AquaClinic.App.Pages
         private List<OcupacionAgenda> _ocupaciones = [];
         private DateTime _fecha = DateTime.Today;
         private string? _errorCarga;
-
-        // ------------------- Modo movil (vista dia) ----------------------
-        // Un modulo JSInforma cambios de matchMedia("(max-width: 640px)").
-        // El prerender estatico asume escritorio (vista semana) para no
-        // divergir del HTML inicial; en el primer render interactivo el JS
-        // corrige el valor si toca.
-        private bool _esMovil;
+        private int _selectedViewIndex;
         private DotNetObjectReference<ReservarCita>? _dotNetRef;
         private IJSObjectReference? _moduloMovil;
         private const string AnchoMovil = "(max-width: 640px)";
 
         [Inject]
-        private IJSRuntime JS { get; set; } = default!;
+        private SeleccionReservaEstado SeleccionReserva { get; set; } = default!;
 
         [Inject]
-        private SeleccionReservaEstado SeleccionReserva { get; set; } = default!;
+        private IJSRuntime JS { get; set; } = default!;
 
         // Seleccion en curso (reserva suave propia)
         private DateTime _seleccionInicio;
@@ -113,34 +107,32 @@ namespace AquaClinic.App.Pages
             }
         }
 
-        // ------------------- Deteccion movil -------------------
-
         private async Task IniciarDeteccionMovilAsync()
         {
             try
             {
                 _dotNetRef = DotNetObjectReference.Create(this);
                 _moduloMovil = await JS.InvokeAsync<IJSObjectReference>("import", "./js/agenda-movil.js");
-                _esMovil = await _moduloMovil.InvokeAsync<bool>("iniciar", AnchoMovil, _dotNetRef);
-                if (_esMovil != _esMovilRenderizada)
-                {
-                    _esMovilRenderizada = _esMovil;
-                    StateHasChanged();
-                }
+                ActualizarVistaInicial(await _moduloMovil.InvokeAsync<bool>("iniciar", AnchoMovil, _dotNetRef));
             }
             catch (JSException)
             {
-                // Sin JS el fallback es escritorio: la vista semana sigue funcionando
+                // Sin JS se conserva la vista semanal por defecto.
             }
         }
-
-        private bool _esMovilRenderizada;
 
         [JSInvokable]
         public void AlCambiarAncho(bool esMovil)
         {
-            if (_esMovil == esMovil) return;
-            _esMovil = esMovil;
+            ActualizarVistaInicial(esMovil);
+        }
+
+        private void ActualizarVistaInicial(bool esMovil)
+        {
+            var indiceVista = esMovil ? 1 : 0;
+            if (_selectedViewIndex == indiceVista) return;
+
+            _selectedViewIndex = indiceVista;
             StateHasChanged();
         }
 
@@ -193,7 +185,10 @@ namespace AquaClinic.App.Pages
         private async Task OnAgendaLoadDataAsync(Radzen.SchedulerLoadDataEventArgs args)
         {
             _fecha = args.Start;
-            await CargarAgendaAsync(args.Start, args.End);
+            var fin = args.End.Date <= args.Start.Date
+                ? args.Start.Date.AddDays(1)
+                : args.End;
+            await CargarAgendaAsync(args.Start, fin);
         }
 
         // ---------- Eventos en tiempo real ----------
@@ -562,23 +557,20 @@ namespace AquaClinic.App.Pages
             Agenda.ReservaLiberada -= AlReservaLiberada;
             Agenda.CitaCreada -= AlCitaCreada;
 
-            if (_dotNetRef is not null)
+            if (_moduloMovil is not null)
             {
                 try
                 {
-                    if (_moduloMovil is not null)
-                    {
-                        await _moduloMovil.InvokeVoidAsync("detener");
-                        await _moduloMovil.DisposeAsync();
-                    }
+                    await _moduloMovil.InvokeVoidAsync("detener");
+                    await _moduloMovil.DisposeAsync();
                 }
                 catch (JSDisconnectedException)
                 {
-                    // El circuito se cerro antes que el modulo: nada que hacer
+                    // El circuito se cerro antes que el modulo.
                 }
-
-                _dotNetRef.Dispose();
             }
+
+            _dotNetRef?.Dispose();
 
             if (_tieneSeleccion)
             {

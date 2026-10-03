@@ -1044,6 +1044,13 @@ footer.ag-footer {
     border: none;
 }
 
+.ag-booking-scheduler .rz-event {
+    inset-inline: 0 !important;
+    width: auto !important;
+    margin-inline: 0 !important;
+    box-sizing: border-box;
+}
+
 /* ============================================================
    Reserva de cita: layout a pantalla amplia
    ============================================================ */

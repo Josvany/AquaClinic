@@ -34,35 +34,19 @@
             }
             else
             {
-                @if (_esMovil)
-                {
-                    <RadzenScheduler @ref="_scheduler" TItem="OcupacionAgenda" Data="@_ocupaciones"
-                                     TextProperty="Estado" StartProperty="Inicio" EndProperty="Fin"
-                                     LoadData="@(OnAgendaLoadDataAsync)" Style="height: 72vh; min-height: 420px;"
-                                     SlotSelect="@(OnSlotSelectAsync)"
-                                     AppointmentSelect="@(OnCitaSelectAsync)"
-                                     AppointmentRender="@(OnAppointmentRender)"
-                                     SlotRender="@(OnSlotRender)"
-                                     AppointmentMouseEnter="@(AlMouseEnCita)"
-                                     AppointmentMouseLeave="@(AlMouseFueraCita)">
-                        <RadzenDayView StartTime="@TimeSpan.FromHours(8)" EndTime="@TimeSpan.FromHours(19)" MinutesPerSlot="15" />
-                    </RadzenScheduler>
-                }
-                else
-                {
-                    <RadzenScheduler @ref="_scheduler" TItem="OcupacionAgenda" Data="@_ocupaciones"
-                                     TextProperty="Estado" StartProperty="Inicio" EndProperty="Fin"
-                                     LoadData="@(OnAgendaLoadDataAsync)" Style="height: 78vh; min-height: 560px;"
-                                     SlotSelect="@(OnSlotSelectAsync)"
-                                     AppointmentSelect="@(OnCitaSelectAsync)"
-                                     AppointmentRender="@(OnAppointmentRender)"
-                                     SlotRender="@(OnSlotRender)"
-                                     AppointmentMouseEnter="@(AlMouseEnCita)"
-                                     AppointmentMouseLeave="@(AlMouseFueraCita)">
-                        <RadzenWeekView StartTime="@TimeSpan.FromHours(8)" EndTime="@TimeSpan.FromHours(19)" MinutesPerSlot="15" />
-                        <RadzenDayView StartTime="@TimeSpan.FromHours(8)" EndTime="@TimeSpan.FromHours(19)" MinutesPerSlot="15" />
-                    </RadzenScheduler>
-                }
+                <RadzenScheduler @ref="_scheduler" TItem="OcupacionAgenda" Data="@_ocupaciones"
+                                 TextProperty="Estado" StartProperty="Inicio" EndProperty="Fin"
+                                 SelectedIndex="@_selectedViewIndex"
+                                 LoadData="@(OnAgendaLoadDataAsync)" Style="height: 78vh; min-height: 420px;"
+                                 SlotSelect="@(OnSlotSelectAsync)"
+                                 AppointmentSelect="@(OnCitaSelectAsync)"
+                                 AppointmentRender="@(OnAppointmentRender)"
+                                 SlotRender="@(OnSlotRender)"
+                                 AppointmentMouseEnter="@(AlMouseEnCita)"
+                                 AppointmentMouseLeave="@(AlMouseFueraCita)">
+                    <RadzenWeekView StartTime="@TimeSpan.FromHours(8)" EndTime="@TimeSpan.FromHours(19)" MinutesPerSlot="15" />
+                    <RadzenDayView StartTime="@TimeSpan.FromHours(8)" EndTime="@TimeSpan.FromHours(19)" MinutesPerSlot="15" />
+                </RadzenScheduler>
             }
         </div>
 
