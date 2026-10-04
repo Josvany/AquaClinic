@@ -1048,6 +1048,11 @@ footer.ag-footer {
     inset-inline: 0 !important;
     width: auto !important;
     margin-inline: 0 !important;
+    /* El fondo teal lo pinta el HIJO (.rz-event-content); el padding horizontal
+       del wrapper lo encogeria dejando bandas vacias a los lados. En cero el
+       bloque llega al 100% del slot; el aire del texto lo da el padding del
+       hijo, cuyo fondo cubre su propia caja. */
+    padding-inline: 0 !important;
     box-sizing: border-box;
 }
 
