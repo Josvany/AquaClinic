@@ -168,7 +168,7 @@ public static class TextoUi
         ["Si olvidaste tu contraseña, usa este codigo:"] = "Forgot your password? Use this code:",
         ["Volver al perfil"] = "Back to profile",
         ["Reservar cita — Aqua Skin & Glow"] = "Book an appointment — Aqua Skin & Glow",
-        ["Haz clic en un horario libre para reservar; se actualiza en tiempo real."] = "Select an available time to book. Availability updates in real time.",
+        ["Para agendar una cita, da clic en un horario libre del calendario: se abrirá el formulario de reserva donde seleccionas el servicio y confirmas. La disponibilidad se actualiza en tiempo real."] = "To book an appointment, click any free slot in the calendar: the booking form will open, where you select the service and confirm. Availability updates in real time.",
         ["Ocupado"] = "Booked",
         ["Reservando"] = "Being booked",
         ["Antes de tu visita"] = "Before your visit",
