@@ -1,0 +1,41 @@
+@rendermode InteractiveServer
+
+<div class="ag-reserva-modal ag-nueva-cita">
+    <p class="ag-nueva-cita-aviso">
+        @TextoUi.T("Cita actual:")
+        <strong>@Cita.Cliente</strong> &mdash;
+        @Cita.FechaInicioLocal.ToString("f", System.Globalization.CultureInfo.CurrentCulture)
+        (@Cita.DuracionMinutos&nbsp;min)
+    </p>
+
+    @if (_error is not null)
+    {
+        <div class="ag-nueva-cita-error">@TextoUi.T(_error)</div>
+    }
+
+    <div class="ag-fila-doble">
+        <div class="ag-field">
+            <label>@TextoUi.T("Nueva fecha")</label>
+            <RadzenDatePicker Value="@_fecha" Min="@AgendaCalendario.HoyClinica" ValueChanged="@(async (DateTime? f) => await AlCambiarFechaAsync(f))"
+                              DateFormat="dd/MM/yyyy" Style="width:100%;" />
+        </div>
+
+        <div class="ag-field">
+            <label>@TextoUi.T("Nueva hora")</label>
+            <RadzenDropDown Value="@_hora" Change="@(async (object? h) => await AlCambiarHoraAsync(h as OpcionHora))"
+                            Data="@_horas" TextProperty="Texto" DisabledProperty="NoSeleccionable"
+                            TValue="OpcionHora" Placeholder="Elige una hora" Style="width:100%;" />
+            @if (_horas.Any(h => h.Ocupada))
+            {
+                <small class="ag-nueva-cita-aviso">@TextoUi.T("Las horas marcadas \"(ocupada)\" ya tienen una cita y no se pueden elegir.")</small>
+            }
+        </div>
+    </div>
+
+    <div class="ag-reserva-acciones">
+        <RadzenButton Text="@TextoUi.T("Mover cita")" ButtonStyle="ButtonStyle.Primary" Disabled="@_enviando"
+                      Click="@(async () => await Enviar())" />
+        <RadzenButton Text="@TextoUi.T("Cancelar")" ButtonStyle="ButtonStyle.Secondary" Disabled="@_enviando"
+                      Click="@Cancelar" />
+    </div>
+</div>

@@ -2,14 +2,17 @@
 using AquaClinic.App.Contracts;
 using AquaClinic.App.Services.Base;
 using AquaClinic.App.ViewModels;
+using System.Globalization;
+using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace AquaClinic.App.Services
 {
-    public class CitaDataService: BaseDataService, ICitaDataService
+    public class CitaDataService : BaseDataService, ICitaDataService
     {
-        
         private readonly IMapper _mapper;
+        private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
 
         public CitaDataService(IClient client, IMapper mapper) : base(client)
         {
@@ -24,29 +27,52 @@ namespace AquaClinic.App.Services
         }
 
         /// <summary>
-        /// Pagina del listado de citas (server-side) para el DataGrid de la
-        /// agenda interna. Usa HttpClient directo (el cliente tipado NSwag no
-        /// incluye el endpoint nuevo; regenerarlo exigiria la API corriendo).
+        /// Pagina del listado de citas (server-side) para el DataGrid
+        /// de la agenda interna, con filtros opcionales de texto
+        /// (cliente), estado y rango de fechas. Usa HttpClient directo
+        /// (el cliente tipado NSwag no incluye el endpoint; regenerarlo
+        /// exigiria la API corriendo).
         /// </summary>
-        public async Task<CitasPaginadasViewModel> GetCitasPaginadas(int pagina, int tamanoPagina)
+        public async Task<CitasPaginadasViewModel> GetCitasPaginadas(int pagina, int tamanoPagina, string? texto = null, string? estado = null, DateOnly? fechaDesde = null, DateOnly? fechaHasta = null)
         {
+            string url = "api/citas/paginadas?pagina=" + pagina + "&tamanoPagina=" + tamanoPagina;
+
+            if (!string.IsNullOrWhiteSpace(texto))
+            {
+                url += "&texto=" + Uri.EscapeDataString(texto.Trim());
+            }
+
+            if (!string.IsNullOrWhiteSpace(estado))
+            {
+                url += "&estado=" + Uri.EscapeDataString(estado.Trim());
+            }
+
+            if (fechaDesde.HasValue)
+            {
+                url += "&fechaDesde=" + fechaDesde.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            }
+
+            if (fechaHasta.HasValue)
+            {
+                url += "&fechaHasta=" + fechaHasta.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            }
+
             var response = await _client.HttpClient
-                .GetFromJsonAsync<CitasPaginadasViewModel>(
-                    $"api/citas/paginadas?pagina={pagina}&tamanoPagina={tamanoPagina}");
+                .GetFromJsonAsync<CitasPaginadasViewModel>(url, _jsonOptions);
 
             return response ?? new CitasPaginadasViewModel();
         }
 
         /// <summary>
-        /// Citas del usuario autenticado ("Mis citas"). Usa HttpClient directo
-        /// por el mismo motivo: el cliente NSwag aun no incluye el endpoint.
+        /// Citas del usuario autenticado ("Mis citas"). Usa HttpClient
+        /// directo por el mismo motivo.
         /// </summary>
         public async Task<List<MiCitaViewModel>> GetMisCitas()
         {
             try
             {
                 var citas = await _client.HttpClient
-                    .GetFromJsonAsync<List<MiCitaViewModel>>("api/citas/mias");
+                    .GetFromJsonAsync<List<MiCitaViewModel>>("api/citas/mias", _jsonOptions);
 
                 return citas ?? [];
             }
@@ -56,52 +82,110 @@ namespace AquaClinic.App.Services
             }
         }
 
-        public async Task<CitaDetailViewModel> GetCitaById(Guid id)
-        {
-            var selectedCita = await _client.GetCitaByIdAsync(id);
-            var mappedCita = _mapper.Map<CitaDetailViewModel>(selectedCita);
-            return mappedCita;
-        }
-
-        public async Task<ApiResponse<Guid>> CreateCita(CitaDetailViewModel eventDetailViewModel)
+        /// <summary>
+        /// Detalle de la cita con HttpClient directo: el cliente NSwag
+        /// trae el contrato antiguo (nombre/precio/doctor/imagen) que no
+        /// corresponde a la entidad Cita de la BD.
+        /// </summary>
+        public async Task<CitaDetalleViewModel?> ObtenerDetalleAsync(Guid id)
         {
             try
             {
-                CreateCitaCommand createCitaCommand = _mapper.Map<CreateCitaCommand>(eventDetailViewModel);
-                var newId = await _client.AddCitaAsync(createCitaCommand);
-                return new ApiResponse<Guid>() { Data = newId, Success = true };
+                return await _client.HttpClient
+                    .GetFromJsonAsync<CitaDetalleViewModel>($"api/citas/{id}", _jsonOptions);
             }
-            catch (ApiException ex)
+            catch (HttpRequestException)
             {
-                return ConvertApiExceptions<Guid>(ex);
+                return null;
             }
         }
 
-        public async Task<ApiResponse<Guid>> UpdateCita(CitaDetailViewModel eventDetailViewModel)
+        /// <summary>Mueve la cita a otro horario (PUT api/citas/{id}/mover).</summary>
+        public async Task<ApiResponse<Guid>> MoverCitaAsync(Guid citaId, DateTime nuevoInicioLocal, int duracionMinutos)
         {
             try
             {
-                UpdateCitaCommand updateCitaCommand = _mapper.Map<UpdateCitaCommand>(eventDetailViewModel);
-                await _client.UpdateCitaAsync(updateCitaCommand);
-                return new ApiResponse<Guid>() { Success = true };
+                var body = new { NuevoInicioLocal = nuevoInicioLocal, DuracionMinutos = duracionMinutos };
+                var response = await _client.HttpClient
+                    .PutAsJsonAsync($"api/citas/{citaId}/mover", body, _jsonOptions);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var id = await response.Content.ReadFromJsonAsync<Guid>(_jsonOptions);
+                    return new ApiResponse<Guid> { Data = id, Success = true };
+                }
+
+                var mensaje = await LeerMensajeErrorAsync(response);
+                return new ApiResponse<Guid> { Success = false, Message = mensaje };
             }
-            catch (ApiException ex)
+            catch (HttpRequestException)
             {
-                return ConvertApiExceptions<Guid>(ex);
+                return new ApiResponse<Guid> { Success = false, Message = "No se pudo conectar con la API." };
             }
         }
 
-        public async Task<ApiResponse<Guid>> DeleteCita(Guid id)
+        /// <summary>Cancela la cita (POST api/citas/{id}/cancelar).</summary>
+        public async Task<ApiResponse<string>> CancelarCitaAsync(Guid citaId)
         {
             try
             {
-                await _client.DeleteCitaAsync(id);
-                return new ApiResponse<Guid>() { Success = true };
+                var response = await _client.HttpClient
+                    .PostAsync($"api/citas/{citaId}/cancelar", null);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return new ApiResponse<string> { Data = citaId.ToString(), Success = true };
+                }
+
+                var mensaje = await LeerMensajeErrorAsync(response);
+                return new ApiResponse<string> { Success = false, Message = mensaje };
             }
-            catch (ApiException ex)
+            catch (HttpRequestException)
             {
-                return ConvertApiExceptions<Guid>(ex);
+                return new ApiResponse<string> { Success = false, Message = "No se pudo conectar con la API." };
             }
+        }
+
+        /// <summary>
+        /// La API responde errores como arreglo de validaciones (400) o
+        /// { "error": "..." } (409). Se extrae el texto legible.
+        /// </summary>
+        private static async Task<string> LeerMensajeErrorAsync(HttpResponseMessage response)
+        {
+            var cuerpo = await response.Content.ReadAsStringAsync();
+
+            try
+            {
+                using var doc = JsonDocument.Parse(cuerpo);
+
+                if (doc.RootElement.ValueKind == JsonValueKind.Array)
+                {
+                    var errores = doc.RootElement
+                        .EnumerateArray()
+                        .Select(e => e.GetString())
+                        .Where(s => !string.IsNullOrWhiteSpace(s));
+
+                    var unido = string.Join(" ", errores);
+                    if (!string.IsNullOrWhiteSpace(unido))
+                    {
+                        return unido;
+                    }
+                }
+
+                if (doc.RootElement.TryGetProperty("error", out var error)
+                    && !string.IsNullOrWhiteSpace(error.GetString()))
+                {
+                    return error.GetString()!;
+                }
+            }
+            catch
+            {
+                /* cuerpo no JSON: mensaje por defecto */
+            }
+
+            return response.StatusCode == HttpStatusCode.Conflict
+                ? "Ese horario acaba de ser tomado. Elige otro disponible."
+                : "No se pudo completar la operación. Intenta de nuevo.";
         }
     }
 }

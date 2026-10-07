@@ -17,7 +17,8 @@ namespace AquaClinic.Application.Features.Citas.Queries.GetCitasPaginadas
             var pagina = Math.Max(1, request.Pagina);
             var tamano = request.TamanoPagina <= 0 ? 10 : request.TamanoPagina;
 
-            var (items, total) = await _citaRepository.GetCitasPaginadasAsync(pagina, tamano);
+            var (items, total) = await _citaRepository.GetCitasPaginadasAsync(
+                pagina, tamano, request.Texto, request.Estado, request.FechaDesde, request.FechaHasta);
 
             return new CitasPaginadasVm
             {
@@ -30,7 +31,7 @@ namespace AquaClinic.Application.Features.Citas.Queries.GetCitasPaginadas
                         CitaId = c.CitaId,
                         Nombre = c.NombreInvitado ?? c.EmailInvitado ?? "Cliente registrado",
                         Fecha = CitaFechas.ALocal(c.FechaInicio),
-                        ImagenUrl = c.CitasServicios?.FirstOrDefault()?.Servicio?.ImagenUrl
+                        Estado = c.Estado.ToString()
                     })
                     .ToList()
             };

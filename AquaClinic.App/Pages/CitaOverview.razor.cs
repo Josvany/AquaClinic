@@ -15,7 +15,8 @@ namespace AquaClinic.App.Pages
     /// y, en vivo via SignalR, las reservas en proceso que los visitantes estan
     /// haciendo en la pagina publica /reservar (bloques dorados).
     /// El listado "Citas agendadas" es un RadzenDataGrid server-side (paginado en
-    /// la API, ordenado por fecha descendente).
+    /// la API, ordenado por fecha descendente) con la fila de filtros nativa
+    /// del grid (FilterMode.Simple): cliente por texto libre y estado exacto.
     /// </summary>
     public partial class CitaOverview : IAsyncDisposable
     {
@@ -82,8 +83,8 @@ namespace AquaClinic.App.Pages
 
         /// <summary>
         /// Carga de una pagina del DataGrid (invocado por LoadData del grid; el
-        /// pager de Radzen pasa args.Skip/args.Top). Orden fijo: fecha descendente,
-        /// aplicado en la API.
+        /// pager de Radzen pasa args.Skip/args.Top y la fila de filtros sus
+        /// filtros). Orden fijo: fecha descendente, aplicado en la API.
         /// </summary>
         private async Task CargarPaginaAsync(LoadDataArgs args)
         {
@@ -96,10 +97,12 @@ namespace AquaClinic.App.Pages
             var top = (args.Top ?? 0) > 0 ? args.Top!.Value : TamanoPagina;
             var pagina = (int)Math.Floor((double)skip / top) + 1;
 
+            var (texto, estado, fechaDesde, fechaHasta) = TraducirFiltros(args);
+
             try
             {
                 _cargandoPagina = true;
-                var respuesta = await CitaDataService.GetCitasPaginadas(pagina, top);
+                var respuesta = await CitaDataService.GetCitasPaginadas(pagina, top, texto, estado, fechaDesde, fechaHasta);
                 _citas = respuesta.Items;
                 _totalCitas = respuesta.Total;
                 _errorCarga = null;
@@ -120,6 +123,107 @@ namespace AquaClinic.App.Pages
             // El grid server-side se alimenta de la Data asignada en el handler:
             // forzar re-render para que pinte la pagina recibida.
             StateHasChanged();
+        }
+
+        /// <summary>
+        /// Traduce los filtros del popup Advanced del grid a los parametros de
+        /// la API: la columna Cliente (contains) al texto libre, la columna
+        /// Estado (equals) al nombre del estado y la columna Fecha a un rango de
+        /// dias. La API solo admite una condicion por columna, asi que si el
+        /// usuario deja el primer valor vacio se usa el segundo.
+        /// </summary>
+        private static (string? Texto, string? Estado, DateOnly? FechaDesde, DateOnly? FechaHasta)
+            TraducirFiltros(LoadDataArgs args)
+        {
+            string? texto = null;
+            string? estado = null;
+            DateOnly? fechaDesde = null;
+            DateOnly? fechaHasta = null;
+
+            if (args.Filters is not null)
+            {
+                foreach (var filtro in args.Filters)
+                {
+                    var propiedad = filtro.Property ?? filtro.FilterProperty;
+
+                    // La API no soporta dos condiciones para la misma columna:
+                    // si el primer valor esta vacio se usa el segundo.
+                    var valor = filtro.FilterValue?.ToString();
+
+                    if (string.IsNullOrWhiteSpace(valor))
+                    {
+                        valor = filtro.SecondFilterValue?.ToString();
+                    }
+
+                    if (string.Equals(propiedad, nameof(CitaListViewModel.Nombre), StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (!string.IsNullOrWhiteSpace(valor))
+                        {
+                            texto = valor.Trim();
+                        }
+                    }
+                    else if (string.Equals(propiedad, nameof(CitaListViewModel.Estado), StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (!string.IsNullOrWhiteSpace(valor))
+                        {
+                            estado = valor.Trim();
+                        }
+                    }
+                    else if (string.Equals(propiedad, nameof(CitaListViewModel.Fecha), StringComparison.OrdinalIgnoreCase))
+                    {
+                        var (desde, hasta) = TraducirRangoFechas(filtro);
+                        fechaDesde = desde;
+                        fechaHasta = hasta;
+                    }
+                }
+            }
+
+            return (texto, estado, fechaDesde, fechaHasta);
+        }
+
+        /// <summary>
+        /// Convierte las condiciones del popup de Fecha en un rango de dias:
+        /// "Equals" es ese dia, "&gt;=" el limite inferior y "&lt;=" el superior
+        /// (ambos por dia completo). Las dos condiciones se combinan, que es
+        /// como se usa el popup para pedir un rango.
+        /// </summary>
+        private static (DateOnly? Desde, DateOnly? Hasta) TraducirRangoFechas(FilterDescriptor filtro)
+        {
+            DateOnly? desde = null;
+            DateOnly? hasta = null;
+
+            Aplicar(filtro.FilterOperator, filtro.FilterValue);
+            Aplicar(filtro.SecondFilterOperator, filtro.SecondFilterValue);
+
+            return (desde, hasta);
+
+            void Aplicar(FilterOperator operador, object? valor)
+            {
+                if (valor is not DateTime fecha)
+                {
+                    return;
+                }
+
+                var dia = DateOnly.FromDateTime(fecha);
+
+                switch (operador)
+                {
+                    case FilterOperator.Equals:
+                        desde ??= dia;
+                        hasta ??= dia;
+                        break;
+
+                    case FilterOperator.GreaterThan:
+                    case FilterOperator.GreaterThanOrEquals:
+                        desde ??= dia;
+                        break;
+
+                    case FilterOperator.LessThan:
+                    case FilterOperator.LessThanOrEquals:
+                        hasta ??= dia;
+                        break;
+                }
+            }
         }
 
         /// <summary>
@@ -264,6 +368,44 @@ namespace AquaClinic.App.Pages
         }
 
         // ---------- Acciones ----------
+
+        /// <summary>
+        /// Edita la cita en un modal (detalle + mover/cancelar) en vez de
+        /// navegar a otra pagina. Al cerrarlo recarga la pagina del grid.
+        /// </summary>
+        private async Task EditarCitaAsync(Guid citaId)
+        {
+            await DialogService.OpenAsync<CitaDetalleDialog>(TextoUi.T("Editar cita"),
+                new Dictionary<string, object?>
+                {
+                    { "CitaId", citaId },
+                    { "CitaModificada", EventCallback.Factory.Create<bool>(this, async modificada => await AlCitaModificadaAsync(modificada)) }
+                },
+                new DialogOptions
+                {
+                    Width = "640px",
+                    ShowClose = true,
+                    CloseDialogOnEsc = true,
+                    CloseDialogOnOverlayClick = false,
+                    Draggable = false,
+                    CssClass = "ag-dialog"
+                });
+
+            await RefrescarPaginaVisibleAsync();
+        }
+
+        /// <summary>
+        /// La cita se movio o cancelo desde el modal: el calendario del
+        /// back office y la pagina visible del grid quedan desactualizados.
+        /// </summary>
+        private async Task AlCitaModificadaAsync(bool modificada)
+        {
+            if (modificada)
+            {
+                await CargarCitasCalendarioAsync();
+                await RefrescarPaginaVisibleAsync();
+            }
+        }
 
         /// <summary>
         /// Agendar desde el back office: el dialogo permite elegir un cliente

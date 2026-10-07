@@ -10,10 +10,6 @@ namespace AquaClinic.App.Profiles
         {
             //Vms are coming in from the API, ViewModel are the local entities in Blazor
             CreateMap<CitaListVm, CitaListViewModel>().ReverseMap();
-            CreateMap<CitaDetailVm, CitaDetailViewModel>().ReverseMap();
-
-            CreateMap<CitaDetailViewModel, CreateCitaCommand>().ReverseMap();
-            CreateMap<CitaDetailViewModel, UpdateCitaCommand>().ReverseMap();
 
             CreateMap<EspecialidadCitaDto, CitaNestedViewModel>().ReverseMap();
 

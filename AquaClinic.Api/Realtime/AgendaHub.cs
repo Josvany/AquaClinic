@@ -23,7 +23,13 @@ namespace AquaClinic.Api.Realtime
             _logger = logger;
         }
 
-        /// <summary>Marca un horario como "en proceso de reserva" para los demas visitantes.</summary>
+        /// <summary>
+        /// Marca un horario como "en proceso de reserva". Se difunde a todos,
+        /// incluida la conexion que reservo: el calendario del back office
+        /// (detras del dialogo de mover) es esa misma conexion y debe ver la
+        /// seleccion en curso. No genera duplicados porque los handlers del
+        /// cliente quitan el bloque de esa hora antes de agregarlo.
+        /// </summary>
         public async Task ReservarSuavemente(DateTimeOffset inicio, DateTimeOffset fin)
         {
             var ok = _reservasSuaves.IntentarReservar(Context.ConnectionId, inicio, fin);
@@ -35,15 +41,19 @@ namespace AquaClinic.Api.Realtime
                 return;
             }
 
-            await Clients.Others.SendAsync("ReservaSuave", inicio, fin);
+            await Clients.All.SendAsync("ReservaSuave", inicio, fin);
         }
 
-        /// <summary>Libera la reserva suave de esta conexion (modal cerrado / cambio de hora).</summary>
+        /// <summary>
+        /// Libera la reserva suave de esta conexion (modal cerrado / cambio de
+        /// hora). Va a todos por la misma razon que ReservaSuave: tambien el
+        /// calendario de quien eligio la hora debe quitar el bloque dorado.
+        /// </summary>
         public async Task LiberarReserva(DateTimeOffset inicio)
         {
             _reservasSuaves.LiberarPorInicio(inicio);
 
-            await Clients.Others.SendAsync("ReservaLiberada", inicio);
+            await Clients.All.SendAsync("ReservaLiberada", inicio);
         }
 
         public override Task OnConnectedAsync()

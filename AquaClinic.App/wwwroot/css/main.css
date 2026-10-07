@@ -156,6 +156,22 @@ button.rz-dialog-close:hover {
     box-shadow: none;
 }
 
+/* El icono de filtro de una columna del DataGrid en modo Advanced es un
+   <button> pelado (clase rz-grid-filter-icon, sin rz-button). El tema de Radzen
+   le pone background:none, border:none, padding:0 y margin-inline, pero NO
+   min-width, box-shadow ni margin-left: eso lo hereda del boton global de la App
+   (pastilla teal de 170px en el encabezado). Solo se resetea el layout; el
+   tamano y la fuente del icono los pone .rzi / .rz-grid-filter-icon. */
+button.rz-grid-filter-icon {
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    min-width: 0 !important;
+    margin-left: 0 !important;
+    padding: 0 !important;
+    transform: none;
+}
+
 /* Fondo blanco en los bordes del toast: el contenedor fijo y el wrapper del
    item heredan fondo blanco; transparentarlos deja solo la tarjeta coloreada. */
 .rz-notification,

@@ -6,13 +6,23 @@ namespace AquaClinic.App.Contracts
     public interface ICitaDataService
     {
         Task<List<CitaListViewModel>> GetAllCitas();
-        Task<CitasPaginadasViewModel> GetCitasPaginadas(int pagina, int tamanoPagina);
+
+        /// <summary>
+        /// Pagina del listado server-side con filtros opcionales
+        /// de texto (cliente), estado y rango de fechas.
+        /// </summary>
+        Task<CitasPaginadasViewModel> GetCitasPaginadas(int pagina, int tamanaPagina, string? texto = null, string? estado = null, DateOnly? fechaDesde = null, DateOnly? fechaHasta = null);
 
         /// <summary>Citas del usuario autenticado (pantalla "Mis citas").</summary>
         Task<List<MiCitaViewModel>> GetMisCitas();
-        Task<CitaDetailViewModel> GetCitaById(Guid id);
-        Task<ApiResponse<Guid>> CreateCita(CitaDetailViewModel eventDetailViewModel);
-        Task<ApiResponse<Guid>> UpdateCita(CitaDetailViewModel eventDetailViewModel);
-        Task<ApiResponse<Guid>> DeleteCita(Guid id);
+
+        /// <summary>Detalle real de una cita (cliente, servicios, fecha y estado).</summary>
+        Task<CitaDetalleViewModel?> ObtenerDetalleAsync(Guid id);
+
+        /// <summary>Mueve la cita a otro horario; falla (409) si el horario ya fue tomado.</summary>
+        Task<ApiResponse<Guid>> MoverCitaAsync(Guid citaId, DateTime nuevoInicioLocal, int duracionMinutos);
+
+        /// <summary>Cancela la cita (solo pendientes o confirmadas).</summary>
+        Task<ApiResponse<string>> CancelarCitaAsync(Guid citaId);
     }
 }

@@ -67,34 +67,43 @@
 
                 <RadzenDataGrid @ref="_grid" TItem="CitaListViewModel" Data="@_citas"
                                 LoadData="@(CargarPaginaAsync)" Count="@_totalCitas"
-                                AllowPaging="true" PageSize="10" PagerPageSizeOptions="@(false)" AllowSorting="false" Width="100%">
+                                AllowPaging="true" AllowFiltering="true" FilterMode="FilterMode.Advanced"
+                                PageSize="10" PagerPageSizeOptions="@(false)" AllowSorting="false" Width="100%">
                     <Columns>
-                        <RadzenDataGridColumn TItem="CitaListViewModel" Title="" Width="70px">
-                            <Template Context="cita">
-                                @if (!string.IsNullOrEmpty(cita.ImagenUrl))
-                                {
-                                    <img src="@cita.ImagenUrl" class="event-image" alt="" />
-                                }
-                                else
-                                {
-                                    <span class="ag-citas-sinimagen">
-                                        <i class="fa-regular fa-calendar-check" aria-hidden="true"></i>
-                                    </span>
-                                }
-                            </Template>
-                        </RadzenDataGridColumn>
-                        <RadzenDataGridColumn TItem="CitaListViewModel" Property="Nombre" Title="@TextoUi.T("Cliente")" />
-                        <RadzenDataGridColumn TItem="CitaListViewModel" Property="Fecha" Title="@TextoUi.T("Fecha")">
+                        <RadzenDataGridColumn TItem="CitaListViewModel" Property="Nombre" Title="@TextoUi.T("Cliente")"
+                                              FilterOperators="@(new FilterOperator[] { FilterOperator.Contains })" />
+                        <RadzenDataGridColumn TItem="CitaListViewModel" Property="Fecha" Title="@TextoUi.T("Fecha")"
+                                              FilterOperator="FilterOperator.Equals"
+                                              FilterOperators="@(new FilterOperator[]
+                                                  {
+                                                      FilterOperator.Equals,
+                                                      FilterOperator.GreaterThanOrEquals,
+                                                      FilterOperator.LessThanOrEquals
+                                                  })">
+                            <FilterValueTemplate>
+                                <RadzenDatePicker TValue="object" Style="width:100%" AllowClear="true"
+                                                  ShowTime="false" ShowTimeOkButton="false"
+                                                  Value="@context.GetFilterValue()"
+                                                  Change="@(args => context.SetFilterValue(args))" />
+                            </FilterValueTemplate>
                             <Template Context="cita">
                                 <span class="event-date">@cita.Fecha.ToString("f", System.Globalization.CultureInfo.CurrentCulture)</span>
                             </Template>
                         </RadzenDataGridColumn>
-                        <RadzenDataGridColumn TItem="CitaListViewModel" Sortable="false" Width="90px" TextAlign="TextAlign.Center">
+                        <RadzenDataGridColumn TItem="CitaListViewModel" Property="Estado" Title="@TextoUi.T("Estado")" Width="150px"
+                                              FilterOperator="FilterOperator.Equals"
+                                              FilterOperators="@(new FilterOperator[] { FilterOperator.Equals })">
                             <Template Context="cita">
-                                <a href="@($"citadetails/{cita.CitaId}")" class="event-purchase-button btn"
-                                   title="@TextoUi.T("Editar cita")">
+                                <span class="ag-miscitas-estado ag-miscitas-estado-@cita.Estado.ToLower()">@cita.Estado</span>
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="CitaListViewModel" Sortable="false" Filterable="false" Width="90px" TextAlign="TextAlign.Center">
+                            <Template Context="cita">
+                                <button type="button" class="event-purchase-button btn"
+                                        title="@TextoUi.T("Editar cita")"
+                                        @onclick="@(() => EditarCitaAsync(cita.CitaId))">
                                     <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
-                                </a>
+                                </button>
                             </Template>
                         </RadzenDataGridColumn>
                     </Columns>

@@ -1892,6 +1892,61 @@ footer.ag-footer {
         color: var(--color-teal-900) !important;
     }
 
+/* Los botones del popup de filtros del DataGrid (Aplicar / Limpiar) usan la
+   misma pastilla suave que la navegacion del calendario, para que el grid y
+   el scheduler se vean del mismo tono.
+
+   OJO 1: NO se puede acotar con .ag-citas-lista. Al abrirse, Radzen mueve el
+   popup a document.body (Radzen.openPopup en Radzen.Blazor.js), asi que
+   dentro del body no existe ningun ancestro del grid y el selector no
+   matchearia. Por eso el selector arranca en .rz-grid-filter-buttons, que es
+   una clase global del popup de filtros del DataGrid.
+
+   OJO 2: <RadzenTheme> (App.razor) inyecta el tema DESPUES de este archivo y
+   tiene reglas mas especificas para estos dos botones:
+     .rz-grid-filter-buttons .rz-button.rz-shade-default.rz-clear-filter
+     .rz-grid-filter-buttons .rz-button.rz-shade-default.rz-apply-filter
+   Se replican aqui esos selectores y se usan !important para igualarlos al
+   tono de la navegacion del scheduler y anular el boton global de main.css
+   (degradado teal, min-width 170px, margen izquierdo). */
+.rz-grid-filter-buttons .rz-button,
+.rz-grid-filter-buttons .rz-button.rz-shade-default.rz-clear-filter,
+.rz-grid-filter-buttons .rz-button.rz-shade-default.rz-apply-filter {
+    background-image: none !important;
+    /* El tema pinta el boton de aplicar con su variable propia; se pisa con
+       !important para igualarlo al tono suave de la navegacion del scheduler. */
+    background-color: #eaf3f2 !important;
+    color: var(--color-teal-900) !important;
+    box-shadow: none !important;
+    border: 1px solid var(--color-mist) !important;
+    border-radius: var(--radius-pill) !important;
+    font-family: var(--font-sans) !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    letter-spacing: normal !important;
+    height: auto !important;
+    padding: 7px 16px !important;
+    white-space: nowrap !important;
+    width: auto !important;
+    min-width: fit-content !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    text-transform: none !important;
+}
+
+    .rz-grid-filter-buttons .rz-button:hover,
+    .rz-grid-filter-buttons .rz-button:focus,
+    .rz-grid-filter-buttons .rz-button:active,
+    .rz-grid-filter-buttons .rz-button.rz-shade-default.rz-clear-filter:hover,
+    .rz-grid-filter-buttons .rz-button.rz-shade-default.rz-apply-filter:hover {
+        background-color: #d8e9e7 !important;
+        border-color: rgba(42, 107, 102, 0.35) !important;
+        color: var(--color-teal-900) !important;
+        transform: none;
+        box-shadow: none !important;
+    }
+
 
 .rz-scheduler .rz-event {
     /*background-color: var(--color-teal-500);*/
@@ -2685,13 +2740,16 @@ label[for] {
 
 /* Boton editar del DataGrid: bootstrap .btn le agrega borde/fondo blanquecino
    (--bs-btn-border-color #dee2e6) que se ve como un cuadro blanco detras del
-   icono; se anula para dejar solo el pill teal */
+   icono; se anula para dejar solo el pill teal. Al ser un <button> tambien
+   hereda del boton global de main.css el min-width y el margin-left. */
 .ag-citas-lista .rz-grid-table .event-purchase-button {
     background-color: transparent;
     background-image: var(--gradient-teal);
     border: none !important;
     box-shadow: none;
     padding: 9px 14px;
+    min-width: 0;
+    margin-left: 0;
 }
 
     .ag-citas-lista .rz-grid-table .event-purchase-button:hover {
@@ -2718,12 +2776,19 @@ label[for] {
     border: none;
     border-bottom: 1px solid var(--color-mist);
     padding: 12px 10px;
+    font-family: var(--font-sans);
+    color: var(--color-bronze);
+}
+
+/* Mayusculas, tracking y tamano solo en el titulo de la columna: la fila de
+   filtros del grid (FilterMode.Simple) usa las mismas <th>, y como
+   text-transform y letter-spacing se heredan, la caja de busqueda los
+   recibia y escribia en mayusculas espaciadas. */
+.ag-citas-lista .rz-datatable-thead > tr > th .rz-column-title {
     font-size: var(--text-caption);
     font-weight: 600;
     letter-spacing: var(--tracking-caps);
     text-transform: uppercase;
-    color: var(--color-bronze);
-    font-family: var(--font-sans);
 }
 
 .ag-citas-lista .rz-datatable-data > tr > td {
@@ -3073,6 +3138,124 @@ button.ag-tipo-cliente-opcion {
         flex-wrap: wrap;
     }
 }
+
+/* ============================================================
+   Detalle de cita (/citadetails)
+   ============================================================ */
+
+.ag-cita-detalle-cabecera {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--color-mist);
+}
+
+.ag-cita-detalle-cliente {
+    font-family: var(--font-serif);
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--color-teal-900);
+    margin: 0;
+}
+
+.ag-cita-detalle-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.25rem 2rem;
+}
+
+.ag-cita-detalle-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.ag-cita-detalle-etiqueta {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+    color: var(--color-bronze);
+}
+
+.ag-cita-detalle-valor {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    font-size: 1rem;
+    color: var(--color-teal-900);
+}
+
+.ag-cita-detalle-valor small {
+    font-size: 0.8rem;
+    color: #6b7f7d;
+}
+
+.ag-cita-detalle-servicio {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    padding: 0.35rem 0;
+}
+
+.ag-cita-detalle-servicio + .ag-cita-detalle-servicio {
+    border-top: 1px dashed var(--color-mist);
+}
+
+.ag-cita-detalle-servicio strong {
+    font-weight: 600;
+}
+
+.ag-cita-detalle-notas {
+    grid-column: 1 / -1;
+}
+
+    .ag-cita-detalle-notas .ag-cita-detalle-valor {
+        font-style: italic;
+        color: #6b7f7d;
+    }
+
+.ag-cita-detalle-acciones {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-mist);
+}
+
+/* Variante de peligro (cancelar) */
+.ag-btn-peligro {
+    background-image: none;
+    background-color: #a03a30;
+    box-shadow: none;
+}
+
+    .ag-btn-peligro:hover,
+    .ag-btn-peligro:focus-visible {
+        background-color: #8c3229;
+        color: #fff;
+        box-shadow: 0 16px 34px rgba(160, 58, 48, 0.3);
+    }
+
+.ag-btn-contorno.ag-btn-peligro {
+    background: transparent;
+    color: #a03a30;
+    border: 1.5px solid #a03a30;
+    box-shadow: none;
+}
+
+    .ag-btn-contorno.ag-btn-peligro:hover,
+    .ag-btn-contorno.ag-btn-peligro:focus-visible {
+        background: rgba(160, 58, 48, 0.08);
+        color: #8c3229;
+        border-color: #8c3229;
+        box-shadow: none;
+    }
 
 /* ============================================================
    CRUD de servicios (administracion del catalogo)

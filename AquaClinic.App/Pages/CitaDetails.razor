@@ -3,82 +3,42 @@
 @attribute [Authorize]
 @rendermode InteractiveServer
 
-<h1 class="page-title">@TextoUi.T("Detalles de ")@CitaDetailViewModel.Nombre</h1>
-
-@Message
-
-<EditForm Model="@CitaDetailViewModel" OnValidSubmit="@HandleValidSubmit">
-    <DataAnnotationsValidator />
-    <ValidationSummary></ValidationSummary>
-
-    <div class="row mb-3">
-        <label for="nombre" class="col-sm-3 form-label">@TextoUi.T("Nombre: ")</label>
-        <div class="col-sm-8">
-            <InputText id="nombre" class="form-control" @bind-Value="@CitaDetailViewModel.Nombre" placeholder="@TextoUi.T("Ingrese el nombre")"></InputText>
-            <ValidationMessage For="@(() => CitaDetailViewModel.Nombre)" />
+<section class="ag-citas-seccion">
+    <div class="ag-contenedor">
+        <div class="ag-citas-encabezado">
+            <div>
+                <span class="ag-label-caps">@TextoUi.T("Agenda de la clínica")</span>
+                <h1 class="ag-citas-titulo">@TextoUi.T("Detalles de la cita")</h1>
+                <p class="ag-citas-subtitulo">
+                    @TextoUi.T("Consulta el cliente, el servicio y el horario. Solo puedes mover la cita a otro horario o cancelarla.")
+                </p>
+            </div>
         </div>
+
+        @if (Cargando)
+        {
+            <p><em>@TextoUi.T("Cargando...")</em></p>
+        }
+        else if (Error is not null)
+        {
+            <div class="alert alert-danger">@TextoUi.T(Error)</div>
+        }
+        else if (Cita is null || Cita.CitaId == Guid.Empty)
+        {
+            <div class="ag-panel ag-miscitas-vacio">
+                <i class="fa-regular fa-calendar-xmark" aria-hidden="true"></i>
+                <h3>@TextoUi.T("Cita no encontrada")</h3>
+                <p>@TextoUi.T("La cita que buscas no existe o ya fue eliminada.")</p>
+            </div>
+        }
+        else
+        {
+            <CitaDetalleVista Cita="Cita" OnMover="MoverCita" OnCancelar="CancelarCita" />
+        }
+
+        <p class="back-to-catalog mt-3">
+            <img src="img/back-arrow.svg" />
+            <a @onclick="@VolverAlListado">@TextoUi.T("Volver al listado")</a>
+        </p>
     </div>
-
-    <div class="row mb-3">
-        <label for="precio" class="col-sm-3 form-label">@TextoUi.T("Precio: ")</label>
-        <div class="col-sm-8">
-            <InputNumber id="precio" class="form-control" @bind-Value="@CitaDetailViewModel.Precio" placeholder="@TextoUi.T("Ingrese el precio")"></InputNumber>
-            <ValidationMessage For="@(() => CitaDetailViewModel.Precio)" />
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <label for="doctor" class="col-sm-3 form-label">@TextoUi.T("Doctor:")</label>
-        <div class="col-sm-8">
-            <InputText id="doctor" class="form-control" @bind-Value="@CitaDetailViewModel.Doctor" placeholder="@TextoUi.T("Ingrese el doctor")"></InputText>
-            <ValidationMessage For="@(() => CitaDetailViewModel.Doctor)" />
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <label for="date" class="col-sm-3 form-label">@TextoUi.T("Fecha:")</label>
-        <div class="col-sm-8">
-            <InputDate id="date" class="form-control" @bind-Value="@CitaDetailViewModel.Fecha"></InputDate>
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <label for="descripcion" class="col-sm-3 form-label">@TextoUi.T("Descripción:")</label>
-        <div class="col-sm-8">
-            <InputTextArea id="descripcion" class="form-control" @bind-Value="@CitaDetailViewModel.Descripcion" placeholder="@TextoUi.T("Ingrese la descripción")"></InputTextArea>
-            <ValidationMessage For="@(() => CitaDetailViewModel.Descripcion)" />
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <label for="imageurl" class="col-sm-3 form-label">@TextoUi.T("Imagen:")</label>
-        <div class="col-sm-8">
-            <InputText id="imageurl" class="form-control" @bind-Value="@CitaDetailViewModel.ImagenUrl" placeholder="@TextoUi.T("Ingrese la URL de la imagen")"></InputText>
-            <ValidationMessage For="@(() => CitaDetailViewModel.ImagenUrl)" />
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <label for="especialidad" class="col-sm-3 form-label">@TextoUi.T("Especialidad:")</label>
-        <div class="col-sm-8">
-            <InputSelect id="especialidad" class="form-control" @bind-Value="@SelectedEspecialidadId">
-                @foreach (var category in Especialidades)
-                {
-                    <option value="@category.EspecialidadId">@TextoUi.T(category.Nombre)</option>
-                }
-            </InputSelect>
-        </div>
-    </div>
-
-    <button type="submit" class="submit-button">@TextoUi.T("Guardar cita")</button>
-
-</EditForm>
-
-@if (SelectedCitaId != Guid.Empty)
-{
-    <p>
-        <button @onclick="DeleteCita" class="delete-button mt-3">@TextoUi.T("Eliminar cita")</button>
-    </p>
-}
-<br />
-<p class="back-to-catalog mt-3"><img src="img/back-arrow.svg" /><a @onclick="@NavigateToOverview">@TextoUi.T("Volver al listado")</a></p>
+</section>

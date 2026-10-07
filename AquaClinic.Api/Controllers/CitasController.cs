@@ -1,7 +1,9 @@
 using AquaClinic.Api.Authorization;
 using AquaClinic.Api.Utility;
 using AquaClinic.Identity;
+using AquaClinic.Application.Features.Citas.Commands.CancelarCita;
 using AquaClinic.Application.Features.Citas.Commands.CreateCita;
+using AquaClinic.Application.Features.Citas.Commands.MoverCita;
 using AquaClinic.Application.Features.Citas.Queries.GetAgendaSemana;
 using AquaClinic.Application.Features.Citas.Queries.GetCitaById;
 using AquaClinic.Application.Features.Citas.Queries.GetCitasExport;
@@ -90,6 +92,52 @@ namespace AquaClinic.Api.Controllers
         }
 
         /// <summary>
+        /// Mueve una cita pendiente o confirmada a otro horario.
+        /// Valida disponibilidad (horario de la clinica, bloqueos y
+        /// solapamiento con otras citas); 409 si el nuevo horario ya
+        /// fue tomado. El identity del token manda: solo personal con
+        /// permiso citas:gestionar puede mover citas.
+        /// </summary>
+        [HttpPut("{id}/mover", Name = "MoverCita")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesDefaultResponseType]
+        [HasPermission(Permisos.CitasGestionar)]
+        public async Task<ActionResult<Guid>> MoverCita(Guid id, [FromBody] MoverCitaCommand command)
+        {
+            command.CitaId = id;
+
+            try
+            {
+                var citaId = await _mediator.Send(command);
+                return Ok(citaId);
+            }
+            catch (Application.Exceptions.BadRequestException ex)
+            {
+                // Horario tomado o clinica cerrada: conflicto
+                return Conflict(new { error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Cancela una cita pendiente o confirmada (el horario vuelve
+        /// a quedar disponible). Exige permiso citas:gestionar.
+        /// </summary>
+        [HttpPost("{id}/cancelar", Name = "CancelarCita")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesDefaultResponseType]
+        [HasPermission(Permisos.CitasGestionar)]
+        public async Task<ActionResult> CancelarCita(Guid id)
+        {
+            await _mediator.Send(new CancelarCitaCommand { CitaId = id });
+            return Ok();
+        }
+
+        /// <summary>
         /// Citas del usuario autenticado (rol Cliente) para su pantalla
         /// "Mis citas": su historial completo, sin exponer datos de otros.
         /// </summary>
@@ -105,7 +153,8 @@ namespace AquaClinic.Api.Controllers
 
         /// <summary>
         /// Pagina del listado de citas (fecha descendente) para el DataGrid
-        /// server-side de la agenda interna.
+        /// server-side de la agenda interna, con filtros opcionales de
+        /// texto (cliente), estado y rango de fechas.
         /// </summary>
         [HttpGet("paginadas", Name = "GetCitasPaginadas")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -113,13 +162,22 @@ namespace AquaClinic.Api.Controllers
         [HasPermission(Permisos.CitasVer)]
         public async Task<ActionResult<CitasPaginadasVm>> GetCitasPaginadas(
             [FromQuery] int pagina = 1,
-            [FromQuery] int tamanoPagina = 10)
+            [FromQuery] int tamanoPagina = 10,
+            [FromQuery] string? texto = null,
+            [FromQuery] string? estado = null,
+            [FromQuery] DateOnly? fechaDesde = null,
+            [FromQuery] DateOnly? fechaHasta = null)
         {
             var result = await _mediator.Send(new GetCitasPaginadasQuery
             {
                 Pagina = pagina,
-                TamanoPagina = tamanoPagina
+                TamanoPagina = tamanoPagina,
+                Texto = texto,
+                Estado = estado,
+                FechaDesde = fechaDesde?.ToDateTime(TimeOnly.MinValue),
+                FechaHasta = fechaHasta?.ToDateTime(TimeOnly.MinValue)
             });
+
             return Ok(result);
         }
 
