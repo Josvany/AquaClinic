@@ -18,25 +18,42 @@ namespace AquaClinic.Application.Features.Citas.Queries.GetCitaById
             var cita = await _citaRepository.GetByIdWithServiciosAsync(request.Id)
                 ?? throw new AquaClinic.Application.Exceptions.NotFoundException(nameof(Cita), request.Id);
 
-            var servicio = cita.CitasServicios?.FirstOrDefault()?.Servicio;
-            var fechaLocal = CitaFechas.ALocal(cita.FechaInicio);
+            var (clienteRegistrado, emailRegistrado, personal) =
+                await _citaRepository.ObtenerContactoAsync(cita.UsuarioId, cita.PersonalId);
+
+            var servicios = (cita.CitasServicios ?? [])
+                .Where(cs => cs.Servicio is not null)
+                .Select(cs => new CitaDetalleServicioDto
+                {
+                    ServicioId = cs.Servicio!.ServicioId,
+                    Nombre = cs.Servicio.Nombre,
+                    DuracionMinutos = cs.Servicio.DuracionMinutos,
+                    Precio = cs.Servicio.Precio,
+                    EspecialidadNombre = cs.Servicio.Especialidad?.Nombre
+                })
+                .ToList();
+
+            // Cliente visible: el usuario registrado; si no, el invitado
+            // (nombre o, de ultimo, su correo).
+            var cliente = clienteRegistrado
+                ?? (!string.IsNullOrWhiteSpace(cita.NombreInvitado)
+                    ? cita.NombreInvitado
+                    : (!string.IsNullOrWhiteSpace(cita.EmailInvitado) ? cita.EmailInvitado : "Cliente"));
 
             return new CitaDetailVm
             {
                 CitaId = cita.CitaId,
-                Nombre = cita.NombreInvitado ?? cita.EmailInvitado ?? "Cliente registrado",
-                // La cita no tiene precio/doctor propios: vienen del servicio vinculado
-                Precio = (int)Math.Round(servicio?.Precio ?? 0),
-                Doctor = servicio?.Nombre,
-                Fecha = fechaLocal,
-                Descripcion = cita.Notas,
-                ImagenUrl = servicio?.ImagenUrl,
-                EspecialidadId = servicio?.EspecialidadId ?? Guid.Empty,
-                Especialidad = servicio?.Especialidad == null ? null : new CitaDetalleEspecialidadDto
-                {
-                    EspecialidadId = servicio.Especialidad.EspecialidadId,
-                    Nombre = servicio.Especialidad.Nombre
-                }
+                EsRegistrado = !string.IsNullOrEmpty(cita.UsuarioId),
+                Cliente = cliente,
+                EmailContacto = emailRegistrado ?? cita.EmailInvitado,
+                TelefonoContacto = cita.TelefonoInvitado,
+                PersonalNombre = personal,
+                FechaInicioLocal = CitaFechas.ALocal(cita.FechaInicio),
+                FechaFinLocal = CitaFechas.ALocal(cita.FechaFin),
+                Estado = cita.Estado.ToString(),
+                EstadoValor = (int)cita.Estado,
+                Notas = cita.Notas,
+                Servicios = servicios
             };
         }
     }

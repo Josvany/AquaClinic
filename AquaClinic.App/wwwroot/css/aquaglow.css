@@ -3075,6 +3075,124 @@ button.ag-tipo-cliente-opcion {
 }
 
 /* ============================================================
+   Detalle de cita (/citadetails)
+   ============================================================ */
+
+.ag-cita-detalle-cabecera {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--color-mist);
+}
+
+.ag-cita-detalle-cliente {
+    font-family: var(--font-serif);
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--color-teal-900);
+    margin: 0;
+}
+
+.ag-cita-detalle-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.25rem 2rem;
+}
+
+.ag-cita-detalle-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.ag-cita-detalle-etiqueta {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+    color: var(--color-bronze);
+}
+
+.ag-cita-detalle-valor {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    font-size: 1rem;
+    color: var(--color-teal-900);
+}
+
+.ag-cita-detalle-valor small {
+    font-size: 0.8rem;
+    color: #6b7f7d;
+}
+
+.ag-cita-detalle-servicio {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    padding: 0.35rem 0;
+}
+
+.ag-cita-detalle-servicio + .ag-cita-detalle-servicio {
+    border-top: 1px dashed var(--color-mist);
+}
+
+.ag-cita-detalle-servicio strong {
+    font-weight: 600;
+}
+
+.ag-cita-detalle-notas {
+    grid-column: 1 / -1;
+}
+
+    .ag-cita-detalle-notas .ag-cita-detalle-valor {
+        font-style: italic;
+        color: #6b7f7d;
+    }
+
+.ag-cita-detalle-acciones {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-mist);
+}
+
+/* Variante de peligro (cancelar) */
+.ag-btn-peligro {
+    background-image: none;
+    background-color: #a03a30;
+    box-shadow: none;
+}
+
+    .ag-btn-peligro:hover,
+    .ag-btn-peligro:focus-visible {
+        background-color: #8c3229;
+        color: #fff;
+        box-shadow: 0 16px 34px rgba(160, 58, 48, 0.3);
+    }
+
+.ag-btn-contorno.ag-btn-peligro {
+    background: transparent;
+    color: #a03a30;
+    border: 1.5px solid #a03a30;
+    box-shadow: none;
+}
+
+    .ag-btn-contorno.ag-btn-peligro:hover,
+    .ag-btn-contorno.ag-btn-peligro:focus-visible {
+        background: rgba(160, 58, 48, 0.08);
+        color: #8c3229;
+        border-color: #8c3229;
+        box-shadow: none;
+    }
+
+/* ============================================================
    CRUD de servicios (administracion del catalogo)
    ============================================================ */
 

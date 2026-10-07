@@ -23,5 +23,13 @@ namespace AquaClinic.Application.Contracts.Persistence
 
         /// <summary>Citas de un usuario registrado, mas recientes primero, con su servicio.</summary>
         Task<IReadOnlyList<Cita>> GetCitasDeUsuarioAsync(string usuarioId);
+
+        /// <summary>
+        /// Nombre y correo del cliente registrado (AspNetUsers) y nombre
+        /// del personal asignado; null cuando no hay. Para el detalle de
+        /// la cita (la entidad Cita no navea a esos registros).
+        /// </summary>
+        Task<(string? ClienteNombre, string? ClienteEmail, string? PersonalNombre)>
+            ObtenerContactoAsync(string? usuarioId, Guid? personalId);
     }
 }

@@ -1,7 +1,9 @@
 using AquaClinic.Api.Authorization;
 using AquaClinic.Api.Utility;
 using AquaClinic.Identity;
+using AquaClinic.Application.Features.Citas.Commands.CancelarCita;
 using AquaClinic.Application.Features.Citas.Commands.CreateCita;
+using AquaClinic.Application.Features.Citas.Commands.MoverCita;
 using AquaClinic.Application.Features.Citas.Queries.GetAgendaSemana;
 using AquaClinic.Application.Features.Citas.Queries.GetCitaById;
 using AquaClinic.Application.Features.Citas.Queries.GetCitasExport;
@@ -87,6 +89,52 @@ namespace AquaClinic.Api.Controllers
                 // Horario tomado o clinica cerrada: conflicto para el scheduler
                 return Conflict(new { error = ex.Message });
             }
+        }
+
+        /// <summary>
+        /// Mueve una cita pendiente o confirmada a otro horario.
+        /// Valida disponibilidad (horario de la clinica, bloqueos y
+        /// solapamiento con otras citas); 409 si el nuevo horario ya
+        /// fue tomado. El identity del token manda: solo personal con
+        /// permiso citas:gestionar puede mover citas.
+        /// </summary>
+        [HttpPut("{id}/mover", Name = "MoverCita")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesDefaultResponseType]
+        [HasPermission(Permisos.CitasGestionar)]
+        public async Task<ActionResult<Guid>> MoverCita(Guid id, [FromBody] MoverCitaCommand command)
+        {
+            command.CitaId = id;
+
+            try
+            {
+                var citaId = await _mediator.Send(command);
+                return Ok(citaId);
+            }
+            catch (Application.Exceptions.BadRequestException ex)
+            {
+                // Horario tomado o clinica cerrada: conflicto
+                return Conflict(new { error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Cancela una cita pendiente o confirmada (el horario vuelve
+        /// a quedar disponible). Exige permiso citas:gestionar.
+        /// </summary>
+        [HttpPost("{id}/cancelar", Name = "CancelarCita")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesDefaultResponseType]
+        [HasPermission(Permisos.CitasGestionar)]
+        public async Task<ActionResult> CancelarCita(Guid id)
+        {
+            await _mediator.Send(new CancelarCitaCommand { CitaId = id });
+            return Ok();
         }
 
         /// <summary>

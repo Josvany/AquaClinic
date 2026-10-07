@@ -58,6 +58,44 @@ namespace AquaClinic.Persistence.Repositories
                 .ToListAsync();
         }
 
+        public async Task<(string? ClienteNombre, string? ClienteEmail, string? PersonalNombre)>
+            ObtenerContactoAsync(string? usuarioId, Guid? personalId)
+        {
+            string? clienteNombre = null;
+            string? clienteEmail = null;
+
+            if (!string.IsNullOrEmpty(usuarioId))
+            {
+                var usuario = await _dbContext.Users
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(u => u.Id == usuarioId);
+
+                if (usuario is not null)
+                {
+                    var nombre = $"{usuario.Nombre} {usuario.Apellidos}".Trim();
+                    clienteNombre = string.IsNullOrEmpty(nombre) ? null : nombre;
+                    clienteEmail = usuario.Email;
+                }
+            }
+
+            string? personalNombre = null;
+
+            if (personalId.HasValue)
+            {
+                var personal = await _dbContext.Personal
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(p => p.PersonalId == personalId.Value);
+
+                if (personal is not null)
+                {
+                    var nombre = $"{personal.Nombre} {personal.Apellidos}".Trim();
+                    personalNombre = string.IsNullOrEmpty(nombre) ? null : nombre;
+                }
+            }
+
+            return (clienteNombre, clienteEmail, personalNombre);
+        }
+
         public async Task AsignarServicioAsync(Guid citaId, Guid servicioId)
         {
             var existe = await _dbContext.CitasServicios

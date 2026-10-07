@@ -3,82 +3,126 @@
 @attribute [Authorize]
 @rendermode InteractiveServer
 
-<h1 class="page-title">@TextoUi.T("Detalles de ")@CitaDetailViewModel.Nombre</h1>
-
-@Message
-
-<EditForm Model="@CitaDetailViewModel" OnValidSubmit="@HandleValidSubmit">
-    <DataAnnotationsValidator />
-    <ValidationSummary></ValidationSummary>
-
-    <div class="row mb-3">
-        <label for="nombre" class="col-sm-3 form-label">@TextoUi.T("Nombre: ")</label>
-        <div class="col-sm-8">
-            <InputText id="nombre" class="form-control" @bind-Value="@CitaDetailViewModel.Nombre" placeholder="@TextoUi.T("Ingrese el nombre")"></InputText>
-            <ValidationMessage For="@(() => CitaDetailViewModel.Nombre)" />
+<section class="ag-citas-seccion">
+    <div class="ag-contenedor">
+        <div class="ag-citas-encabezado">
+            <div>
+                <span class="ag-label-caps">@TextoUi.T("Agenda de la clínica")</span>
+                <h1 class="ag-citas-titulo">@TextoUi.T("Detalles de la cita")</h1>
+                <p class="ag-citas-subtitulo">
+                    @TextoUi.T("Consulta el cliente, el servicio y el horario. Solo puedes mover la cita a otro horario o cancelarla.")
+                </p>
+            </div>
         </div>
-    </div>
 
-    <div class="row mb-3">
-        <label for="precio" class="col-sm-3 form-label">@TextoUi.T("Precio: ")</label>
-        <div class="col-sm-8">
-            <InputNumber id="precio" class="form-control" @bind-Value="@CitaDetailViewModel.Precio" placeholder="@TextoUi.T("Ingrese el precio")"></InputNumber>
-            <ValidationMessage For="@(() => CitaDetailViewModel.Precio)" />
-        </div>
-    </div>
+        @if (Cargando)
+        {
+            <p><em>@TextoUi.T("Cargando...")</em></p>
+        }
+        else if (Error is not null)
+        {
+            <div class="alert alert-danger">@TextoUi.T(Error)</div>
+        }
+        else if (Cita is null || Cita.CitaId == Guid.Empty)
+        {
+            <div class="ag-panel ag-miscitas-vacio">
+                <i class="fa-regular fa-calendar-xmark" aria-hidden="true"></i>
+                <h3>@TextoUi.T("Cita no encontrada")</h3>
+                <p>@TextoUi.T("La cita que buscas no existe o ya fue eliminada.")</p>
+            </div>
+        }
+        else
+        {
+            <div class="ag-panel ag-cita-detalle">
+                <div class="ag-cita-detalle-cabecera">
+                    <h2 class="ag-cita-detalle-cliente">@Cita.Cliente</h2>
+                    <span class="ag-miscitas-estado ag-miscitas-estado-@Cita.Estado.ToLower()">@TextoUi.T(Cita.Estado)</span>
+                </div>
 
-    <div class="row mb-3">
-        <label for="doctor" class="col-sm-3 form-label">@TextoUi.T("Doctor:")</label>
-        <div class="col-sm-8">
-            <InputText id="doctor" class="form-control" @bind-Value="@CitaDetailViewModel.Doctor" placeholder="@TextoUi.T("Ingrese el doctor")"></InputText>
-            <ValidationMessage For="@(() => CitaDetailViewModel.Doctor)" />
-        </div>
-    </div>
+                <div class="ag-cita-detalle-grid">
+                    <div class="ag-cita-detalle-item">
+                        <span class="ag-cita-detalle-etiqueta">@TextoUi.T("Cliente")</span>
+                        <span class="ag-cita-detalle-valor">
+                            @Cita.Cliente
+                            <small>@(Cita.EsRegistrado ? TextoUi.T("Registrado") : TextoUi.T("Invitado"))</small>
+                        </span>
+                    </div>
 
-    <div class="row mb-3">
-        <label for="date" class="col-sm-3 form-label">@TextoUi.T("Fecha:")</label>
-        <div class="col-sm-8">
-            <InputDate id="date" class="form-control" @bind-Value="@CitaDetailViewModel.Fecha"></InputDate>
-        </div>
-    </div>
+                    <div class="ag-cita-detalle-item">
+                        <span class="ag-cita-detalle-etiqueta">@TextoUi.T("Contacto")</span>
+                        <span class="ag-cita-detalle-valor">
+                            @if (!string.IsNullOrWhiteSpace(Cita.EmailContacto))
+                            {
+                                <span>@Cita.EmailContacto</span>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(Cita.TelefonoContacto))
+                            {
+                                <span>@Cita.TelefonoContacto</span>
+                            }
+                        </span>
+                    </div>
 
-    <div class="row mb-3">
-        <label for="descripcion" class="col-sm-3 form-label">@TextoUi.T("Descripción:")</label>
-        <div class="col-sm-8">
-            <InputTextArea id="descripcion" class="form-control" @bind-Value="@CitaDetailViewModel.Descripcion" placeholder="@TextoUi.T("Ingrese la descripción")"></InputTextArea>
-            <ValidationMessage For="@(() => CitaDetailViewModel.Descripcion)" />
-        </div>
-    </div>
+                    <div class="ag-cita-detalle-item ag-cita-detalle-servicios">
+                        <span class="ag-cita-detalle-etiqueta">@TextoUi.T("Servicio(s)")</span>
+                        <span class="ag-cita-detalle-valor">
+                            @foreach (var servicio in Cita.Servicios)
+                            {
+                                <div class="ag-cita-detalle-servicio">
+                                    <strong>@servicio.Nombre</strong>
+                                    <small>@servicio.DuracionMinutos&nbsp;min &middot;&nbsp;@servicio.Precio.ToString("C", FormatoClinica.CulturaDinero)</small>
+                                    @if (!string.IsNullOrWhiteSpace(servicio.EspecialidadNombre))
+                                    {
+                                        <small>@servicio.EspecialidadNombre</small>
+                                    }
+                                </div>
+                            }
+                        </span>
+                    </div>
 
-    <div class="row mb-3">
-        <label for="imageurl" class="col-sm-3 form-label">@TextoUi.T("Imagen:")</label>
-        <div class="col-sm-8">
-            <InputText id="imageurl" class="form-control" @bind-Value="@CitaDetailViewModel.ImagenUrl" placeholder="@TextoUi.T("Ingrese la URL de la imagen")"></InputText>
-            <ValidationMessage For="@(() => CitaDetailViewModel.ImagenUrl)" />
-        </div>
-    </div>
+                    <div class="ag-cita-detalle-item">
+                        <span class="ag-cita-detalle-etiqueta">@TextoUi.T("Fecha y hora")</span>
+                        <span class="ag-cita-detalle-valor">
+                            @Cita.FechaInicioLocal.ToString("f", System.Globalization.CultureInfo.CurrentCulture)
+                            &ndash;&nbsp;@Cita.FechaFinLocal.ToString("t", System.Globalization.CultureInfo.CurrentCulture)
+                            <small>@TextoUi.T("hora de la clínica (Vancouver)")</small>
+                        </span>
+                    </div>
 
-    <div class="row mb-3">
-        <label for="especialidad" class="col-sm-3 form-label">@TextoUi.T("Especialidad:")</label>
-        <div class="col-sm-8">
-            <InputSelect id="especialidad" class="form-control" @bind-Value="@SelectedEspecialidadId">
-                @foreach (var category in Especialidades)
+                    <div class="ag-cita-detalle-item">
+                        <span class="ag-cita-detalle-etiqueta">@TextoUi.T("Esteticista asignado")</span>
+                        <span class="ag-cita-detalle-valor">
+                            @(string.IsNullOrWhiteSpace(Cita.PersonalNombre) ? TextoUi.T("Por asignar") : Cita.PersonalNombre)
+                        </span>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(Cita.Notas))
+                    {
+                        <div class="ag-cita-detalle-item ag-cita-detalle-notas">
+                            <span class="ag-cita-detalle-etiqueta">@TextoUi.T("Notas")</span>
+                            <span class="ag-cita-detalle-valor">@Cita.Notas</span>
+                        </div>
+                    }
+                </div>
+
+                @if (Cita.PermiteGestion)
                 {
-                    <option value="@category.EspecialidadId">@TextoUi.T(category.Nombre)</option>
+                    <div class="ag-cita-detalle-acciones">
+                        <button class="ag-btn" @onclick="MoverCita">
+                            <i class="fa-regular fa-calendar-clock" aria-hidden="true"></i>
+                            @TextoUi.T("Mover a otro horario")
+                        </button>
+                        <button class="ag-btn ag-btn-contorno ag-btn-peligro" @onclick="CancelarCita">
+                            <i class="fa-regular fa-calendar-xmark" aria-hidden="true"></i>
+                            @TextoUi.T("Cancelar cita")
+                        </button>
+                    </div>
                 }
-            </InputSelect>
-        </div>
+            </div>
+        }
+
+        <p class="back-to-catalog mt-3">
+            <img src="img/back-arrow.svg" />
+            <a @onclick="@VolverAlListado">@TextoUi.T("Volver al listado")</a>
+        </p>
     </div>
-
-    <button type="submit" class="submit-button">@TextoUi.T("Guardar cita")</button>
-
-</EditForm>
-
-@if (SelectedCitaId != Guid.Empty)
-{
-    <p>
-        <button @onclick="DeleteCita" class="delete-button mt-3">@TextoUi.T("Eliminar cita")</button>
-    </p>
-}
-<br />
-<p class="back-to-catalog mt-3"><img src="img/back-arrow.svg" /><a @onclick="@NavigateToOverview">@TextoUi.T("Volver al listado")</a></p>
+</section>
