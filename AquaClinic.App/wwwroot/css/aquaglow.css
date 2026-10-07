@@ -2685,13 +2685,16 @@ label[for] {
 
 /* Boton editar del DataGrid: bootstrap .btn le agrega borde/fondo blanquecino
    (--bs-btn-border-color #dee2e6) que se ve como un cuadro blanco detras del
-   icono; se anula para dejar solo el pill teal */
+   icono; se anula para dejar solo el pill teal. Al ser un <button> tambien
+   hereda del boton global de main.css el min-width y el margin-left. */
 .ag-citas-lista .rz-grid-table .event-purchase-button {
     background-color: transparent;
     background-image: var(--gradient-teal);
     border: none !important;
     box-shadow: none;
     padding: 9px 14px;
+    min-width: 0;
+    margin-left: 0;
 }
 
     .ag-citas-lista .rz-grid-table .event-purchase-button:hover {

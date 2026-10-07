@@ -1,0 +1,24 @@
+@rendermode InteractiveServer
+
+<div class="ag-reserva-modal">
+    @if (_cargando)
+    {
+        <p><em>@TextoUi.T("Cargando...")</em></p>
+    }
+    else if (_error is not null)
+    {
+        <div class="ag-nueva-cita-error">@TextoUi.T(_error)</div>
+    }
+    else if (_cita is null)
+    {
+        <div class="ag-miscitas-vacio">
+            <i class="fa-regular fa-calendar-xmark" aria-hidden="true"></i>
+            <h3>@TextoUi.T("Cita no encontrada")</h3>
+            <p>@TextoUi.T("La cita que buscas no existe o ya fue eliminada.")</p>
+        </div>
+    }
+    else
+    {
+        <CitaDetalleVista Cita="_cita" OnMover="MoverCita" OnCancelar="CancelarCita" />
+    }
+</div>

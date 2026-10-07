@@ -1,0 +1,87 @@
+@using AquaClinic.App.ViewModels
+
+<div class="ag-cita-detalle">
+    <div class="ag-cita-detalle-cabecera">
+        <h2 class="ag-cita-detalle-cliente">@Cita.Cliente</h2>
+        <span class="ag-miscitas-estado ag-miscitas-estado-@Cita.Estado.ToLower()">@TextoUi.T(Cita.Estado)</span>
+    </div>
+
+    <div class="ag-cita-detalle-grid">
+        <div class="ag-cita-detalle-item">
+            <span class="ag-cita-detalle-etiqueta">@TextoUi.T("Cliente")</span>
+            <span class="ag-cita-detalle-valor">
+                @Cita.Cliente
+                <small>@(Cita.EsRegistrado ? TextoUi.T("Registrado") : TextoUi.T("Invitado"))</small>
+            </span>
+        </div>
+
+        <div class="ag-cita-detalle-item">
+            <span class="ag-cita-detalle-etiqueta">@TextoUi.T("Contacto")</span>
+            <span class="ag-cita-detalle-valor">
+                @if (!string.IsNullOrWhiteSpace(Cita.EmailContacto))
+                {
+                    <span>@Cita.EmailContacto</span>
+                }
+                @if (!string.IsNullOrWhiteSpace(Cita.TelefonoContacto))
+                {
+                    <span>@Cita.TelefonoContacto</span>
+                }
+            </span>
+        </div>
+
+        <div class="ag-cita-detalle-item ag-cita-detalle-servicios">
+            <span class="ag-cita-detalle-etiqueta">@TextoUi.T("Servicio(s)")</span>
+            <span class="ag-cita-detalle-valor">
+                @foreach (var servicio in Cita.Servicios)
+                {
+                    <div class="ag-cita-detalle-servicio">
+                        <strong>@servicio.Nombre</strong>
+                        <small>@servicio.DuracionMinutos&nbsp;min &middot;&nbsp;@servicio.Precio.ToString("C", FormatoClinica.CulturaDinero)</small>
+                        @if (!string.IsNullOrWhiteSpace(servicio.EspecialidadNombre))
+                        {
+                            <small>@servicio.EspecialidadNombre</small>
+                        }
+                    </div>
+                }
+            </span>
+        </div>
+
+        <div class="ag-cita-detalle-item">
+            <span class="ag-cita-detalle-etiqueta">@TextoUi.T("Fecha y hora")</span>
+            <span class="ag-cita-detalle-valor">
+                @Cita.FechaInicioLocal.ToString("f", System.Globalization.CultureInfo.CurrentCulture)
+                &ndash;&nbsp;@Cita.FechaFinLocal.ToString("t", System.Globalization.CultureInfo.CurrentCulture)
+                <small>@TextoUi.T("hora de la clínica (Vancouver)")</small>
+            </span>
+        </div>
+
+        <div class="ag-cita-detalle-item">
+            <span class="ag-cita-detalle-etiqueta">@TextoUi.T("Esteticista asignado")</span>
+            <span class="ag-cita-detalle-valor">
+                @(string.IsNullOrWhiteSpace(Cita.PersonalNombre) ? TextoUi.T("Por asignar") : Cita.PersonalNombre)
+            </span>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Cita.Notas))
+        {
+            <div class="ag-cita-detalle-item ag-cita-detalle-notas">
+                <span class="ag-cita-detalle-etiqueta">@TextoUi.T("Notas")</span>
+                <span class="ag-cita-detalle-valor">@Cita.Notas</span>
+            </div>
+        }
+    </div>
+
+    @if (Cita.PermiteGestion)
+    {
+        <div class="ag-cita-detalle-acciones">
+            <button type="button" class="ag-btn" @onclick="@(() => OnMover.InvokeAsync())">
+                <i class="fa-regular fa-calendar-clock" aria-hidden="true"></i>
+                @TextoUi.T("Mover a otro horario")
+            </button>
+            <button type="button" class="ag-btn ag-btn-contorno ag-btn-peligro" @onclick="@(() => OnCancelar.InvokeAsync())">
+                <i class="fa-regular fa-calendar-xmark" aria-hidden="true"></i>
+                @TextoUi.T("Cancelar cita")
+            </button>
+        </div>
+    }
+</div>

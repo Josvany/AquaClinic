@@ -86,10 +86,11 @@
                         </RadzenDataGridColumn>
                         <RadzenDataGridColumn TItem="CitaListViewModel" Sortable="false" Filterable="false" Width="90px" TextAlign="TextAlign.Center">
                             <Template Context="cita">
-                                <a href="@($"citadetails/{cita.CitaId}")" class="event-purchase-button btn"
-                                   title="@TextoUi.T("Editar cita")">
+                                <button type="button" class="event-purchase-button btn"
+                                        title="@TextoUi.T("Editar cita")"
+                                        @onclick="@(() => EditarCitaAsync(cita.CitaId))">
                                     <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
-                                </a>
+                                </button>
                             </Template>
                         </RadzenDataGridColumn>
                     </Columns>

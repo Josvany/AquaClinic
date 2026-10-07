@@ -316,6 +316,44 @@ namespace AquaClinic.App.Pages
         // ---------- Acciones ----------
 
         /// <summary>
+        /// Edita la cita en un modal (detalle + mover/cancelar) en vez de
+        /// navegar a otra pagina. Al cerrarlo recarga la pagina del grid.
+        /// </summary>
+        private async Task EditarCitaAsync(Guid citaId)
+        {
+            await DialogService.OpenAsync<CitaDetalleDialog>(TextoUi.T("Editar cita"),
+                new Dictionary<string, object?>
+                {
+                    { "CitaId", citaId },
+                    { "CitaModificada", EventCallback.Factory.Create<bool>(this, async modificada => await AlCitaModificadaAsync(modificada)) }
+                },
+                new DialogOptions
+                {
+                    Width = "640px",
+                    ShowClose = true,
+                    CloseDialogOnEsc = true,
+                    CloseDialogOnOverlayClick = false,
+                    Draggable = false,
+                    CssClass = "ag-dialog"
+                });
+
+            await RefrescarPaginaVisibleAsync();
+        }
+
+        /// <summary>
+        /// La cita se movio o cancelo desde el modal: el calendario del
+        /// back office y la pagina visible del grid quedan desactualizados.
+        /// </summary>
+        private async Task AlCitaModificadaAsync(bool modificada)
+        {
+            if (modificada)
+            {
+                await CargarCitasCalendarioAsync();
+                await RefrescarPaginaVisibleAsync();
+            }
+        }
+
+        /// <summary>
         /// Agendar desde el back office: el dialogo permite elegir un cliente
         /// registrado o capturar los datos de un cliente no registrado.
         /// </summary>
