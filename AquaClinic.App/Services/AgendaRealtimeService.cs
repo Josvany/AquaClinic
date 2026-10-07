@@ -208,7 +208,7 @@ namespace AquaClinic.App.Services
                 return;
             }
 
-            var baseUrl = _configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7021/";
+            var baseUrl = _configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7022/";
             _conexion = new HubConnectionBuilder()
                 .WithUrl(new Uri(new Uri(baseUrl), "hubs/agenda"))
                 .WithAutomaticReconnect()

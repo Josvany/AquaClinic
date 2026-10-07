@@ -44,8 +44,8 @@ namespace AquaClinic.Api
             builder.Services.AddCors(
                 options => options.AddPolicy(
                     "open",
-                    policy => policy.WithOrigins([builder.Configuration["ApiUrl"] ?? "https://localhost:7021",
-                        builder.Configuration["BlazorUrl"] ?? "https://localhost:7081"])
+                    policy => policy.WithOrigins([builder.Configuration["ApiUrl"] ?? "https://localhost:7022",
+                        builder.Configuration["BlazorUrl"] ?? "https://localhost:7082"])
             .AllowAnyMethod()
             .SetIsOriginAllowed(pol => true)
             .AllowAnyHeader()
