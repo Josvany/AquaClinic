@@ -645,6 +645,51 @@ namespace AquaClinic.Persistence.Migrations
                     b.ToTable("MovimientosServicios");
                 });
 
+            modelBuilder.Entity("AquaClinic.Domain.Entities.PasswordResetToken", b =>
+                {
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("Token")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("Consumido")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("CreadoUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("Expira")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("Expira");
+
+                    b.Property<int>("Intentos")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Vencido")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Email", "Token");
+
+                    b.HasIndex("Email");
+
+                    b.ToTable("PasswordResetTokens", (string)null);
+                });
+
             modelBuilder.Entity("AquaClinic.Domain.Entities.Personal", b =>
                 {
                     b.Property<Guid>("PersonalId")

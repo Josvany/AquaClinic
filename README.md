@@ -96,7 +96,7 @@ dotnet restore AquaClinic.sln
 dotnet run --project AquaClinic.Api
 ```
 
-- API: `https://localhost:7081` (Swagger en `/swagger` solo en Development)
+- API: `https://localhost:7021` (Swagger en `/swagger` solo en Development)
 - Al iniciar, **recrea** `AquaClinicDb` (única: negocio + Identity), aplica la migración con el seed del catálogo real y asegura los roles + el usuario administrador demo (solo en Development)
 - Ya no hay una migración separada de Identity: todo vive en el mismo `AquaClinicDbContext`
 
@@ -108,7 +108,7 @@ En otra terminal:
 dotnet run --project AquaClinic.App
 ```
 
-- App: `https://localhost:7080`
+- App: `https://localhost:7081`
 - La App lee la URL de la API desde `AquaClinic.App/appsettings.json` (`ApiSettings:BaseUrl`)
 
 ### 4. Cuentas demo
@@ -186,7 +186,7 @@ dotnet test AquaClinic.sln
 
 ## Regenerar el cliente NSwag de la UI
 
-La App usa un cliente tipado generado con NSwag a partir del swagger de la API. Para regenerarlo (con la API corriendo en `https://localhost:7081`):
+La App usa un cliente tipado generado con NSwag a partir del swagger de la API. Para regenerarlo (con la API corriendo en `https://localhost:7021`):
 
 ```bash
 dotnet tool install --global Nswag.ConsoleCore   # si no está instalado

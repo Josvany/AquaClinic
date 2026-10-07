@@ -105,7 +105,7 @@ namespace AquaClinic.Application.Features.Citas.Commands.CreateCita
                 FechaInicio = inicioUtc,
                 FechaFin = finUtc,
                 Estado = EstadoCita.Confirmada,
-                Notas = request.Notas
+                Notas = string.IsNullOrWhiteSpace(request.Notas) ? null : request.Notas.Trim()
             };
 
             await _citaRepository.AddAsync(cita);

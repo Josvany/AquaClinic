@@ -45,7 +45,7 @@ builder.Services.AddRadzenComponents();
 // HttpClient hacia la API con AuthHeaderHandler:
 // inyecta Authorization: Bearer con el JWT de la sesion (TokenStore) y
 // renueva el token automaticamente ante un 401 (api/usuarios/refresh).
-var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7081/";
+var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7021/";
 
 // Almacen del JWT/refresh token por circuito (scoped)
 builder.Services.AddScoped<TokenStore>();

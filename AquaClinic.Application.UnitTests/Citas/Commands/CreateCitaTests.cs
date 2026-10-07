@@ -65,14 +65,43 @@ namespace AquaClinic.Application.UnitTests.Citas.Commands
                 NullLogger<CreateCitaCommandHandler>.Instance);
         }
 
+        /// <summary>Proximo lunes 9 AM en la zona de la clinica (America/Vancouver):
+        /// siempre estrictamente futuro para no chocar con la validacion de fechas
+        /// pasadas del CreateCitaCommandValidator (una fecha fija caduca con el tiempo).
+        /// </summary>
+        private static DateTime ProximoLunes9Am()
+        {
+            try
+            {
+                var tz = TimeZoneInfo.FindSystemTimeZoneById("America/Vancouver");
+                var hoy = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz).Date;
+                var dias = ((int)DayOfWeek.Monday - (int)hoy.DayOfWeek + 7) % 7;
+                if (dias == 0) dias = 7;
+                return hoy.AddDays(dias).AddHours(9);
+            }
+            catch (TimeZoneNotFoundException)
+            {
+                var hoy = DateTime.Today;
+                var dias = ((int)DayOfWeek.Monday - (int)hoy.DayOfWeek + 7) % 7;
+                if (dias == 0) dias = 7;
+                return hoy.AddDays(dias).AddHours(9);
+            }
+            catch (InvalidTimeZoneException)
+            {
+                var hoy = DateTime.Today;
+                var dias = ((int)DayOfWeek.Monday - (int)hoy.DayOfWeek + 7) % 7;
+                if (dias == 0) dias = 7;
+                return hoy.AddDays(dias).AddHours(9);
+            }
+        }
+
         private CreateCitaCommand CrearComando() => new()
         {
             ServicioId = _servicioId,
-            // Lunes 9 AM: el mock de horarios no valida dia (lista vacia = sin horarios,
-            // pero ValidarHorarioClinica lanza si no encuentra el dia). Se usa un dia
-            // cualquiera: la lista vacia de horarios hace que FirstOrDefault sea null...
-            // Por eso el mock debe devolver horarios; ver TestHorarios helper.
-            FechaInicioLocal = new DateTime(2026, 10, 5, 9, 0, 0),
+            // Proximo lunes 9 AM (hora de la clinica): el mock de horarios del test
+            // especifico devuelve el lunes abierto; la lista vacia por defecto hace
+            // que ValidarHorarioClinica no encuentre restricciones. Ver ProximoLunes9Am.
+            FechaInicioLocal = ProximoLunes9Am(),
             EmailInvitado = "cliente@example.com",
             NombreInvitado = "Ana"
         };

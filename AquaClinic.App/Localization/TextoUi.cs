@@ -14,6 +14,7 @@ public static class TextoUi
         ["Agenda tu visita"] = "Plan your visit",
         ["Agenda tu análisis de piel"] = "Book your skin analysis",
         ["Ver tratamientos"] = "Explore treatments",
+        ["Encuentra un horario"] = "Find a time slot",
         ["Nuestros tratamientos"] = "Our treatments",
         ["Cuatro tratamientos, una misma piel"] = "Four treatments. One skin.",
         ["Testimonios reales"] = "Real experiences",
