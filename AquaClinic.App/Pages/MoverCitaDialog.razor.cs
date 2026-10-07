@@ -311,8 +311,10 @@ namespace AquaClinic.App.Pages
 
                 if (resultado.Success)
                 {
-                    // La cita movida libero la reserva suave en el servidor
-                    // (evento CitaCreada -> ReservaLiberada).
+                    // El servidor ya libero la reserva suave de esta hora al
+                    // confirmar el movimiento; el slot queda como Ocupado via
+                    // el evento CitaCreada, asi que el dialogo deja de
+                    // llevar la suya.
                     _reservaInicio = null;
 
                     Notificador.Exito(string.Format(

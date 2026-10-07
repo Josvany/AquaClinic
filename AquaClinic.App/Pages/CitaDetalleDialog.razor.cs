@@ -41,8 +41,9 @@ namespace AquaClinic.App.Pages
         }
 
         /// <summary>
-        /// Mueve la cita a otro horario: el dialogo elige la nueva fecha
-        /// y hora libre (la API valida disponibilidad).
+        /// Mueve la cita a otro horario: el dialogo elige la nueva fecha y hora
+        /// libre (la API valida disponibilidad) y, si la cita queda movida, este
+        /// modal se cierra tambien y avisa al listado para que se actualice.
         /// </summary>
         private async Task MoverCita()
         {
@@ -51,18 +52,15 @@ namespace AquaClinic.App.Pages
                 return;
             }
 
+            var movida = false;
+
+            // OpenAsync completa cuando el dialogo de mover se cierra: despues
+            // se puede cerrar este sin pisar al que esta encima.
             await Dialogs.OpenAsync<MoverCitaDialog>(TextoUi.T("Mover cita"),
                 new Dictionary<string, object?>
                 {
                     { "Cita", _cita },
-                    { "CitaMovida", EventCallback.Factory.Create<bool>(this, async movida =>
-                        {
-                            if (movida)
-                            {
-                                await RecargarAsync();
-                                await CitaModificada.InvokeAsync(true);
-                            }
-                        }) }
+                    { "CitaMovida", EventCallback.Factory.Create<bool>(this, m => movida = m) }
                 },
                 new DialogOptions
                 {
@@ -73,6 +71,12 @@ namespace AquaClinic.App.Pages
                     Draggable = false,
                     CssClass = "ag-dialog"
                 });
+
+            if (movida)
+            {
+                await CitaModificada.InvokeAsync(true);
+                Dialogs.Close();
+            }
         }
 
         /// <summary>
