@@ -72,7 +72,20 @@
                     <Columns>
                         <RadzenDataGridColumn TItem="CitaListViewModel" Property="Nombre" Title="@TextoUi.T("Cliente")"
                                               FilterOperators="@(new FilterOperator[] { FilterOperator.Contains })" />
-                        <RadzenDataGridColumn TItem="CitaListViewModel" Property="Fecha" Title="@TextoUi.T("Fecha")" Filterable="false">
+                        <RadzenDataGridColumn TItem="CitaListViewModel" Property="Fecha" Title="@TextoUi.T("Fecha")"
+                                              FilterOperator="FilterOperator.Equals"
+                                              FilterOperators="@(new FilterOperator[]
+                                                  {
+                                                      FilterOperator.Equals,
+                                                      FilterOperator.GreaterThanOrEquals,
+                                                      FilterOperator.LessThanOrEquals
+                                                  })">
+                            <FilterValueTemplate>
+                                <RadzenDatePicker TValue="object" Style="width:100%" AllowClear="true"
+                                                  ShowTime="false" ShowTimeOkButton="false"
+                                                  Value="@context.GetFilterValue()"
+                                                  Change="@(args => context.SetFilterValue(args))" />
+                            </FilterValueTemplate>
                             <Template Context="cita">
                                 <span class="event-date">@cita.Fecha.ToString("f", System.Globalization.CultureInfo.CurrentCulture)</span>
                             </Template>

@@ -1,4 +1,5 @@
 using AquaClinic.Application.Contracts.Persistence;
+using AquaClinic.Application.Features.Citas;
 using AquaClinic.Domain.Entities;
 using AquaClinic.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -31,7 +32,8 @@ namespace AquaClinic.Persistence.Repositories
         }
 
         public async Task<(IReadOnlyList<Cita> Items, int Total)> GetCitasPaginadasAsync(
-            int pagina, int tamanaPagina, string? texto = null, string? estado = null)
+            int pagina, int tamanaPagina, string? texto = null, string? estado = null,
+            DateTime? fechaDesde = null, DateTime? fechaHasta = null)
         {
             var query = _dbContext.Citas
                 .AsNoTracking()
@@ -58,6 +60,32 @@ namespace AquaClinic.Persistence.Repositories
                             (u.Nombre != null && u.Nombre.Contains(limpio)) ||
                             (u.Apellidos != null && u.Apellidos.Contains(limpio)) ||
                             (u.Email != null && u.Email.Contains(limpio))))));
+            }
+
+            // Filtro de fecha en hora local de la clinica: "desde" es
+            // inclusivo y "hasta" abarca el dia completo (se compara contra
+            // las 00:00 del dia siguiente).
+            if (fechaDesde.HasValue || fechaHasta.HasValue)
+            {
+                var desde = fechaDesde.HasValue ? CitaFechas.AUtc(fechaDesde.Value.Date) : (DateTimeOffset?)null;
+                var hasta = fechaHasta.HasValue ? CitaFechas.AUtc(fechaHasta.Value.Date.AddDays(1)) : (DateTimeOffset?)null;
+
+                if (desde.HasValue && hasta.HasValue)
+                {
+                    var limiteInferior = desde.Value;
+                    var limiteSuperior = hasta.Value;
+                    query = query.Where(c => c.FechaInicio >= limiteInferior && c.FechaInicio < limiteSuperior);
+                }
+                else if (desde.HasValue)
+                {
+                    var limiteInferior = desde.Value;
+                    query = query.Where(c => c.FechaInicio >= limiteInferior);
+                }
+                else
+                {
+                    var limiteSuperior = hasta!.Value;
+                    query = query.Where(c => c.FechaInicio < limiteSuperior);
+                }
             }
 
             var total = await query.CountAsync();

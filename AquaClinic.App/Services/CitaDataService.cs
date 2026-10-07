@@ -2,6 +2,7 @@
 using AquaClinic.App.Contracts;
 using AquaClinic.App.Services.Base;
 using AquaClinic.App.ViewModels;
+using System.Globalization;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -28,23 +29,32 @@ namespace AquaClinic.App.Services
         /// <summary>
         /// Pagina del listado de citas (server-side) para el DataGrid
         /// de la agenda interna, con filtros opcionales de texto
-        /// (cliente) y estado. Usa HttpClient directo (el cliente
-        /// tipado NSwag no incluye el endpoint; regenerarlo exigiria
-        /// la API corriendo).
+        /// (cliente), estado y rango de fechas. Usa HttpClient directo
+        /// (el cliente tipado NSwag no incluye el endpoint; regenerarlo
+        /// exigiria la API corriendo).
         /// </summary>
-        public async Task<CitasPaginadasViewModel> GetCitasPaginadas(
-            int pagina, int tamanaPagina, string? texto = null, string? estado = null)
+        public async Task<CitasPaginadasViewModel> GetCitasPaginadas(int pagina, int tamanoPagina, string? texto = null, string? estado = null, DateOnly? fechaDesde = null, DateOnly? fechaHasta = null)
         {
-            var url = $"api/citas/paginadas?pagina={pagina}&tamanoPagina={tamanaPagina}";
+            string url = "api/citas/paginadas?pagina=" + pagina + "&tamanoPagina=" + tamanoPagina;
 
             if (!string.IsNullOrWhiteSpace(texto))
             {
-                url += $"&texto={Uri.EscapeDataString(texto.Trim())}";
+                url += "&texto=" + Uri.EscapeDataString(texto.Trim());
             }
 
             if (!string.IsNullOrWhiteSpace(estado))
             {
-                url += $"&estado={Uri.EscapeDataString(estado.Trim())}";
+                url += "&estado=" + Uri.EscapeDataString(estado.Trim());
+            }
+
+            if (fechaDesde.HasValue)
+            {
+                url += "&fechaDesde=" + fechaDesde.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            }
+
+            if (fechaHasta.HasValue)
+            {
+                url += "&fechaHasta=" + fechaHasta.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
             }
 
             var response = await _client.HttpClient

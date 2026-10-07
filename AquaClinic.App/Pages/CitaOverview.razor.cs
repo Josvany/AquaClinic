@@ -97,12 +97,12 @@ namespace AquaClinic.App.Pages
             var top = (args.Top ?? 0) > 0 ? args.Top!.Value : TamanoPagina;
             var pagina = (int)Math.Floor((double)skip / top) + 1;
 
-            var (texto, estado) = TraducirFiltros(args);
+            var (texto, estado, fechaDesde, fechaHasta) = TraducirFiltros(args);
 
             try
             {
                 _cargandoPagina = true;
-                var respuesta = await CitaDataService.GetCitasPaginadas(pagina, top, texto, estado);
+                var respuesta = await CitaDataService.GetCitasPaginadas(pagina, top, texto, estado, fechaDesde, fechaHasta);
                 _citas = respuesta.Items;
                 _totalCitas = respuesta.Total;
                 _errorCarga = null;
@@ -127,16 +127,18 @@ namespace AquaClinic.App.Pages
 
         /// <summary>
         /// Traduce los filtros del popup Advanced del grid a los parametros de
-        /// la API: la columna Cliente (contains) al texto libre y la columna
-        /// Estado (equals) al nombre del estado. Las demas columnas no se
-        /// filtran (la API solo admite estos dos). El popup permite una segunda
-        /// condicion por columna; la API solo admite una, asi que si el usuario
-        /// deja el primer valor vacio se usa el segundo.
+        /// la API: la columna Cliente (contains) al texto libre, la columna
+        /// Estado (equals) al nombre del estado y la columna Fecha a un rango de
+        /// dias. La API solo admite una condicion por columna, asi que si el
+        /// usuario deja el primer valor vacio se usa el segundo.
         /// </summary>
-        private static (string? Texto, string? Estado) TraducirFiltros(LoadDataArgs args)
+        private static (string? Texto, string? Estado, DateOnly? FechaDesde, DateOnly? FechaHasta)
+            TraducirFiltros(LoadDataArgs args)
         {
             string? texto = null;
             string? estado = null;
+            DateOnly? fechaDesde = null;
+            DateOnly? fechaHasta = null;
 
             if (args.Filters is not null)
             {
@@ -153,23 +155,75 @@ namespace AquaClinic.App.Pages
                         valor = filtro.SecondFilterValue?.ToString();
                     }
 
-                    if (string.IsNullOrWhiteSpace(valor))
-                    {
-                        continue;
-                    }
-
                     if (string.Equals(propiedad, nameof(CitaListViewModel.Nombre), StringComparison.OrdinalIgnoreCase))
                     {
-                        texto = valor.Trim();
+                        if (!string.IsNullOrWhiteSpace(valor))
+                        {
+                            texto = valor.Trim();
+                        }
                     }
                     else if (string.Equals(propiedad, nameof(CitaListViewModel.Estado), StringComparison.OrdinalIgnoreCase))
                     {
-                        estado = valor.Trim();
+                        if (!string.IsNullOrWhiteSpace(valor))
+                        {
+                            estado = valor.Trim();
+                        }
+                    }
+                    else if (string.Equals(propiedad, nameof(CitaListViewModel.Fecha), StringComparison.OrdinalIgnoreCase))
+                    {
+                        var (desde, hasta) = TraducirRangoFechas(filtro);
+                        fechaDesde = desde;
+                        fechaHasta = hasta;
                     }
                 }
             }
 
-            return (texto, estado);
+            return (texto, estado, fechaDesde, fechaHasta);
+        }
+
+        /// <summary>
+        /// Convierte las condiciones del popup de Fecha en un rango de dias:
+        /// "Equals" es ese dia, "&gt;=" el limite inferior y "&lt;=" el superior
+        /// (ambos por dia completo). Las dos condiciones se combinan, que es
+        /// como se usa el popup para pedir un rango.
+        /// </summary>
+        private static (DateOnly? Desde, DateOnly? Hasta) TraducirRangoFechas(FilterDescriptor filtro)
+        {
+            DateOnly? desde = null;
+            DateOnly? hasta = null;
+
+            Aplicar(filtro.FilterOperator, filtro.FilterValue);
+            Aplicar(filtro.SecondFilterOperator, filtro.SecondFilterValue);
+
+            return (desde, hasta);
+
+            void Aplicar(FilterOperator operador, object? valor)
+            {
+                if (valor is not DateTime fecha)
+                {
+                    return;
+                }
+
+                var dia = DateOnly.FromDateTime(fecha);
+
+                switch (operador)
+                {
+                    case FilterOperator.Equals:
+                        desde ??= dia;
+                        hasta ??= dia;
+                        break;
+
+                    case FilterOperator.GreaterThan:
+                    case FilterOperator.GreaterThanOrEquals:
+                        desde ??= dia;
+                        break;
+
+                    case FilterOperator.LessThan:
+                    case FilterOperator.LessThanOrEquals:
+                        hasta ??= dia;
+                        break;
+                }
+            }
         }
 
         /// <summary>

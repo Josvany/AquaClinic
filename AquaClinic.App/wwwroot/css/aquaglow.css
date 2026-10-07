@@ -1892,6 +1892,61 @@ footer.ag-footer {
         color: var(--color-teal-900) !important;
     }
 
+/* Los botones del popup de filtros del DataGrid (Aplicar / Limpiar) usan la
+   misma pastilla suave que la navegacion del calendario, para que el grid y
+   el scheduler se vean del mismo tono.
+
+   OJO 1: NO se puede acotar con .ag-citas-lista. Al abrirse, Radzen mueve el
+   popup a document.body (Radzen.openPopup en Radzen.Blazor.js), asi que
+   dentro del body no existe ningun ancestro del grid y el selector no
+   matchearia. Por eso el selector arranca en .rz-grid-filter-buttons, que es
+   una clase global del popup de filtros del DataGrid.
+
+   OJO 2: <RadzenTheme> (App.razor) inyecta el tema DESPUES de este archivo y
+   tiene reglas mas especificas para estos dos botones:
+     .rz-grid-filter-buttons .rz-button.rz-shade-default.rz-clear-filter
+     .rz-grid-filter-buttons .rz-button.rz-shade-default.rz-apply-filter
+   Se replican aqui esos selectores y se usan !important para igualarlos al
+   tono de la navegacion del scheduler y anular el boton global de main.css
+   (degradado teal, min-width 170px, margen izquierdo). */
+.rz-grid-filter-buttons .rz-button,
+.rz-grid-filter-buttons .rz-button.rz-shade-default.rz-clear-filter,
+.rz-grid-filter-buttons .rz-button.rz-shade-default.rz-apply-filter {
+    background-image: none !important;
+    /* El tema pinta el boton de aplicar con su variable propia; se pisa con
+       !important para igualarlo al tono suave de la navegacion del scheduler. */
+    background-color: #eaf3f2 !important;
+    color: var(--color-teal-900) !important;
+    box-shadow: none !important;
+    border: 1px solid var(--color-mist) !important;
+    border-radius: var(--radius-pill) !important;
+    font-family: var(--font-sans) !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    letter-spacing: normal !important;
+    height: auto !important;
+    padding: 7px 16px !important;
+    white-space: nowrap !important;
+    width: auto !important;
+    min-width: fit-content !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    text-transform: none !important;
+}
+
+    .rz-grid-filter-buttons .rz-button:hover,
+    .rz-grid-filter-buttons .rz-button:focus,
+    .rz-grid-filter-buttons .rz-button:active,
+    .rz-grid-filter-buttons .rz-button.rz-shade-default.rz-clear-filter:hover,
+    .rz-grid-filter-buttons .rz-button.rz-shade-default.rz-apply-filter:hover {
+        background-color: #d8e9e7 !important;
+        border-color: rgba(42, 107, 102, 0.35) !important;
+        color: var(--color-teal-900) !important;
+        transform: none;
+        box-shadow: none !important;
+    }
+
 
 .rz-scheduler .rz-event {
     /*background-color: var(--color-teal-500);*/

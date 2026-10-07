@@ -9,9 +9,9 @@ namespace AquaClinic.App.Contracts
 
         /// <summary>
         /// Pagina del listado server-side con filtros opcionales
-        /// de texto (cliente) y estado.
+        /// de texto (cliente), estado y rango de fechas.
         /// </summary>
-        Task<CitasPaginadasViewModel> GetCitasPaginadas(int pagina, int tamanaPagina, string? texto = null, string? estado = null);
+        Task<CitasPaginadasViewModel> GetCitasPaginadas(int pagina, int tamanaPagina, string? texto = null, string? estado = null, DateOnly? fechaDesde = null, DateOnly? fechaHasta = null);
 
         /// <summary>Citas del usuario autenticado (pantalla "Mis citas").</summary>
         Task<List<MiCitaViewModel>> GetMisCitas();

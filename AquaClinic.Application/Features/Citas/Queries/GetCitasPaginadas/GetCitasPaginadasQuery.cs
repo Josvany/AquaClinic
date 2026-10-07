@@ -17,5 +17,11 @@ namespace AquaClinic.Application.Features.Citas.Queries.GetCitasPaginadas
 
         /// <summary>Nombre del estado a filtrar (Pendiente/Confirmada/Cancelada/Completada); null = todas.</summary>
         public string? Estado { get; set; }
+
+        /// <summary>Dia local inicial del filtro por fecha (inclusive); null = sin limite.</summary>
+        public DateTime? FechaDesde { get; set; }
+
+        /// <summary>Dia local final del filtro por fecha (inclusive, dia completo); null = sin limite.</summary>
+        public DateTime? FechaHasta { get; set; }
     }
 }

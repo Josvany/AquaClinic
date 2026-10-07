@@ -18,7 +18,7 @@ namespace AquaClinic.Application.Features.Citas.Queries.GetCitasPaginadas
             var tamano = request.TamanoPagina <= 0 ? 10 : request.TamanoPagina;
 
             var (items, total) = await _citaRepository.GetCitasPaginadasAsync(
-                pagina, tamano, request.Texto, request.Estado);
+                pagina, tamano, request.Texto, request.Estado, request.FechaDesde, request.FechaHasta);
 
             return new CitasPaginadasVm
             {
