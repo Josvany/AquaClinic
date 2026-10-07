@@ -24,7 +24,11 @@ namespace AquaClinic.Api.Authorization
                 Permisos.BloqueosVer,
                 Permisos.BloqueosCrear,
                 Permisos.BloqueosEditar,
-                Permisos.BloqueosEliminar
+                Permisos.BloqueosEliminar,
+                Permisos.PromocionesVer,
+                Permisos.PromocionesCrear,
+                Permisos.PromocionesEditar,
+                Permisos.PromocionesEliminar
             ],
             [RolesClinica.Recepcion] =
             [

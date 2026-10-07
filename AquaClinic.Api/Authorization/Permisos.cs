@@ -27,6 +27,12 @@ namespace AquaClinic.Api.Authorization
         public const string BloqueosEditar = "bloqueos:editar";
         public const string BloqueosEliminar = "bloqueos:eliminar";
 
+        // ===== Promociones del catalogo =====
+        public const string PromocionesVer = "promociones:ver";
+        public const string PromocionesCrear = "promociones:crear";
+        public const string PromocionesEditar = "promociones:editar";
+        public const string PromocionesEliminar = "promociones:eliminar";
+
         // ===== Citas propias del cliente =====
         public const string MisCitasVer = "miscitas:ver";
     }

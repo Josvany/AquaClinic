@@ -5,6 +5,9 @@ using AquaClinic.Application.Features.Bloqueos.Queries.GetBloqueosList;
 using AquaClinic.Application.Features.Especialidades.Commands.CreateEspecialidad;
 using AquaClinic.Application.Features.Especialidades.Queries.GetEspecialidadesList;
 using AquaClinic.Application.Features.Especialidades.Queries.GetEspecialidadesListWithServicios;
+using AquaClinic.Application.Features.Promociones.Commands.CreatePromocion;
+using AquaClinic.Application.Features.Promociones.Commands.UpdatePromocion;
+using AquaClinic.Application.Features.Promociones.Queries.GetPromocionesList;
 using AquaClinic.Application.Features.Servicios.Commands.CreateServicio;
 using AquaClinic.Application.Features.Servicios.Commands.UpdateServicio;
 using AquaClinic.Application.Features.Servicios.Queries.GetServicioDetail;
@@ -39,6 +42,11 @@ namespace AquaClinic.Application.Profiles
             CreateMap<Bloqueo, BloqueoListVm>().ReverseMap();
             CreateMap<Bloqueo, CreateBloqueoCommand>().ReverseMap();
             CreateMap<Bloqueo, UpdateBloqueoCommand>().ReverseMap();
+
+            // Promociones del catalogo (CRUD administrativo)
+            CreateMap<Promocion, PromocionListVm>().ReverseMap();
+            CreateMap<Promocion, CreatePromocionCommand>().ReverseMap();
+            CreateMap<Promocion, UpdatePromocionCommand>().ReverseMap();
 
             // Usuarios (perfil del cliente)
             CreateMap<Usuario, UsuarioVm>();

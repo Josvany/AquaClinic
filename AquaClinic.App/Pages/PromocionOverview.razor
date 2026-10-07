@@ -1,0 +1,106 @@
+@page "/promocionoverview"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inject IPromocionDataService PromocionDataService
+@inject DialogService Dialogs
+@inject NotificadorUi Notificador
+
+<PageTitle>@TextoUi.T("Promociones") — @TextoUi.T("Administración")</PageTitle>
+
+<section class="ag-citas-seccion">
+    <div class="ag-contenedor">
+        <div class="ag-citas-encabezado">
+            <div>
+                <span class="ag-label-caps">@TextoUi.T("Administración")</span>
+                <h1 class="page-title">@TextoUi.T("Promociones")</h1>
+                <p class="ag-citas-subtitulo">
+                    @TextoUi.T("Descuentos del catálogo: porcentaje o monto fijo en CAD, con vigencia opcional.")
+                </p>
+            </div>
+            <div class="ag-citas-acciones">
+                <RadzenButton Text="@TextoUi.T("Nueva promoción")" Icon="add_circle_outline"
+                              ButtonStyle="ButtonStyle.Primary" Click="@AbrirCrearAsync" />
+            </div>
+        </div>
+
+        @if (_errorCarga is not null)
+        {
+            <div class="alert alert-warning">@TextoUi.T(_errorCarga)</div>
+        }
+        else if (_cargando)
+        {
+            <p><em>@TextoUi.T("Cargando...")</em></p>
+        }
+        else
+        {
+            <div class="ag-panel">
+                <RadzenDataGrid TItem="PromocionViewModel" Data="@_promociones"
+                                AllowPaging="true" PageSize="10" PagerPageSizeOptions="@(false)"
+                                AllowSorting="true" Width="100%">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="PromocionViewModel" Title="@TextoUi.T("Nombre")" Sortable="false">
+                            <Template Context="promocion">
+                                <strong>@TextoUi.T(promocion.Nombre)</strong>
+                                @if (!string.IsNullOrWhiteSpace(promocion.Descripcion))
+                                {
+                                    <small style="display:block; color:var(--ag-tinta);">@TextoUi.T(promocion.Descripcion)</small>
+                                }
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="PromocionViewModel" Title="@TextoUi.T("Descuento")" Width="150px">
+                            <Template Context="promocion">
+                                @promocion.DescuentoTexto
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="PromocionViewModel" Title="@TextoUi.T("Vigencia")" Width="230px">
+                            <Template Context="promocion">
+                                @if (promocion.VigenciaDesde is null && promocion.VigenciaHasta is null)
+                                {
+                                    @TextoUi.T("Sin límite")
+                                }
+                                else
+                                {
+                                    @VigenciaTexto(promocion)
+                                }
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="PromocionViewModel" Title="@TextoUi.T("Servicios")" Width="180px" Sortable="false">
+                            <Template Context="promocion">
+                                @if (promocion.EsGlobal)
+                                {
+                                    <span class="ag-alcance ag-alcance-global">@TextoUi.T("Todos los servicios")</span>
+                                }
+                                else
+                                {
+                                    <span class="ag-alcance">
+                                        @string.Format(TextoUi.T("{0} servicio(s)"), promocion.ServicioIds.Count)
+                                    </span>
+                                }
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="PromocionViewModel" Title="@TextoUi.T("Estado")" Width="120px">
+                            <Template Context="promocion">
+                                @if (promocion.Activo)
+                                {
+                                    <span class="ag-estado ag-estado-activa">@TextoUi.T("Activa")</span>
+                                }
+                                else
+                                {
+                                    <span class="ag-estado ag-estado-inactiva">@TextoUi.T("Inactiva")</span>
+                                }
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="PromocionViewModel" Title="" Width="130px" Sortable="false">
+                            <Template Context="promocion">
+                                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small"
+                                              Click="@(() => AbrirEditarAsync(promocion))" />
+                                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small"
+                                              Click="@(() => ConfirmarEliminarAsync(promocion))" />
+                            </Template>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+            </div>
+        }
+    </div>
+</section>

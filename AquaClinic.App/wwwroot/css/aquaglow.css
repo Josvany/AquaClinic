@@ -3653,3 +3653,112 @@ button.ag-tipo-cliente-opcion {
     align-self: flex-start;
     margin: 14px 0 0 14px;
 }
+
+/* ============================================================
+   Fila de checkbox (formularios): el texto va AL LADO del check,
+   no como titulo de campo. No usar .ag-field aqui: su > label es
+   un caption en mayusculas pensado para campos de texto.
+   ============================================================ */
+
+.ag-check-campo {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 1.1rem;
+}
+
+    .ag-check-campo > label {
+        font-family: var(--font-sans);
+        font-size: 0.92rem;
+        font-weight: 500;
+        text-transform: none;
+        letter-spacing: normal;
+        color: var(--ag-tinta);
+        cursor: pointer;
+    }
+/* ============================================================
+   Badge de estado (Activa / Inactiva) en las tablas admin.
+   NO usar .ag-leyenda para esto: esa clase es el cuadradito de
+   color de 14x14 de la leyenda del calendario (/reservar) y no
+   admite texto dentro.
+   ============================================================ */
+
+.ag-estado {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: normal;
+    text-transform: none;
+    white-space: nowrap;
+    line-height: 1.5;
+}
+
+    .ag-estado-activa {
+        background: var(--color-teal-900);
+        color: var(--color-white);
+    }
+
+    .ag-estado-inactiva {
+        background: var(--color-mist);
+        color: var(--ag-texto-mudo);
+    }
+/* ============================================================
+   Descuento en las tarjetas de servicio (portada): badge con el
+   porcentaje/monto y el precio original tachado junto al final.
+   ============================================================ */
+
+.ag-banner-descuento {
+    display: inline-block;
+    margin-bottom: 6px;
+    padding: 3px 12px;
+    border-radius: var(--radius-pill);
+    /* Mismo tono que los botones de navegacion del calendario (< >, Hoy, vistas):
+       fondo #eaf3f2, texto teal-900 y borde mist. Ver el bloque "Botones del
+       scheduler" mas arriba para no divergir de ahi. */
+    background: #eaf3f2;
+    color: var(--color-teal-900);
+    border: 1px solid var(--color-mist);
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: normal;
+    text-transform: none;
+    line-height: 1.5;
+}
+
+.ag-banner-precio-antes {
+    color: var(--ag-texto-mudo);
+    font-weight: 400;
+    font-size: 0.9rem;
+    margin-right: 4px;
+    opacity: 0.75;
+}
+
+    .ag-banner-tarifa strong {
+        font-weight: 700;
+    }
+/* Alcance de la promocion en la tabla admin: pill para "todos" y texto simple
+   cuando solo aplica a algunos servicios. */
+.ag-alcance {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: var(--radius-pill);
+    background: var(--color-ivory);
+    border: 1px solid var(--color-mist);
+    color: var(--ag-texto-mudo);
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.5;
+    white-space: nowrap;
+}
+
+    .ag-alcance-global {
+        background: #eaf3f2;
+        color: var(--color-teal-900);
+    }

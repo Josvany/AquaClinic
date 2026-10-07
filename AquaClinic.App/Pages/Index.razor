@@ -46,7 +46,21 @@
                                 {
                                     <p>@TextoUi.T(servicio.Descripcion)</p>
                                 }
-                                <span class="ag-banner-tarifa">@servicio.Precio.ToString("C", FormatoClinica.CulturaDinero) &middot; @servicio.DuracionMinutos min</span>
+                                @if (servicio.TienePromocion)
+                                {
+                                    <span class="ag-banner-descuento" title="@servicio.NombrePromocion">
+                                        @servicio.DescuentoTexto
+                                    </span>
+                                    <span class="ag-banner-tarifa">
+                                        <s class="ag-banner-precio-antes">@servicio.Precio.ToString("C", FormatoClinica.CulturaDinero)</s>
+                                        <strong>@servicio.PrecioConDescuento.ToString("C", FormatoClinica.CulturaDinero)</strong>
+                                        &middot; @servicio.DuracionMinutos min
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="ag-banner-tarifa">@servicio.Precio.ToString("C", FormatoClinica.CulturaDinero) &middot; @servicio.DuracionMinutos min</span>
+                                }
                             </a>
                         }
                     </div>

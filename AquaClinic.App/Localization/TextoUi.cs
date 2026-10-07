@@ -342,7 +342,48 @@ public static class TextoUi
         ["La clínica está cerrada en ese horario. Elige otro disponible."] = "The clinic is closed at that time. Choose another available time.",
         ["Duración:"] = "Duration:",
         ["Los bloqueos cierran la agenda de toda la clínica (feriados, vacaciones, capacitaciones). Los clientes no pueden reservar dentro de ese rango y en las agendas aparece como \"Cerrado\"."] = "Closures block the whole clinic's schedule (holidays, vacations, training). Clients cannot book within that range and the agendas show it as \"Closed\".",
-        ["La hora elegida ya pasó. Elige una hora disponible."] = "The selected time has already passed. Choose an available time."
+        ["La hora elegida ya pasó. Elige una hora disponible."] = "The selected time has already passed. Choose an available time.",
+
+        // ===== Promociones (CRUD administrativo) =====
+        ["Promociones"] = "Promotions",
+        ["Nueva promoción"] = "New promotion",
+        ["Editar promoción"] = "Edit promotion",
+        ["Eliminar promoción"] = "Delete promotion",
+        ["Crear promoción"] = "Create promotion",
+        ["Descuentos del catálogo: porcentaje o monto fijo en CAD, con vigencia opcional."] = "Catalog discounts: a percentage or a fixed amount in CAD, with an optional validity period.",
+        ["Nombre"] = "Name",
+        ["Descripción"] = "Description",
+        ["Descuento"] = "Discount",
+        ["Vigencia"] = "Validity",
+        ["Estado"] = "Status",
+        ["Activa"] = "Active",
+        ["Inactiva"] = "Inactive",
+        ["Sin límite"] = "No limit",
+        ["Desde {0}"] = "From {0}",
+        ["Hasta {0}"] = "Until {0}",
+        ["Tipo de descuento"] = "Discount type",
+        ["Valor"] = "Value",
+        ["Vigencia desde (opcional)"] = "Valid from (optional)",
+        ["Vigencia hasta (opcional)"] = "Valid until (optional)",
+        ["Promoción activa"] = "Promotion active",
+        ["Ej. Gran inauguración..."] = "E.g. Grand opening...",
+        ["Qué incluye la promoción..."] = "What the promotion includes...",
+        ["La vigencia se interpreta en la zona de la clínica (America/Vancouver). Déjala vacía para que no tenga límite."] = "The validity period is interpreted in the clinic's time zone (America/Vancouver). Leave it empty for no limit.",
+        ["¿Eliminar la promoción \"{0}\"?"] = "Delete the promotion \"{0}\"?",
+        ["Promoción \"{0}\" eliminada."] = "Promotion \"{0}\" deleted.",
+        ["Promoción \"{0}\" actualizada."] = "Promotion \"{0}\" updated.",
+        ["Promoción \"{0}\" creada."] = "Promotion \"{0}\" created.",
+
+        // ===== Descuento del catalogo (tarjetas de servicio) =====
+        ["-{0}%"] = "-{0}%",
+        ["-{0} CAD"] = "-{0} CAD",
+
+        // ===== Alcance de la promocion (servicios asociados) =====
+        ["Servicios"] = "Services",
+        ["Servicios (opcional)"] = "Services (optional)",
+        ["Todos los servicios"] = "All services",
+        ["{0} servicio(s)"] = "{0} service(s)",
+        ["Si no eliges ninguno, la promoción aplica a todos los servicios. Si eliges algunos, solo aplica a esos y tiene prioridad sobre cualquier promoción general."] = "If you select none, the promotion applies to all services. If you pick some, it only applies to those and takes priority over any general promotion."
     };
 
     public static string T(string? texto)

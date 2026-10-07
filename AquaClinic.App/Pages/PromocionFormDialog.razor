@@ -1,0 +1,253 @@
+@inject IPromocionDataService PromocionDataService
+@inject IServicioDataService ServicioDataService
+@inject NotificadorUi Notificador
+@inject DialogService Dialogs
+
+<div class="ag-reserva-modal">
+    <div class="ag-reserva-form">
+        <div class="ag-field">
+            <label for="promocion-nombre">@TextoUi.T("Nombre")</label>
+            <RadzenTextBox @bind-Value="_nombre" Name="nombre" InputId="promocion-nombre" MaxLength="100"
+                           Placeholder="@TextoUi.T("Ej. Gran inauguración...")" />
+        </div>
+
+        <div class="ag-field">
+            <label for="promocion-descripcion">@TextoUi.T("Descripción (opcional)")</label>
+            <RadzenTextArea @bind-Value="_descripcion" Name="descripcion" InputId="promocion-descripcion" Rows="2"
+                            Placeholder="@TextoUi.T("Qué incluye la promoción...")" />
+        </div>
+
+        <div class="ag-reserva-dos-columnas">
+            <div class="ag-field">
+                <label for="promocion-tipo">@TextoUi.T("Tipo de descuento")</label>
+                <RadzenDropDown TValue="int" @bind-Value="_tipoDescuento" Name="tipoDescuento"
+                                InputId="promocion-tipo" Data="@_tiposDescuento"
+                                TextProperty="Texto" ValueProperty="Valor" Style="width:100%;" />
+            </div>
+
+            <div class="ag-field">
+                <label for="promocion-valor">@TextoUi.T("Valor")</label>
+                <RadzenNumeric TValue="decimal" @bind-Value="_valor" Name="valor" InputId="promocion-valor"
+                               Min="0.01m" Max="10000" Step="0.5m" />
+            </div>
+        </div>
+
+        <div class="ag-reserva-dos-columnas">
+            <div class="ag-field">
+                <label for="promocion-desde">@TextoUi.T("Vigencia desde (opcional)")</label>
+                <RadzenDatePicker TValue="DateTime?" @bind-Value="_vigenciaDesde" Name="vigenciaDesde"
+                                  InputId="promocion-desde" ShowTime="true" ShowSeconds="false"
+                                  HourFormat="HH:mm" DateFormat="dd/MM/yyyy" Style="width:100%;" />
+            </div>
+
+            <div class="ag-field">
+                <label for="promocion-hasta">@TextoUi.T("Vigencia hasta (opcional)")</label>
+                <RadzenDatePicker TValue="DateTime?" @bind-Value="_vigenciaHasta" Name="vigenciaHasta"
+                                  InputId="promocion-hasta" ShowTime="true" ShowSeconds="false"
+                                  HourFormat="HH:mm" DateFormat="dd/MM/yyyy" Style="width:100%;" />
+            </div>
+        </div>
+
+        <div class="ag-field">
+            <label for="promocion-servicios">@TextoUi.T("Servicios (opcional)")</label>
+            <RadzenDropDown TValue="IEnumerable<Guid>" @bind-Value="_servicioIds" Name="servicios"
+                            InputId="promocion-servicios" Multiple="true" AllowFiltering="true"
+                            Data="@_servicios" TextProperty="Nombre" ValueProperty="ServicioId"
+                            Placeholder="@TextoUi.T("Todos los servicios")" Style="width:100%;" />
+        </div>
+
+        <small class="ag-nueva-cita-aviso">@TextoUi.T("Si no eliges ninguno, la promoción aplica a todos los servicios. Si eliges algunos, solo aplica a esos y tiene prioridad sobre cualquier promoción general.")</small>
+
+        <div class="ag-check-campo">
+            <RadzenCheckBox TValue="bool" @bind-Value="_activo" Name="activo" InputId="promocion-activo" />
+            <label for="promocion-activo">@TextoUi.T("Promoción activa")</label>
+        </div>
+
+        <small class="ag-nueva-cita-aviso">@TextoUi.T("La vigencia se interpreta en la zona de la clínica (America/Vancouver). Déjala vacía para que no tenga límite.")</small>
+
+        @if (_error is not null)
+        {
+            <div class="ag-nueva-cita-error" style="white-space: pre-line;">@TextoUi.T(_error)</div>
+        }
+
+        <div class="ag-reserva-acciones">
+            <RadzenButton Text="@(_esEditando ? TextoUi.T("Guardar cambios") : TextoUi.T("Crear promoción"))"
+                          ButtonStyle="ButtonStyle.Primary" Disabled="_guardando"
+                          Click="@GuardarAsync" />
+            <RadzenButton Text="@TextoUi.T("Cancelar")" Click="@CancelarAsync"
+                          ButtonStyle="ButtonStyle.Secondary" Disabled="_guardando" />
+        </div>
+    </div>
+</div>
+
+@code {
+    /// <summary>Null = crear; con valor = editar esa promoción.</summary>
+    [Parameter] public PromocionViewModel? Promocion { get; set; }
+
+    /// <summary>La pagina lo invoca cuando el dialogo guardo cambios.</summary>
+    [Parameter] public EventCallback OnGuardado { get; set; }
+
+    // TipoDescuento del dominio: 1 = Porcentaje, 2 = Monto
+    private static readonly TipoDescuentoItem[] _tiposDescuento =
+    [
+        new() { Valor = 1, Texto = "Porcentaje (%)" },
+        new() { Valor = 2, Texto = "Monto fijo (CAD)" }
+    ];
+
+    private string _nombre = string.Empty;
+    private string? _descripcion;
+    private int _tipoDescuento = 1;
+    private decimal _valor;
+    private DateTime? _vigenciaDesde;
+    private DateTime? _vigenciaHasta;
+    private bool _activo = true;
+    private bool _guardando;
+    private string? _error;
+
+    // Alcance: vacio = global (aplica a todos los servicios).
+    private IEnumerable<Guid> _servicioIds = [];
+    private List<ServicioViewModel> _servicios = [];
+
+    private bool _esEditando => Promocion is not null && Promocion.PromocionId != Guid.Empty;
+    private Guid _promocionOriginal;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _servicios = await ServicioDataService.ObtenerTodosAsync();
+        }
+        catch (HttpRequestException)
+        {
+            // Sin catalogo no se puede acotar el alcance, pero el resto del
+            // formulario sigue siendo usable (la promo quedara global).
+            _servicios = [];
+        }
+
+        if (_esEditando && Promocion is not null)
+        {
+            _promocionOriginal = Promocion.PromocionId;
+            _nombre = Promocion.Nombre;
+            _descripcion = Promocion.Descripcion;
+            _tipoDescuento = Promocion.TipoDescuento;
+            _valor = Promocion.Valor;
+            _vigenciaDesde = Promocion.VigenciaDesde;
+            _vigenciaHasta = Promocion.VigenciaHasta;
+            _activo = Promocion.Activo;
+            _servicioIds = [.. Promocion.ServicioIds];
+        }
+    }
+
+    private async Task GuardarAsync()
+    {
+        // Validacion explicita y visible: los mismos requisitos que aplica la API
+        var errores = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(_nombre))
+        {
+            errores.Add("El nombre es obligatorio.");
+        }
+        else if (_nombre.Trim().Length > 100)
+        {
+            errores.Add("El nombre no debe exceder 100 caracteres.");
+        }
+
+        if (_descripcion is not null && _descripcion.Trim().Length > 500)
+        {
+            errores.Add("La descripción no debe exceder 500 caracteres.");
+        }
+
+        if (_valor <= 0)
+        {
+            errores.Add("El valor del descuento debe ser mayor que cero.");
+        }
+        else if (_tipoDescuento == 1 && _valor > 100)
+        {
+            errores.Add("Un descuento en porcentaje no puede superar el 100%.");
+        }
+
+        if (_vigenciaDesde is not null && _vigenciaHasta is not null && _vigenciaHasta <= _vigenciaDesde)
+        {
+            errores.Add("La vigencia debe terminar después de empezar.");
+        }
+
+        if (errores.Count > 0)
+        {
+            _error = string.Join(Environment.NewLine, errores);
+            return;
+        }
+
+        _guardando = true;
+        _error = null;
+
+        try
+        {
+            var vm = new PromocionViewModel
+            {
+                PromocionId = _esEditando ? _promocionOriginal : Guid.Empty,
+                Nombre = _nombre.Trim(),
+                Descripcion = string.IsNullOrWhiteSpace(_descripcion) ? null : _descripcion.Trim(),
+                TipoDescuento = _tipoDescuento,
+                Valor = _valor,
+                VigenciaDesde = _vigenciaDesde,
+                VigenciaHasta = _vigenciaHasta,
+                Activo = _activo,
+                ServicioIds = [.. _servicioIds ?? []]
+            };
+
+            if (_esEditando)
+            {
+                var r = await PromocionDataService.ActualizarAsync(vm);
+
+                if (!r.Success)
+                {
+                    _error = CombinarError(r.Message, r.ValidationErrors);
+                    return;
+                }
+            }
+            else
+            {
+                var r = await PromocionDataService.CrearAsync(vm);
+
+                if (!r.Success)
+                {
+                    _error = CombinarError(r.Message, r.ValidationErrors);
+                    return;
+                }
+            }
+
+            var mensaje = _esEditando
+                ? string.Format(TextoUi.T("Promoción \"{0}\" actualizada."), vm.Nombre)
+                : string.Format(TextoUi.T("Promoción \"{0}\" creada."), vm.Nombre);
+            Notificador.Exito(mensaje);
+            await OnGuardado.InvokeAsync();
+            Dialogs.Close(true);
+        }
+        catch (HttpRequestException)
+        {
+            _error = "No se pudo conectar con la API. Verifica tu conexión.";
+        }
+        finally
+        {
+            _guardando = false;
+        }
+    }
+
+    private static string CombinarError(string message, string? validationErrors)
+    {
+        return message + (string.IsNullOrEmpty(validationErrors) ? "" : Environment.NewLine + validationErrors.TrimEnd());
+    }
+
+    private async Task CancelarAsync()
+    {
+        Dialogs.Close(false);
+        await Task.CompletedTask;
+    }
+
+    /// <summary>Opcion del dropdown de tipo de descuento.</summary>
+    private sealed class TipoDescuentoItem
+    {
+        public int Valor { get; init; }
+        public string Texto { get; init; } = string.Empty;
+    }
+}

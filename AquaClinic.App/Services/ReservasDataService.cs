@@ -35,7 +35,10 @@ namespace AquaClinic.App.Services
                         Descripcion = s.Descripcion,
                         Precio = s.Precio,
                         DuracionMinutos = s.DuracionMinutos,
-                        EspecialidadNombre = s.EspecialidadNombre
+                        EspecialidadNombre = s.EspecialidadNombre,
+                        NombrePromocion = s.NombrePromocion,
+                        TipoDescuentoPromocion = s.TipoDescuentoPromocion,
+                        ValorPromocion = s.ValorPromocion
                     }) ?? [];
             }
             catch (HttpRequestException)
@@ -110,6 +113,9 @@ namespace AquaClinic.App.Services
             public int DuracionMinutos { get; set; }
             public string? ImagenUrl { get; set; }
             public string? EspecialidadNombre { get; set; }
+            public string? NombrePromocion { get; set; }
+            public int? TipoDescuentoPromocion { get; set; }
+            public decimal? ValorPromocion { get; set; }
         }
     }
 }
