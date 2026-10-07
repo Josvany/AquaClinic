@@ -15,6 +15,12 @@ namespace AquaClinic.Application.Features.Servicios.Queries.GetServiciosList
         public string? EspecialidadNombre { get; set; }
 
         /// <summary>
+        /// Vigente en el catalogo. En el listado publico siempre es true (solo se
+        /// exponen los activos); el listado administrativo si incluye los inactivos.
+        /// </summary>
+        public bool Activo { get; set; } = true;
+
+        /// <summary>
         /// Promocion vigente que aplica a este servicio (null si ninguna). Solo se
         /// considera una: si hay una global y otra por servicio, gana la
         /// especifica (ver ResolucionPromocion).

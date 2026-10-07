@@ -383,7 +383,18 @@ public static class TextoUi
         ["Servicios (opcional)"] = "Services (optional)",
         ["Todos los servicios"] = "All services",
         ["{0} servicio(s)"] = "{0} service(s)",
-        ["Si no eliges ninguno, la promoción aplica a todos los servicios. Si eliges algunos, solo aplica a esos y tiene prioridad sobre cualquier promoción general."] = "If you select none, the promotion applies to all services. If you pick some, it only applies to those and takes priority over any general promotion."
+        ["Si no eliges ninguno, la promoción aplica a todos los servicios. Si eliges algunos, solo aplica a esos y tiene prioridad sobre cualquier promoción general."] = "If you select none, the promotion applies to all services. If you pick some, it only applies to those and takes priority over any general promotion.",
+
+        // ===== Filtro por estado (catalogo de servicios) =====
+        ["Filtrar por estado"] = "Filter by status",
+        ["Todos"] = "All",
+        ["Solo activos"] = "Active only",
+        ["Solo inactivos"] = "Inactive only",
+        ["Activo"] = "Active",
+        ["Inactivo"] = "Inactive",
+        ["{0} de {1}"] = "{0} of {1}",
+        ["No hay servicios inactivos en el catálogo."] = "There are no inactive services in the catalog.",
+        ["No hay servicios que coincidan con este filtro."] = "No services match this filter."
     };
 
     public static string T(string? texto)

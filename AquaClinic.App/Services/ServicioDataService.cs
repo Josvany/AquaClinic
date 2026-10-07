@@ -44,6 +44,26 @@ namespace AquaClinic.App.Services
                 .ToList() ?? [];
         }
 
+        public async Task<List<ServicioViewModel>> ObtenerTodosIncluyendoInactivosAsync()
+        {
+            // GET api/servicios/todos trae tambien los dados de baja (Activo = false)
+            var servicios = await _httpClient.GetFromJsonAsync<List<ServicioApiDto>>("api/servicios/todos", _jsonOptions);
+
+            return servicios?
+                .Select(s => new ServicioViewModel
+                {
+                    ServicioId = s.ServicioId,
+                    Nombre = s.Nombre,
+                    Descripcion = s.Descripcion,
+                    Precio = s.Precio,
+                    DuracionMinutos = s.DuracionMinutos,
+                    ImagenUrl = s.ImagenUrl,
+                    Activo = s.Activo,
+                    EspecialidadNombre = s.EspecialidadNombre
+                })
+                .ToList() ?? [];
+        }
+
         public async Task<ServicioViewModel?> ObtenerPorIdAsync(Guid id)
         {
             var response = await _httpClient.GetAsync($"api/servicios/{id}");
@@ -206,7 +226,8 @@ namespace AquaClinic.App.Services
             decimal Precio,
             int DuracionMinutos,
             string? ImagenUrl,
-            string? EspecialidadNombre);
+            string? EspecialidadNombre,
+            bool Activo = true);
 
         private sealed record ServicioDetalleDto(
             Guid ServicioId,

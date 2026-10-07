@@ -23,5 +23,12 @@ namespace AquaClinic.Persistence.Repositories
                 .Where(s => s.Activo)
                 .ToListAsync();
         }
+
+        public async Task<IReadOnlyList<Servicio>> GetTodosConEspecialidadAsync()
+        {
+            return await _dbContext.Servicios
+                .Include(s => s.Especialidad)
+                .ToListAsync();
+        }
     }
 }

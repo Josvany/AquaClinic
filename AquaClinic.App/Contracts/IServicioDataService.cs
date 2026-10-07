@@ -7,6 +7,12 @@ namespace AquaClinic.App.Contracts
     {
         Task<List<ServicioViewModel>> ObtenerTodosAsync();
 
+        /// <summary>
+        /// Catalogo completo para la administracion, incluyendo los servicios
+        /// inactivos (los que no devuelve <see cref="ObtenerTodosAsync"/>).
+        /// </summary>
+        Task<List<ServicioViewModel>> ObtenerTodosIncluyendoInactivosAsync();
+
         Task<ServicioViewModel?> ObtenerPorIdAsync(Guid id);
 
         Task<ApiResponse<Guid>> CrearAsync(ServicioViewModel servicio);

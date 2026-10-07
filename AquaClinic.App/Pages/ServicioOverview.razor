@@ -33,8 +33,41 @@
         }
         else
         {
+            <div class="ag-filtro-barra">
+                <div class="ag-filtro-grupo" role="group" aria-label="@TextoUi.T("Filtrar por estado")">
+                    <button type="button" class="ag-filtro-opcion @(_filtro == FiltroEstado.Todos ? "ag-filtro-activa" : null)"
+                            aria-pressed="@(_filtro == FiltroEstado.Todos)"
+                            @onclick="@(() => CambiarFiltroAsync(FiltroEstado.Todos))">
+                        <i class="fa-solid fa-layer-group" aria-hidden="true"></i> @TextoUi.T("Todos")
+                    </button>
+                    <button type="button" class="ag-filtro-opcion @(_filtro == FiltroEstado.Activos ? "ag-filtro-activa" : null)"
+                            aria-pressed="@(_filtro == FiltroEstado.Activos)"
+                            @onclick="@(() => CambiarFiltroAsync(FiltroEstado.Activos))">
+                        <i class="fa-solid fa-circle-check" aria-hidden="true"></i> @TextoUi.T("Solo activos")
+                    </button>
+                    <button type="button" class="ag-filtro-opcion @(_filtro == FiltroEstado.Inactivos ? "ag-filtro-activa" : null)"
+                            aria-pressed="@(_filtro == FiltroEstado.Inactivos)"
+                            @onclick="@(() => CambiarFiltroAsync(FiltroEstado.Inactivos))">
+                        <i class="fa-solid fa-circle-ban" aria-hidden="true"></i> @TextoUi.T("Solo inactivos")
+                    </button>
+                </div>
+                <span class="ag-filtro-conteo">
+                    @string.Format(TextoUi.T("{0} de {1}"), _serviciosFiltrados.Count, _servicios.Count)
+                </span>
+            </div>
+
             <div class="ag-panel">
-                <RadzenDataGrid TItem="ServicioViewModel" Data="@_servicios"
+                @if (_serviciosFiltrados.Count == 0)
+                {
+                    <p class="ag-panel-vacio">
+                        @TextoUi.T(_filtro == FiltroEstado.Inactivos
+                            ? "No hay servicios inactivos en el catálogo."
+                            : "No hay servicios que coincidan con este filtro.")
+                    </p>
+                }
+                else
+                {
+                <RadzenDataGrid @ref="_grid" TItem="ServicioViewModel" Data="@_serviciosFiltrados"
                                 AllowPaging="true" PageSize="10" PagerPageSizeOptions="@(false)"
                                 AllowSorting="true" Width="100%">
                     <Columns>
@@ -58,6 +91,18 @@
                                 @servicio.Precio.ToString("C", FormatoClinica.CulturaDinero)
                             </Template>
                         </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="ServicioViewModel" Title="@TextoUi.T("Estado")" Width="110px">
+                            <Template Context="servicio">
+                                @if (servicio.Activo)
+                                {
+                                    <span class="ag-estado ag-estado-activa">@TextoUi.T("Activo")</span>
+                                }
+                                else
+                                {
+                                    <span class="ag-estado ag-estado-inactiva">@TextoUi.T("Inactivo")</span>
+                                }
+                            </Template>
+                        </RadzenDataGridColumn>
                         <RadzenDataGridColumn TItem="ServicioViewModel" Title="" Width="130px" Sortable="false">
                             <Template Context="servicio">
                                 <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small"
@@ -68,19 +113,51 @@
                         </RadzenDataGridColumn>
                     </Columns>
                 </RadzenDataGrid>
+                }
             </div>
         }
     </div>
 </section>
 
 @code {
+    /// <summary>Que servicios muestra la tabla: todos, solo los vigentes o solo los dados de baja.</summary>
+    private enum FiltroEstado
+    {
+        Todos,
+        Activos,
+        Inactivos
+    }
+
+    private Radzen.Blazor.RadzenDataGrid<ServicioViewModel>? _grid;
+
     private List<ServicioViewModel> _servicios = [];
+    private FiltroEstado _filtro = FiltroEstado.Todos;
     private bool _cargando = true;
     private string? _errorCarga;
+
+    /// <summary>Servicios tras aplicar el filtro de estado.</summary>
+    private List<ServicioViewModel> _serviciosFiltrados => _filtro switch
+    {
+        FiltroEstado.Activos => _servicios.Where(s => s.Activo).ToList(),
+        FiltroEstado.Inactivos => _servicios.Where(s => !s.Activo).ToList(),
+        _ => _servicios
+    };
 
     protected override async Task OnInitializedAsync()
     {
         await CargarAsync();
+    }
+
+    private async Task CambiarFiltroAsync(FiltroEstado filtro)
+    {
+        _filtro = filtro;
+
+        // Al filtrar se vuelve a la primera pagina: si estabas en la 3 y el
+        // filtro deja 1 resultado, la tabla se veria vacia.
+        if (_grid is not null)
+        {
+            await _grid.GoToPage(0, forceReload: true);
+        }
     }
 
     private async Task CargarAsync()
@@ -89,7 +166,8 @@
 
         try
         {
-            _servicios = await ServicioDataService.ObtenerTodosAsync();
+            // Catalogo completo (incluye inactivos) para poder filtrar por estado
+            _servicios = await ServicioDataService.ObtenerTodosIncluyendoInactivosAsync();
             _errorCarga = null;
         }
         catch (HttpRequestException)
@@ -125,7 +203,7 @@
         var confirmado = await Dialogs.Confirm(
             string.Format(TextoUi.T("¿Desactivar el servicio \"{0}\"? Saldrá del catálogo y ya no se podrá agendar."), servicio.Nombre),
             TextoUi.T("Desactivar servicio"),
-            new ConfirmOptions { OkButtonText = TextoUi.T("Desactivar"), CancelButtonText = TextoUi.T("Cancelar") }) == true;
+            new ConfirmOptions { OkButtonText = TextoUi.T("Desactivar"), CancelButtonText = TextoUi.T("Cancelar"), CssClass = "ag-confirm-soft" }) == true;
 
         if (!confirmado)
         {

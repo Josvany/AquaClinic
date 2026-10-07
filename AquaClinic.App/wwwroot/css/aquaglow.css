@@ -2808,40 +2808,130 @@ label[for] {
     padding-top: 14px;
 }
 
+    /* Botones de navegacion del pager (< >, numeros de pagina, ir a primera/
+       ultima): mismo tono que los botones de navegacion del RadzenScheduler.
+
+       Se aplica a los tres contenedores de grid con paginacion:
+       .ag-citas-lista (CitaOverview), .ag-panel (Servicios, Bloqueos y
+       Promociones) y .ag-miscitas-grid (Mis Citas).
+
+       OJO 1: Radzen 11 nombra estos botones .rz-pager-first / .rz-pager-prev /
+       .rz-pager-next / .rz-pager-last / .rz-pager-page (NO .rz-paginator-* como
+       en versiones previas). .rz-pager-element existe, pero en el tema solo se
+       usa para el box-shadow, asi que se listan TODAS las clases por si cambia
+       el markup.
+
+       OJO 2: main.css pinta TODO <button> con el degradado teal global; hay que
+       anularlo con !important para igualar el fondo plano verde claro.
+
+       OJO 3: <RadzenTheme> (App.razor) inyecta el tema DESPUES de este archivo,
+       por eso las reglas usan !important y replican los selectores del tema.
+
+       La pagina activa se deja en el tono suave con borde marcado (#d8e9e7),
+       que es lo que hace el scheduler con su boton activo; antes era teal
+       solido con texto blanco y por eso se veía distinta al calendario. */
+    .ag-panel .rz-pager .rz-pager-element,
+    .ag-panel .rz-pager .rz-pager-first,
+    .ag-panel .rz-pager .rz-pager-prev,
+    .ag-panel .rz-pager .rz-pager-next,
+    .ag-panel .rz-pager .rz-pager-last,
+    .ag-panel .rz-pager .rz-pager-page,
     .ag-citas-lista .rz-pager .rz-pager-element,
-    .ag-miscitas-grid .rz-pager .rz-pager-element {
-        border-radius: var(--radius-pill);
-        color: var(--color-teal-900);
-        background-color: #eaf3f2;
-        /* main.css pinta TODO <button> con el degradado teal global: los botones del
-       pager son <button>, hay que anularlo explicitamente para igualar los tonos
-       de la navegacion del RadzenScheduler (fondo plano verde claro) */
+    .ag-citas-lista .rz-pager .rz-pager-first,
+    .ag-citas-lista .rz-pager .rz-pager-prev,
+    .ag-citas-lista .rz-pager .rz-pager-next,
+    .ag-citas-lista .rz-pager .rz-pager-last,
+    .ag-citas-lista .rz-pager .rz-pager-page,
+    .ag-miscitas-grid .rz-pager .rz-pager-element,
+    .ag-miscitas-grid .rz-pager .rz-pager-first,
+    .ag-miscitas-grid .rz-pager .rz-pager-prev,
+    .ag-miscitas-grid .rz-pager .rz-pager-next,
+    .ag-miscitas-grid .rz-pager .rz-pager-last,
+    .ag-miscitas-grid .rz-pager .rz-pager-page {
+        border-radius: var(--radius-pill) !important;
+        color: var(--color-teal-900) !important;
+        background-color: #eaf3f2 !important;
         background-image: none !important;
         box-shadow: none !important;
+        border: 1px solid var(--color-mist) !important;
+        font-family: var(--font-sans) !important;
+        font-weight: 600 !important;
+        letter-spacing: normal !important;
+        text-transform: none !important;
+        min-width: fit-content !important;
         transition: background-color 0.2s ease;
     }
 
+        .ag-panel .rz-pager .rz-pager-element:hover,
+        .ag-panel .rz-pager .rz-pager-first:hover,
+        .ag-panel .rz-pager .rz-pager-prev:hover,
+        .ag-panel .rz-pager .rz-pager-next:hover,
+        .ag-panel .rz-pager .rz-pager-last:hover,
+        .ag-panel .rz-pager .rz-pager-page:hover,
         .ag-citas-lista .rz-pager .rz-pager-element:hover,
-        .ag-miscitas-grid .rz-pager .rz-pager-element:hover {
+        .ag-citas-lista .rz-pager .rz-pager-first:hover,
+        .ag-citas-lista .rz-pager .rz-pager-prev:hover,
+        .ag-citas-lista .rz-pager .rz-pager-next:hover,
+        .ag-citas-lista .rz-pager .rz-pager-last:hover,
+        .ag-citas-lista .rz-pager .rz-pager-page:hover,
+        .ag-miscitas-grid .rz-pager .rz-pager-element:hover,
+        .ag-miscitas-grid .rz-pager .rz-pager-first:hover,
+        .ag-miscitas-grid .rz-pager .rz-pager-prev:hover,
+        .ag-miscitas-grid .rz-pager .rz-pager-next:hover,
+        .ag-miscitas-grid .rz-pager .rz-pager-last:hover,
+        .ag-miscitas-grid .rz-pager .rz-pager-page:hover {
             background-color: #d8e9e7 !important;
             background-image: none !important;
-            color: var(--color-teal-900);
+            border-color: rgba(42, 107, 102, 0.35) !important;
+            color: var(--color-teal-900) !important;
             transform: none;
             box-shadow: none !important;
         }
 
+        /* Pagina actual: mismo fondo del calendario con el borde reforzado, para
+           que se distinga sin salirse de la paleta. */
+        .ag-panel .rz-pager .rz-pager-element.rz-state-active,
+        .ag-panel .rz-pager .rz-pager-first.rz-state-active,
+        .ag-panel .rz-pager .rz-pager-prev.rz-state-active,
+        .ag-panel .rz-pager .rz-pager-next.rz-state-active,
+        .ag-panel .rz-pager .rz-pager-last.rz-state-active,
+        .ag-panel .rz-pager .rz-pager-page.rz-state-active,
         .ag-citas-lista .rz-pager .rz-pager-element.rz-state-active,
-        .ag-miscitas-grid .rz-pager .rz-pager-element.rz-state-active {
-            background: var(--color-teal-700) !important;
+        .ag-citas-lista .rz-pager .rz-pager-first.rz-state-active,
+        .ag-citas-lista .rz-pager .rz-pager-prev.rz-state-active,
+        .ag-citas-lista .rz-pager .rz-pager-next.rz-state-active,
+        .ag-citas-lista .rz-pager .rz-pager-last.rz-state-active,
+        .ag-citas-lista .rz-pager .rz-pager-page.rz-state-active,
+        .ag-miscitas-grid .rz-pager .rz-pager-element.rz-state-active,
+        .ag-miscitas-grid .rz-pager .rz-pager-page.rz-state-active {
+            background: #d8e9e7 !important;
             background-image: none !important;
-            color: #fff;
+            border-color: rgba(42, 107, 102, 0.55) !important;
+            color: var(--color-teal-900) !important;
+            box-shadow: none !important;
         }
 
+        .ag-panel .rz-pager .rz-pager-element.rz-state-disabled,
+        .ag-panel .rz-pager .rz-pager-first.rz-state-disabled,
+        .ag-panel .rz-pager .rz-pager-prev.rz-state-disabled,
+        .ag-panel .rz-pager .rz-pager-next.rz-state-disabled,
+        .ag-panel .rz-pager .rz-pager-last.rz-state-disabled,
         .ag-citas-lista .rz-pager .rz-pager-element.rz-state-disabled,
-        .ag-miscitas-grid .rz-pager .rz-pager-element.rz-state-disabled {
-            background-color: transparent;
-            color: var(--ag-texto-mudo);
-            opacity: 0.5;
+        .ag-citas-lista .rz-pager .rz-pager-first.rz-state-disabled,
+        .ag-citas-lista .rz-pager .rz-pager-prev.rz-state-disabled,
+        .ag-citas-lista .rz-pager .rz-pager-next.rz-state-disabled,
+        .ag-citas-lista .rz-pager .rz-pager-last.rz-state-disabled,
+        .ag-miscitas-grid .rz-pager .rz-pager-element.rz-state-disabled,
+        .ag-miscitas-grid .rz-pager .rz-pager-first.rz-state-disabled,
+        .ag-miscitas-grid .rz-pager .rz-pager-prev.rz-state-disabled,
+        .ag-miscitas-grid .rz-pager .rz-pager-next.rz-state-disabled,
+        .ag-miscitas-grid .rz-pager .rz-pager-last.rz-state-disabled {
+            background-color: transparent !important;
+            background-image: none !important;
+            border-color: transparent !important;
+            color: var(--ag-texto-mudo) !important;
+            box-shadow: none !important;
+            opacity: 0.45;
         }
 
 /* Celdas y cabecera del grid de /miscitas con la misma estetica que el
@@ -3762,3 +3852,131 @@ button.ag-tipo-cliente-opcion {
         background: #eaf3f2;
         color: var(--color-teal-900);
     }
+/* ============================================================
+   Botones del modal de confirmacion (CssClass="ag-confirm-soft").
+   Mismo tono que los botones de navegacion del calendario (< >, Hoy,
+   vistas) y que los botones del popup de filtros del DataGrid: fondo
+   #eaf3f2, texto teal-900, borde mist y pastilla.
+
+   OJO: <RadzenTheme> (App.razor) inyecta el tema DESPUES de este archivo y
+   tiene reglas mas especificas para .rz-button.rz-primary (degradado teal,
+   sombra de CTA, 13px 30px). Por eso se replican los selectores y se usa
+   !important, igual que en el bloque de .rz-grid-filter-buttons.
+
+   El :not(.rz-dialog-close) deja intacta la X de cerrar de la titlebar.
+   ============================================================ */
+
+.ag-confirm-soft .rz-button,
+.ag-confirm-soft .rz-button.rz-primary,
+.ag-confirm-soft .rz-button.rz-secondary,
+.ag-confirm-soft .rz-button.rz-shade-default {
+    background-image: none !important;
+    background-color: #eaf3f2 !important;
+    color: var(--color-teal-900) !important;
+    border: 1px solid var(--color-mist) !important;
+    border-radius: var(--radius-pill) !important;
+    box-shadow: none !important;
+    font-family: var(--font-sans) !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    letter-spacing: normal !important;
+    text-transform: none !important;
+    height: auto !important;
+    padding: 7px 16px !important;
+    width: auto !important;
+    min-width: fit-content !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+}
+
+    .ag-confirm-soft .rz-button:hover,
+    .ag-confirm-soft .rz-button:focus,
+    .ag-confirm-soft .rz-button:active {
+        background-color: #d8e9e7 !important;
+        border-color: rgba(42, 107, 102, 0.35) !important;
+        color: var(--color-teal-900) !important;
+        box-shadow: none !important;
+        transform: none;
+    }
+
+/* La X de cerrar del dialogo no es un boton de accion: se deja como esta. */
+    .ag-confirm-soft .rz-dialog-titlebar .rz-button,
+    .ag-confirm-soft button.rz-dialog-close {
+        background: transparent !important;
+        border: none !important;
+        border-radius: 50% !important;
+        color: inherit;
+        padding: 0 !important;
+    }
+/* ============================================================
+   Barra de filtro por estado (catalogo de servicios). Mismo lenguaje
+   visual que el control segmentado de "Tipo de cliente" del dialogo de
+   nueva cita, con nombres propios para no depender de esa semantica.
+   ============================================================ */
+
+.ag-filtro-barra {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.ag-filtro-grupo {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+    button.ag-filtro-opcion {
+        margin: 0;
+        padding: 9px 16px;
+        border: 1.5px solid var(--color-mist);
+        border-radius: var(--radius-pill);
+        background: var(--color-white);
+        background-image: none;
+        box-shadow: none;
+        color: var(--ag-texto-suave);
+        font-family: var(--font-sans);
+        font-size: 0.84rem;
+        font-weight: 600;
+        letter-spacing: normal;
+        gap: 8px;
+        transform: none;
+    }
+
+    button.ag-filtro-opcion:hover {
+        border-color: var(--color-teal-500);
+        background: rgba(42, 107, 102, 0.06);
+        background-image: none;
+        color: var(--color-teal-900);
+        box-shadow: none;
+        transform: none;
+    }
+
+    button.ag-filtro-opcion.ag-filtro-activa,
+    button.ag-filtro-opcion.ag-filtro-activa:hover {
+        border-color: var(--color-teal-700);
+        background: var(--color-teal-700);
+        background-image: none;
+        color: var(--color-white);
+        box-shadow: none;
+        transform: none;
+    }
+
+.ag-filtro-conteo {
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ag-texto-mudo);
+    white-space: nowrap;
+}
+
+.ag-panel-vacio {
+    margin: 0;
+    padding: 22px 4px;
+    color: var(--ag-texto-mudo);
+    text-align: center;
+}
