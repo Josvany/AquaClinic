@@ -2718,12 +2718,19 @@ label[for] {
     border: none;
     border-bottom: 1px solid var(--color-mist);
     padding: 12px 10px;
+    font-family: var(--font-sans);
+    color: var(--color-bronze);
+}
+
+/* Mayusculas, tracking y tamano solo en el titulo de la columna: la fila de
+   filtros del grid (FilterMode.Simple) usa las mismas <th>, y como
+   text-transform y letter-spacing se heredan, la caja de busqueda los
+   recibia y escribia en mayusculas espaciadas. */
+.ag-citas-lista .rz-datatable-thead > tr > th .rz-column-title {
     font-size: var(--text-caption);
     font-weight: 600;
     letter-spacing: var(--tracking-caps);
     text-transform: uppercase;
-    color: var(--color-bronze);
-    font-family: var(--font-sans);
 }
 
 .ag-citas-lista .rz-datatable-data > tr > td {

@@ -1,5 +1,6 @@
 using AquaClinic.Application.Contracts.Persistence;
 using AquaClinic.Domain.Entities;
+using AquaClinic.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace AquaClinic.Persistence.Repositories
@@ -29,19 +30,42 @@ namespace AquaClinic.Persistence.Repositories
                 .FirstOrDefaultAsync(c => c.CitaId == citaId);
         }
 
-        public async Task<(IReadOnlyList<Cita> Items, int Total)> GetCitasPaginadasAsync(int pagina, int tamanoPagina)
+        public async Task<(IReadOnlyList<Cita> Items, int Total)> GetCitasPaginadasAsync(
+            int pagina, int tamanaPagina, string? texto = null, string? estado = null)
         {
             var query = _dbContext.Citas
-                .Include(c => c.CitasServicios)!
-                .ThenInclude(cs => cs.Servicio)
-                .AsNoTracking();
+                .AsNoTracking()
+                .AsQueryable();
+
+            // Filtro de estado (nombre del enum; vacio = todas)
+            if (!string.IsNullOrWhiteSpace(estado)
+                && Enum.TryParse<EstadoCita>(estado, ignoreCase: true, out var estadoFiltro))
+            {
+                query = query.Where(c => c.Estado == estadoFiltro);
+            }
+
+            // Filtro de texto: cliente invitado (nombre/correo) o
+            // registrado (nombre, apellidos o correo de AspNetUsers)
+            if (!string.IsNullOrWhiteSpace(texto))
+            {
+                var limpio = texto.Trim();
+
+                query = query.Where(c =>
+                    (c.NombreInvitado != null && c.NombreInvitado.Contains(limpio)) ||
+                    (c.EmailInvitado != null && c.EmailInvitado.Contains(limpio)) ||
+                    (c.UsuarioId != null && _dbContext.Users.Any(u =>
+                        u.Id == c.UsuarioId && (
+                            (u.Nombre != null && u.Nombre.Contains(limpio)) ||
+                            (u.Apellidos != null && u.Apellidos.Contains(limpio)) ||
+                            (u.Email != null && u.Email.Contains(limpio))))));
+            }
 
             var total = await query.CountAsync();
 
             var items = await query
                 .OrderByDescending(c => c.FechaInicio)
-                .Skip((pagina - 1) * tamanoPagina)
-                .Take(tamanoPagina)
+                .Skip((pagina - 1) * tamanaPagina)
+                .Take(tamanaPagina)
                 .ToListAsync();
 
             return (items, total);

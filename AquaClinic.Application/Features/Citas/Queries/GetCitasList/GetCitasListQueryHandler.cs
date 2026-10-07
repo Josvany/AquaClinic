@@ -23,7 +23,7 @@ namespace AquaClinic.Application.Features.Citas.Queries.GetCitasList
                     CitaId = c.CitaId,
                     Nombre = c.NombreInvitado ?? c.EmailInvitado ?? "Cliente registrado",
                     Fecha = CitaFechas.ALocal(c.FechaInicio),
-                    ImagenUrl = c.CitasServicios?.FirstOrDefault()?.Servicio?.ImagenUrl
+                    Estado = c.Estado.ToString()
                 })
                 .ToList();
         }

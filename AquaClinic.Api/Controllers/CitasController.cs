@@ -153,7 +153,8 @@ namespace AquaClinic.Api.Controllers
 
         /// <summary>
         /// Pagina del listado de citas (fecha descendente) para el DataGrid
-        /// server-side de la agenda interna.
+        /// server-side de la agenda interna, con filtros opcionales de
+        /// texto (cliente) y estado.
         /// </summary>
         [HttpGet("paginadas", Name = "GetCitasPaginadas")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -161,13 +162,18 @@ namespace AquaClinic.Api.Controllers
         [HasPermission(Permisos.CitasVer)]
         public async Task<ActionResult<CitasPaginadasVm>> GetCitasPaginadas(
             [FromQuery] int pagina = 1,
-            [FromQuery] int tamanoPagina = 10)
+            [FromQuery] int tamanoPagina = 10,
+            [FromQuery] string? texto = null,
+            [FromQuery] string? estado = null)
         {
             var result = await _mediator.Send(new GetCitasPaginadasQuery
             {
                 Pagina = pagina,
-                TamanoPagina = tamanoPagina
+                TamanoPagina = tamanoPagina,
+                Texto = texto,
+                Estado = estado
             });
+
             return Ok(result);
         }
 

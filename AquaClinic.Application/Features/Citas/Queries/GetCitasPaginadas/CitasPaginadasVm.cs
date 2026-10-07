@@ -20,6 +20,8 @@ namespace AquaClinic.Application.Features.Citas.Queries.GetCitasPaginadas
         public Guid CitaId { get; set; }
         public string Nombre { get; set; } = string.Empty;
         public DateTime Fecha { get; set; }
-        public string? ImagenUrl { get; set; }
+
+        /// <summary>Estado legible (Pendiente/Confirmada/Cancelada/Completada).</summary>
+        public string Estado { get; set; } = string.Empty;
     }
 }

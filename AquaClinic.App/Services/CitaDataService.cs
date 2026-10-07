@@ -27,15 +27,28 @@ namespace AquaClinic.App.Services
 
         /// <summary>
         /// Pagina del listado de citas (server-side) para el DataGrid
-        /// de la agenda interna. Usa HttpClient directo (el cliente tipado
-        /// NSwag no incluye el endpoint nuevo; regenerarlo exigiria la API
-        /// corriendo).
+        /// de la agenda interna, con filtros opcionales de texto
+        /// (cliente) y estado. Usa HttpClient directo (el cliente
+        /// tipado NSwag no incluye el endpoint; regenerarlo exigiria
+        /// la API corriendo).
         /// </summary>
-        public async Task<CitasPaginadasViewModel> GetCitasPaginadas(int pagina, int tamanaPagina)
+        public async Task<CitasPaginadasViewModel> GetCitasPaginadas(
+            int pagina, int tamanaPagina, string? texto = null, string? estado = null)
         {
+            var url = $"api/citas/paginadas?pagina={pagina}&tamanoPagina={tamanaPagina}";
+
+            if (!string.IsNullOrWhiteSpace(texto))
+            {
+                url += $"&texto={Uri.EscapeDataString(texto.Trim())}";
+            }
+
+            if (!string.IsNullOrWhiteSpace(estado))
+            {
+                url += $"&estado={Uri.EscapeDataString(estado.Trim())}";
+            }
+
             var response = await _client.HttpClient
-                .GetFromJsonAsync<CitasPaginadasViewModel>(
-                    $"api/citas/paginadas?pagina={pagina}&tamanaPagina={tamanaPagina}", _jsonOptions);
+                .GetFromJsonAsync<CitasPaginadasViewModel>(url, _jsonOptions);
 
             return response ?? new CitasPaginadasViewModel();
         }

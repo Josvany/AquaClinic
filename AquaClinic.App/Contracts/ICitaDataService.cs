@@ -6,7 +6,12 @@ namespace AquaClinic.App.Contracts
     public interface ICitaDataService
     {
         Task<List<CitaListViewModel>> GetAllCitas();
-        Task<CitasPaginadasViewModel> GetCitasPaginadas(int pagina, int tamanaPagina);
+
+        /// <summary>
+        /// Pagina del listado server-side con filtros opcionales
+        /// de texto (cliente) y estado.
+        /// </summary>
+        Task<CitasPaginadasViewModel> GetCitasPaginadas(int pagina, int tamanaPagina, string? texto = null, string? estado = null);
 
         /// <summary>Citas del usuario autenticado (pantalla "Mis citas").</summary>
         Task<List<MiCitaViewModel>> GetMisCitas();
