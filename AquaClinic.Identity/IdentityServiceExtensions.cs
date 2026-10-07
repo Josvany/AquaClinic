@@ -80,7 +80,9 @@ namespace AquaClinic.Identity
             services.AddScoped<IIdentityService, IdentityService>();
 
             // Emision de JWT y gestion de refresh tokens (store estatico compartido)
-            services.AddSingleton<TokenService>();
+            // Scoped (ya no Singleton): ahora depende de IRefreshTokenRepository, que usa el
+// DbContext y por tanto es scoped. Solo lo consumen los controllers.
+services.AddScoped<TokenService>();
 
             return services;
         }

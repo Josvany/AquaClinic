@@ -895,6 +895,43 @@ namespace AquaClinic.Persistence.Migrations
                     b.ToTable("PromocionesServicios");
                 });
 
+            modelBuilder.Entity("AquaClinic.Domain.Entities.RefreshToken", b =>
+                {
+                    b.Property<Guid>("RefreshTokenId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreadoUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiraUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime?>("UltimoUsoUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UsuarioId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("RefreshTokenId");
+
+                    b.HasIndex("ExpiraUtc");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("UsuarioId");
+
+                    b.ToTable("RefreshTokens", (string)null);
+                });
+
             modelBuilder.Entity("AquaClinic.Domain.Entities.ResumenDiarioServicio", b =>
                 {
                     b.Property<Guid>("ResumenDiarioId")

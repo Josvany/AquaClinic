@@ -7,8 +7,8 @@ namespace AquaClinic.App.Auth
     /// Reemplaza al CookieForwardingHandler: inyecta el access token JWT del
     /// TokenStore como Authorization: Bearer en cada request hacia la API.
     /// Si la API responde 401 (token vencido/revocado) y hay refresh token,
-    /// llama a api/usuarios/refresh (que rota el token), actualiza el store
-    /// y reintenta la peticion original una sola vez.
+    /// llama a api/usuarios/refresh (que rota el token), actualiza el store,
+    /// reescribe la cookie de sesion y reintenta la peticion original una sola vez.
     /// </summary>
     public class AuthHeaderHandler(TokenStore tokenStore, IServiceProvider serviceProvider) : DelegatingHandler
     {
@@ -99,11 +99,47 @@ namespace AquaClinic.App.Auth
 
                 tokenStore.ActualizarAccessToken(datos.AccessToken, datos.ExpiraUtc);
                 tokenStore.GuardarRefresh(datos.RefreshToken);
+                PersistirEnCookie(datos.AccessToken, datos.RefreshToken, datos.ExpiraUtc);
                 return true;
             }
             finally
             {
                 _refreshLock.Release();
+            }
+        }
+
+        /// <summary>
+        /// La rotacion del refresh token es de UN SOLO uso, asi que la cookie
+        /// tiene que_guardar el token nuevo: si se queda con el viejo, el
+        /// siguiente refresh fallaria y cerraria la sesion.
+        ///
+        /// Solo se puede escribir durante una peticion HTTP con respuesta sin
+        /// empezar. En un circuito Blazor ya establecido no hay HttpContext, y ahi
+        /// los tokens renovados viven solo en memoria hasta la siguiente peticion
+        /// SSR, que es la que puede reescribir la cookie. Ese caso puntual
+        /// (refresh dentro de un circuito largo + reinicio del proceso en medio)
+        /// es la unica ventana en la que se puede perder la sesion.
+        /// </summary>
+        private void PersistirEnCookie(string accessToken, string refreshToken, DateTime expiraUtc)
+        {
+            try
+            {
+                var httpContext = serviceProvider.GetRequiredService<IHttpContextAccessor>().HttpContext;
+
+                if (httpContext is null || httpContext.Response.HasStarted)
+                {
+                    // Circuito ya establecido: no hay a donde escribir la cookie.
+                    return;
+                }
+
+                var sesiones = serviceProvider.GetRequiredService<SesionCookieStore>();
+                sesiones.Escribir(httpContext.Response, new SesionCifrada(accessToken, refreshToken, expiraUtc),
+                    httpContext.Request.IsHttps);
+            }
+            catch (Exception ex) when (ex is ObjectDisposedException or InvalidOperationException)
+            {
+                // El circuito o la peticion ya se cerraron: la sesion queda solo en
+                // memoria, que es lo mismo que pasaba antes de esta cookie.
             }
         }
 

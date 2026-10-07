@@ -85,7 +85,7 @@ namespace AquaClinic.Api.Controllers
                 return Unauthorized();
             }
 
-            return Ok(EmitirSesion(usuarioVm));
+            return Ok(await EmitirSesionAsync(usuarioVm));
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace AquaClinic.Api.Controllers
         [EnableRateLimiting(RateLimitingPolicies.Authentication)]
         public async Task<ActionResult<RespuestaLoginVm>> Refrescar([FromBody] PeticionRefresh peticion)
         {
-            var usuarioId = _tokenService.ValidarYRotarRefreshToken(peticion.RefreshToken);
+            var usuarioId = await _tokenService.ValidarYRotarRefreshTokenAsync(peticion.RefreshToken);
 
             if (usuarioId is null)
             {
@@ -113,7 +113,7 @@ namespace AquaClinic.Api.Controllers
                 return Unauthorized();
             }
 
-            return Ok(EmitirSesion(new Application.Features.Usuarios.UsuarioVm
+            return Ok(await EmitirSesionAsync(new Application.Features.Usuarios.UsuarioVm
             {
                 UsuarioId = usuario.UsuarioId,
                 Email = usuario.Email,
@@ -129,26 +129,32 @@ namespace AquaClinic.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesDefaultResponseType]
         [Authorize]
-        public ActionResult CerrarSesion()
+        public async Task<ActionResult> CerrarSesion()
         {
             var usuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (!string.IsNullOrEmpty(usuarioId))
             {
-                _tokenService.RevocarRefreshTokens(usuarioId);
+                await _tokenService.RevocarRefreshTokensAsync(usuarioId);
             }
 
             return NoContent();
         }
 
-        private RespuestaLoginVm EmitirSesion(Application.Features.Usuarios.UsuarioVm usuario)
+        /// <summary>
+        /// Emite la sesion completa (access token JWT + refresh token persistido).
+        /// Antes era sincrona y usaba GetAwaiter().GetResult() sobre el JWT; con el
+        /// refresh token en BD eso bloquearia un hilo esperando I/O, asi que ahora
+        /// es async de verdad.
+        /// </summary>
+        private async Task<RespuestaLoginVm> EmitirSesionAsync(
+            Application.Features.Usuarios.UsuarioVm usuario)
         {
-            var (token, expira) = _tokenService
+            var (token, expira) = await _tokenService
                 .EmitirAccessTokenAsync(
-                    usuario.UsuarioId, usuario.Email, usuario.Roles, usuario.Nombre)
-                .GetAwaiter().GetResult();
+                    usuario.UsuarioId, usuario.Email, usuario.Roles, usuario.Nombre);
 
-            var refreshToken = _tokenService.EmitirRefreshToken(usuario.UsuarioId);
+            var refreshToken = await _tokenService.EmitirRefreshTokenAsync(usuario.UsuarioId);
 
             return new RespuestaLoginVm(
                 token,

@@ -23,6 +23,7 @@ namespace AquaClinic.Persistence
             services.AddScoped<IPromocionRepository, PromocionRepository>();
             services.AddScoped<IEmailPendienteRepository, EmailPendienteRepository>();
             services.AddScoped<IMovimientoServicioRepository, MovimientoServicioRepository>();
+            services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
             return services;
         }

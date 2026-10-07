@@ -9,21 +9,24 @@ namespace AquaClinic.App.Auth
 {
     /// <summary>
     /// Esquema de autenticacion de la App para las peticiones HTTP (SSR estatico):
-    /// reconstruye el principal desde la sesion JWT del servidor (ticket opaco en
-    /// cookie) igual que lo hace TokenStoreInitializer para el circuito interactivo.
-    /// Asi el [Authorize] del middleware (p. ej. /especialidadoverview) y el
-    /// Challenge redirigen correctamente sin depender del circuito Blazor.
+    /// descifra la sesion de la cookie (ver SesionCookieStore), la renueva si el
+    /// access token ya vencio y reconstruye el principal con sus claims. Asi el
+    /// [Authorize] del middleware (p. ej. /especialidadoverview) y el Challenge
+    /// redirigen correctamente sin depender del circuito Blazor.
+    ///
+    /// No hay estado en el servidor: la sesion viaja cifrada en la cookie, asi
+    /// que sobrevive a recargas, al cierre del navegador y a reinicios del App.
     /// </summary>
     public class SesionTicketAuthHandler(
         IOptionsMonitor<AuthenticationSchemeOptions> options,
         ILoggerFactory logger,
         UrlEncoder encoder,
-        IHttpClientFactory httpClientFactory) : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
+        IHttpClientFactory httpClientFactory,
+        SesionCookieStore sesiones) : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
     {
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            var ticket = Request.Cookies[SesionPendiente.NombreCookie];
-            var sesion = SesionPendiente.TomarPorTicket(ticket);
+            var sesion = sesiones.Descifrar(Request.Cookies[SesionCookieStore.NombreCookie]);
 
             if (sesion is null || string.IsNullOrEmpty(sesion.AccessToken))
             {
@@ -33,12 +36,12 @@ namespace AquaClinic.App.Auth
             try
             {
                 // ReadJwtToken solo parsea: NO valida firma ni vida. El access token
-                // vencido no puede autenticar una peticion SSR (antes quedaba valido
-                // hasta 7 dias, la vida del ticket). Si el refresh token sigue vigente
-                // se renueva la sesion en el acto para no expulsar al usuario a login.
+                // vencido no puede autenticar una peticion SSR. Si el refresh token
+                // sigue vigente se renueva la sesion en el acto para no expulsar al
+                // usuario a login, y la nueva sesion se reescribe en la cookie.
                 if (TokenVencido(sesion.AccessToken))
                 {
-                    sesion = await RenovarSesionAsync(ticket!, sesion);
+                    sesion = await RenovarSesionAsync(sesion);
 
                     if (sesion is null)
                     {
@@ -83,12 +86,11 @@ namespace AquaClinic.App.Auth
         }
 
         /// <summary>
-        /// Rota el refresh token contra la API, persiste la rotacion en la sesion
-        /// del ticket y en el TokenStore del circuito (si hay uno montado en este
-        /// request). Devuelve la sesion renovada, o null si el refresh ya no es
+        /// Rota el refresh token contra la API y reescribe la cookie con la sesion
+        /// renovada. Devuelve la sesion nueva, o null si el refresh ya no es
         /// valido y el usuario debe re-autenticar.
         /// </summary>
-        private async Task<SesionJwt?> RenovarSesionAsync(string ticket, SesionJwt sesion)
+        private async Task<SesionCifrada?> RenovarSesionAsync(SesionCifrada sesion)
         {
             try
             {
@@ -102,38 +104,34 @@ namespace AquaClinic.App.Auth
 
                 if (!respuesta.IsSuccessStatusCode)
                 {
-                    // Carrera benigna: otra peticion concurrente ya roto el mismo
-                    // refresh token. Si la sesion guardada tiene tokens nuevos se
-                    // sigue con ella en vez de expulsar al usuario.
-                    var actual = SesionPendiente.TomarPorTicket(ticket);
-                    if (actual is not null
-                        && !string.IsNullOrEmpty(actual.AccessToken)
-                        && !string.Equals(actual.RefreshToken, sesion.RefreshToken, StringComparison.Ordinal))
-                    {
-                        return actual;
-                    }
-
-                    // Refresh realmente invalido: la sesion expiro de verdad
-                    SesionPendiente.Eliminar(ticket);
+                    // Refresh realmente invalido (vencido, revocado o porque la API
+                    // reinicio y perdio sus refresh tokens en memoria): la sesion se
+                    // termina y se limpia la cookie para no reintentar en cada request.
+                    Logger.LogWarning(
+                        "Refresh token rechazado: la sesion se cierra (posible API reiniciada o token vencido).");
+                    sesiones.Borrar(Response);
                     return null;
                 }
 
-                var datos = await respuesta.Content.ReadFromJsonAsync<SesionJwt>();
+                var datos = await respuesta.Content.ReadFromJsonAsync<RespuestaRefresh>();
 
                 if (datos is null || string.IsNullOrEmpty(datos.AccessToken))
                 {
                     return null;
                 }
 
-                // Persistir la rotacion: los siguientes requests SSR (y el circuito
-                // que se monte con este ticket) usan los tokens nuevos.
-                SesionPendiente.Actualizar(ticket, datos.AccessToken, datos.RefreshToken, datos.ExpiraUtc);
+                var renovada = new SesionCifrada(datos.AccessToken, datos.RefreshToken, datos.ExpiraUtc);
+
+                // La rotacion es de un solo uso: si la cookie se queda con el token
+                // viejo, el siguiente refresh fallaria. Reescribirla aqui es lo que
+                // mantiene la sesion viva entre peticiones SSR.
+                sesiones.Escribir(Response, renovada, Request.IsHttps);
 
                 var tokenStore = Context.RequestServices.GetService<TokenStore>();
-                tokenStore?.ActualizarAccessToken(datos.AccessToken, datos.ExpiraUtc);
-                tokenStore?.GuardarRefresh(datos.RefreshToken);
+                tokenStore?.ActualizarAccessToken(renovada.AccessToken, renovada.ExpiraUtc);
+                tokenStore?.GuardarRefresh(renovada.RefreshToken);
 
-                return datos;
+                return renovada;
             }
             catch
             {
@@ -141,5 +139,10 @@ namespace AquaClinic.App.Auth
                 return null;
             }
         }
+
+        private sealed record RespuestaRefresh(
+            string AccessToken,
+            string RefreshToken,
+            DateTime ExpiraUtc);
     }
 }

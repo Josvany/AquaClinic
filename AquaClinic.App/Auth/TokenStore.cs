@@ -1,11 +1,13 @@
 namespace AquaClinic.App.Auth
 {
     /// <summary>
-    /// Almacen de la sesion JWT en el servidor Blazor, por circuito interactivo
-    /// (scoped). Reemplaza al almacen de cookies: guarda el access token y el
-    /// refresh token que la API emitio al hacer login, para inyectarlos como
+    /// Almacen de la sesion JWT en el SERVIDOR Blazor, por circuito interactivo
+    /// (scoped). Copia en memoria el access token y el refresh token que
+    /// que viajan cifrados en la cookie (SesionCookieStore) para inyectarlos como
     /// Authorization: Bearer en cada llamada REST (ver AuthHeaderHandler).
-    /// Se pierde al reiniciar el servidor: el usuario vuelve a iniciar sesion.
+    /// El circuito es efimero: al abrir uno nuevo, TokenStoreInitializer devuelve
+    /// los tokens desde la cookie. La sesion sobrevive al reinicio porque la
+    /// cookie es la fuente de verdad, no este almacen.
     /// </summary>
     public class TokenStore
     {

@@ -4,6 +4,7 @@ using AquaClinic.App.Contracts;
 using AquaClinic.App.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Localization;
 using Radzen;
@@ -78,12 +79,26 @@ builder.Services.AddScoped<IServiciosPublicosDataService, ReservasDataService>()
 // Servicio elegido + re-anclaje de hora compartidos entre /reservar y el dialogo
 builder.Services.AddScoped<SeleccionReservaEstado>();
 
+// La sesion viaja cifrada en una cookie (SesionCookieStore), asi que NO hay
+// ningun estado de sesion en el servidor: sobrevive a reinicios del proceso.
+// Data Protection cifra y descifra esa cookie, y SUS CLAVES DEBEN PERSISTIR en
+// disco: por defecto ASP.NET las guarda en el perfil del usuario
+// (%LOCALAPPDATA%\ASP.NET\DataProtection-Keys). Si en produccion corre en un
+// contenedor hay que montar ese directorio en un volumen (o usar
+// PersistKeysToAzureBlobStorage / un KMS) o la cookie dejaria de descifrarse al
+// reiniciar y el usuario tendria que entrar de nuevo.
+builder.Services.AddDataProtection().SetApplicationName("AquaClinic.App");
+
+// Almacen de la sesion cifrada de la cookie. Singleton: solo envuelve al
+// IDataProtector, que ya es thread-safe.
+builder.Services.AddSingleton<SesionCookieStore>();
+
 // Autenticacion via JWT: el principal se construye desde el access token del TokenStore
 builder.Services.AddScoped<ApiAuthenticationStateProvider>();
 
 // Esquema de autenticacion de la App (para el [Authorize] del middleware):
-// reconstruye el principal desde la sesion del ticket (igual que el circuito
-// interactivo). La sesion real vive en el JWT; este esquema nunca emite cookies.
+// descifra la sesion de la cookie y reconstruye el principal desde sus claims
+// (igual que hace el circuito interactivo).
 builder.Services
     .AddAuthentication(options =>
     {
@@ -110,12 +125,13 @@ app.UseAntiforgery();
 // ============================================================
 // Endpoints minimal API para el flujo de autenticacion JWT.
 // Reciben el form POST del navegador, piden el JWT a la API y GUARDAN los
-// tokens en el TokenStore del circuito. No hay cookies de sesion: el
-// principal se construye desde el JWT (ApiAuthenticationStateProvider).
-// ============================================================
+// La sesion viaja CIFRADA en una cookie httpOnly (SesionCookieStore); no hay
+    // estado de sesion en el servidor. El principal se construye desde el JWT
+    // (ApiAuthenticationStateProvider).
+    // ============================================================
 
-app.MapPost("/auth/login", async (HttpContext ctx, IHttpClientFactory httpClientFactory, TokenStore tokens) =>
-{
+    app.MapPost("/auth/login", async (HttpContext ctx, IHttpClientFactory httpClientFactory, TokenStore tokens, SesionCookieStore sesiones) =>
+    {
     var form = await ctx.Request.ReadFormAsync();
     var email = form["email"].ToString();
     var password = form["password"].ToString();
@@ -155,17 +171,17 @@ app.MapPost("/auth/login", async (HttpContext ctx, IHttpClientFactory httpClient
         return RedirigirOJson("/login?error=api");
     }
 
-    // La sesion (tokens) vive en el SERVIDOR; al navegador solo se le entrega
-    // un ticket opaco en una cookie httpOnly. Cada circuito nuevo la recupera
-    // con ese ticket (TokenStoreInitializer), sobreviviendo a recargas.
-    var ticket = SesionPendiente.Registrar(sesion);
-    ctx.Response.Cookies.Append(SesionPendiente.NombreCookie, ticket, new CookieOptions
-    {
-        HttpOnly = true,
-        SameSite = SameSiteMode.Lax,
-        Secure = true,
-        MaxAge = TimeSpan.FromDays(7)
-    });
+    // La sesion (tokens) viaja cifrada en una cookie httpOnly: la cookie ES la
+    // sesion, asi que sobrevive a recargas, al cierre del navegador y a
+    // reinicios del App (antes vivia en memoria y se perdia al reiniciar).
+    sesiones.Escribir(
+        ctx.Response,
+        new SesionCifrada(sesion.AccessToken, sesion.RefreshToken, sesion.ExpiraUtc),
+        ctx.Request.IsHttps);
+
+    // El TokenStore de ESTA peticion queda cargado para las siguientes llamadas
+    // SSR del mismo circuito.
+    tokens.Guardar(sesion.AccessToken, sesion.RefreshToken, sesion.ExpiraUtc, sesion.Usuario.Email);
 
     // El personal aterriza directo en Citas; clientes y resto van a la home
     var esPersonal = sesion.Usuario.Roles.Any(r =>
@@ -212,7 +228,7 @@ app.MapPost("/auth/register", async (HttpContext ctx, IHttpClientFactory httpCli
     return Results.Redirect("/login");
 });
 
-app.MapPost("/logout", async (HttpContext ctx, IHttpClientFactory httpClientFactory, TokenStore tokens) =>
+app.MapPost("/logout", async (HttpContext ctx, IHttpClientFactory httpClientFactory, TokenStore tokens, SesionCookieStore sesiones) =>
 {
     // 1) Revocar el refresh token en la API (best-effort, con el access token)
     if (tokens.TieneToken)
@@ -231,11 +247,10 @@ app.MapPost("/logout", async (HttpContext ctx, IHttpClientFactory httpClientFact
         }
     }
 
-    // 2) Cerrar la sesion del servidor y borrar el ticket del navegador
-    var ticket = ctx.Request.Cookies[SesionPendiente.NombreCookie];
-    SesionPendiente.Eliminar(ticket);
+    // 2) Cerrar la sesion local y borrar la cookie del navegador. No hay estado
+    // que limpiar en el servidor: la sesion ES la cookie.
     tokens.Limpiar();
-    ctx.Response.Cookies.Delete(SesionPendiente.NombreCookie);
+    sesiones.Borrar(ctx.Response);
 
     return Results.LocalRedirect("/");
 });

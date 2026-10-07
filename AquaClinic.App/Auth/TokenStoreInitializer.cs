@@ -1,12 +1,9 @@
-using System.Net.Http.Json;
-
 namespace AquaClinic.App.Auth
 {
     /// <summary>
-    /// Puente entre la sesion JWT del servidor (indexada por el ticket en la
-    /// cookie del navegador) y el TokenStore scoped del circuito. Al montar el
-    /// primer componente interactivo, recupera la sesion del ticket y la copia
-    /// al TokenStore; luego notifica al AuthenticationStateProvider.
+    /// Puente entre la sesion cifrada de la cookie y el TokenStore scoped del
+    /// circuito. Al montar el primer componente interactivo, descifra la cookie y
+    /// copia los tokens al TokenStore; luego notifica al AuthenticationStateProvider.
     /// </summary>
     public sealed class TokenStoreInitializer(
         TokenStore tokenStore,
@@ -18,8 +15,7 @@ namespace AquaClinic.App.Auth
 
         /// <summary>
         /// Debe llamarse una vez por circuito, en el primer render interactivo.
-        /// Restaura los tokens desde la sesion del servidor si el navegador
-        /// trae el ticket en la cookie.
+        /// Restaura los tokens desde la cookie del navegador.
         /// </summary>
         public Task InicializarAsync()
         {
@@ -35,24 +31,28 @@ namespace AquaClinic.App.Auth
                 return Task.CompletedTask;
             }
 
-            var ticket = httpContextAccessor.HttpContext?.Request.Cookies[SesionPendiente.NombreCookie];
-            var sesion = SesionPendiente.TomarPorTicket(ticket);
+            var httpContext = httpContextAccessor.HttpContext;
+            var sesiones = serviceProvider.GetRequiredService<SesionCookieStore>();
+            var sesion = sesiones.Descifrar(httpContext?.Request.Cookies[SesionCookieStore.NombreCookie]);
 
             if (sesion is null || string.IsNullOrEmpty(sesion.AccessToken))
             {
                 return Task.CompletedTask;
             }
 
+            // El correo no viaja en la cookie: sale del propio access token.
+            var email = SesionCookieStore.LeerEmail(sesion.AccessToken) ?? string.Empty;
+
             tokenStore.Guardar(
                 sesion.AccessToken,
                 sesion.RefreshToken,
                 sesion.ExpiraUtc,
-                sesion.Usuario.Email);
+                email);
 
             authStateProvider.InvalidarCache();
 
             // El saludo del nav muestra el nombre real del perfil
-            return PrecalentarSaludoAsync(sesion.Usuario.Email);
+            return PrecalentarSaludoAsync(email);
         }
 
         private async Task PrecalentarSaludoAsync(string email)

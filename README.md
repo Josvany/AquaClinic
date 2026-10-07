@@ -15,7 +15,7 @@ Sistema de gestión de citas clínicas para **Aqua Skin and Glow Clinic** (clín
 - **Personal y horarios**: esteticistas con sus especialidades, horario semanal de la clínica y bloqueos (feriados, vacaciones)
 - **Roles y permisos granulares**: Administrador, Recepcion, Esteticista y Cliente; los endpoints de escritura exigen permisos (`servicios:crear`, `especialidades:crear`...)
 - **Fidelidad (esquema listo)**: promociones, cupones y puntos acumulables para futuras regalías por cliente frecuente
-- **Autenticación con ASP.NET Identity** (cookies) con registro e inicio de sesión
+- **Autenticación con ASP.NET Identity** (usuarios y roles) y sesión por JWT: la API emite el token y la App lo conserva cifrado en una cookie `httpOnly` de 7 días
 - **Swagger**, **Serilog** (con CorrelationId), rate limiting, health checks y OpenTelemetry
 - **Seed de datos de ejemplo**: 4 especialidades, 9 servicios reales con duración y precio CAD, 3 personal, horarios, bloqueos, 3 citas de invitado y 1 promoción
 
@@ -33,6 +33,7 @@ Sistema de gestión de citas clínicas para **Aqua Skin and Glow Clinic** (clín
 | `Bloqueo` | Cierre temporal (feriado/vacaciones): `Motivo`, rango UTC, clínico o de un personal |
 | `Promocion` / `PromocionServicio` / `Cupon` | Fidelidad: descuentos (% o monto CAD) con vigencia, alcance por servicio y cupones asignables a clientes con estado |
 | `MovimientoPuntos` | Puntos acumulables/canjeables por visita (saldo = suma) |
+| `RefreshToken` | Refresh tokens de la sesión: `TokenHash` (SHA-256, nunca el token en claro), `UsuarioId`, `ExpiraUtc`. Se canjean y se borran en el mismo uso |
 
 **Decisiones de diseño:**
 - **UUID v7** en todos los Ids (`Guid.CreateVersion7()` en constructores) — index-friendly en SQL Server; `ApplicationUser.Id` es el v7 en string
@@ -56,7 +57,7 @@ AquaClinic.sln
                           AquaClinic.Persistence.IntegrationTests
 ```
 
-**Flujo de la UI:** la App consume la API vía REST con un cliente tipado generado por NSwag (`Services/Base/ServiceClient.cs`). Login y Registro usan SSR estático (ver [docs/mapa-comunicacion-login.md](docs/mapa-comunicacion-login.md)).
+**Flujo de la UI:** la App consume la API vía REST con un cliente tipado generado por NSwag (`Services/Base/ServiceClient.cs`). Login y Registro usan SSR estático (ver la sección Autenticación más abajo).
 
 > **Nota:** las páginas del catálogo de la App aún referencian los endpoints anteriores (`/api/citas`); su adaptación a `/api/servicios` es la siguiente fase del desarrollo.
 
@@ -67,7 +68,7 @@ AquaClinic.sln
 | .NET | 10.0 | Framework base |
 | ASP.NET Core Blazor | 10.0 | UI web (Blazor Web App) |
 | Entity Framework Core | 10.0.12 | Persistencia (SQL Server / LocalDB) |
-| ASP.NET Core Identity | 10.0.12 | Autenticación por cookies |
+| ASP.NET Core Identity | 10.0.12 | Usuarios, roles y hashing de contraseñas |
 | MediatR | 14.2.0 | CQRS (mediador) |
 | AutoMapper | 16.2.0 | Mapeo entidad ↔ DTO |
 | FluentValidation | 12.1.1 | Validación de comandos |
@@ -128,15 +129,20 @@ dotnet run --project AquaClinic.App
 | `Esteticista` | `servicios:ver`, `especialidades:ver`, `citas:ver` |
 | `Cliente` | `servicios:ver`, `especialidades:ver` |
 
-Los endpoints declaran el permiso con `[HasPermission(Permisos.ServiciosCrear)]`; los roles viajan como claims en la cookie de Identity.
+Los endpoints declaran el permiso con `[HasPermission(Permisos.ServiciosCrear)]`; los roles viajan como claims en el JWT.
 
 ## Autenticación
 
-El diseño usa **dos cookies con contextos separados** sobre la base de datos única (App y API comparten `AquaClinicDbContext`):
+Login y Registro son SSR estático: el formulario hace `POST /auth/login` en la App, que pide el JWT a la API y lo guarda **cifrado en una cookie `httpOnly`** (`aqua_sesion`, 7 días) mediante Data Protection.
 
-- La App autentica localmente con `SignInManager` (cookie `HttpOnly` en el navegador)
-- Al iniciar sesión, la App también solicita a la API su propia cookie (vía `POST /login?useCookies=true`) y la guarda en el servidor (`UserCookieStore`) para reenviarla a los endpoints protegidos
-- El diagrama completo está en [docs/mapa-comunicacion-login.md](docs/mapa-comunicacion-login.md)
+- **No hay estado de sesión en el servidor.** La cookie *es* la sesión: sobrevive a recargas, al cierre del navegador y a reinicios del proceso de la App
+- Los tokens viajan en la cookie cifrados con `SesionCookieStore` (`App/Auth/`); el correo y los roles se leen de los claims del propio access token
+- La App los copia al `TokenStore` del circuito (`AuthHeaderHandler` los inyecta como `Authorization: Bearer`); al abrir un circuito nuevo, `TokenStoreInitializer` los recupera de la cookie
+- Al vencer el access token (60 min) hay refresh automático en ambos caminos (SSR y circuito); el refresh token vive 7 días y es de un solo uso, así que al rotarlo se reescribe la cookie
+- **Los refresh tokens se guardan hasheados en la tabla `RefreshTokens`** (SHA-256, nunca en claro). Antes vivían en memoria y reiniciar la API cerraba todas las sesiones; ahora sobreviven
+- **Las claves de Data Protection deben persistir en disco.** Por defecto van al perfil del usuario (`%LOCALAPPDATA%\ASP.NET\DataProtection-Keys`); en un contenedor hay que montar ese directorio en un volumen o la cookie dejaría de descifrarse al reiniciar
+- Reiniciar el App o la API **no** expulsa al usuario; recargar o reabrir el navegador tampoco
+- Trade-off del logout: al no haber estado de sesión en servidor, cerrar sesión solo borra la cookie del navegador. Una copia del valor cifrado podría reusarse hasta que venza el access token (60 min); el logout sí revoca el refresh token en la API, así que pasado ese plazo la sesión ya no se renueva
 
 ## Endpoints de la API
 
@@ -151,7 +157,7 @@ El diseño usa **dos cookies con contextos separados** sobre la base de datos ú
 | POST | `/api/especialidades` | `especialidades:crear` | Crear especialidad |
 | GET | `/health` | — | Health check de la base de datos |
 | POST | `/api/usuarios/registro` | — | Registrar cliente (rol Cliente, rate limited) |
-| POST | `/api/usuarios/login?useCookies=` | — | Login + perfil con roles (rate limited) |
+| POST | `/api/usuarios/login` | — | Login + perfil con roles (rate limited) |
 | GET | `/api/usuarios/actual` | `[Authorize]` | Perfil del usuario autenticado |
 | PUT | `/api/usuarios/actual` | `[Authorize]` | Actualizar perfil (nombre, apellidos, teléfono) |
 | POST | `/api/usuarios/cambiar-password` | `[Authorize]` | Cambiar contraseña (rate limited) |

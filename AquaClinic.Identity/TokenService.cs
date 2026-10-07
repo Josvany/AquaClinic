@@ -2,6 +2,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using AquaClinic.Application.Contracts.Persistence;
+using AquaClinic.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -10,17 +12,35 @@ namespace AquaClinic.Identity
 {
     /// <summary>
     /// Emite access tokens JWT (con los roles como claims) y refresh tokens
-    /// opacos almacenados en memoria compartida (singleton: los tokens deben
-    /// sobrevivir entre requests, que son scoped). El JWT es stateless.
+    /// opacos persistidos en la BD.
+    ///
+    /// OJO: los refresh tokens vivian antes en un diccionario estatico EN MEMORIA,
+    /// lo que hacia que reiniciar la API cerrara todas las sesiones aunque el
+    /// access token siguiera vigente. Ahora se guardan hasheados en la tabla
+    /// RefreshTokens (nunca en claro), asi que sobreviven a reinicios.
+    ///
+    /// El access token JWT sigue siendo stateless.
     /// </summary>
     public class TokenService(
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IRefreshTokenRepository refreshTokens)
     {
-        private static readonly Dictionary<string, (string UsuarioId, DateTime Expira)> _refreshTokens = new();
-        private static readonly object _lock = new();
+        /// <summary>
+        /// Serializa emitir / rotar / revocar refresh tokens. La rotacion es de UN
+        /// SOLO USO: sin esto, dos peticiones simultaneas con el mismo token (la
+        /// ruta SSR y el circuito Blazor pueden renovar a la vez) podrian canjearlo
+        /// las dos y dejar una sesion huerfana con un token ya consumido.
+        ///
+        /// SemaphoreSlim y no lock porque las operaciones son async: un lock
+        /// sostenido sobre un await puede deadlear.
+        /// </summary>
+        private readonly SemaphoreSlim _refreshLock = new(1, 1);
 
         public double MinutosVidaAccessToken =>
             configuration.GetValue("Jwt:AccessTokenMinutos", 60);
+
+        public double DiasVidaRefreshToken =>
+            configuration.GetValue("Jwt:RefreshTokenDias", 7);
 
         /// <summary>
         /// Genera el JWT del usuario con claims: sub, email, nombre y un claim de
@@ -67,22 +87,28 @@ namespace AquaClinic.Identity
             return (new JwtSecurityTokenHandler().WriteToken(token), expiracion);
         }
 
-        /// <summary>Emite y almacena un refresh token opaco (validez 7 dias).</summary>
-        public string EmitirRefreshToken(string usuarioId)
+        /// <summary>
+        /// Emite un refresh token opaco y lo registra hasheado en la BD.
+        /// Purgar de vez en cuando los vencidos para que la tabla no crezca sin
+        /// control (con un DELETE, no en el camino caliente del login).
+        /// </summary>
+        public async Task<string> EmitirRefreshTokenAsync(string usuarioId)
         {
             var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
 
-            lock (_lock)
+            await _refreshLock.WaitAsync();
+            try
             {
-                _refreshTokens[token] = (usuarioId, DateTime.UtcNow.AddDays(7));
-
-                // Limpieza de tokens vencidos
-                foreach (var vencido in _refreshTokens
-                    .Where(kvp => kvp.Value.Expira < DateTime.UtcNow)
-                    .Select(kvp => kvp.Key))
+                await refreshTokens.AddAsync(new RefreshToken
                 {
-                    _refreshTokens.Remove(vencido);
-                }
+                    TokenHash = Hashear(token),
+                    UsuarioId = usuarioId,
+                    ExpiraUtc = DateTime.UtcNow.AddDays(DiasVidaRefreshToken)
+                });
+            }
+            finally
+            {
+                _refreshLock.Release();
             }
 
             return token;
@@ -92,34 +118,49 @@ namespace AquaClinic.Identity
         /// Valida un refresh token y lo rota (un solo uso). Devuelve el UsuarioId
         /// o null si el token no existe, vencio o ya fue consumido.
         /// </summary>
-        public string? ValidarYRotarRefreshToken(string refreshToken)
+        public async Task<string?> ValidarYRotarRefreshTokenAsync(string refreshToken)
         {
-            lock (_lock)
+            if (string.IsNullOrWhiteSpace(refreshToken))
             {
-                if (!_refreshTokens.TryGetValue(refreshToken, out var dato))
-                {
-                    return null;
-                }
+                return null;
+            }
 
-                _refreshTokens.Remove(refreshToken);
-
-                return dato.Expira >= DateTime.UtcNow ? dato.UsuarioId : null;
+            await _refreshLock.WaitAsync();
+            try
+            {
+                return await refreshTokens.RotarAsync(Hashear(refreshToken), DateTime.UtcNow);
+            }
+            finally
+            {
+                _refreshLock.Release();
             }
         }
 
         /// <summary>Revoca todos los refresh tokens del usuario (logout).</summary>
-        public void RevocarRefreshTokens(string usuarioId)
+        public async Task RevocarRefreshTokensAsync(string usuarioId)
         {
-            lock (_lock)
+            await _refreshLock.WaitAsync();
+            try
             {
-                foreach (var token in _refreshTokens
-                    .Where(kvp => kvp.Value.UsuarioId == usuarioId)
-                    .Select(kvp => kvp.Key))
-                {
-                    _refreshTokens.Remove(token);
-                }
+                await refreshTokens.RevocarTodosAsync(usuarioId);
+            }
+            finally
+            {
+                _refreshLock.Release();
             }
         }
+
+        /// <summary>Borra los refresh tokens vencidos (mantenimiento).</summary>
+        public Task<int> PurgarRefreshTokensVencidosAsync() =>
+            refreshTokens.PurgarVencidosAsync(DateTime.UtcNow);
+
+        /// <summary>
+        /// SHA-256 en base64 del token. Se guarda el hash porque el token en claro
+        /// es una credencial bearer: si se filtra la BD no debe servir para
+        /// suplantar a nadie. Busca rapido por indice unico.
+        /// </summary>
+        private static string Hashear(string token) =>
+            Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
 
         private string ObtenerClave()
         {
