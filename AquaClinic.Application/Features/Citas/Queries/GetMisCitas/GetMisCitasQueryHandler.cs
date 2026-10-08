@@ -34,7 +34,9 @@ namespace AquaClinic.Application.Features.Citas.Queries.GetMisCitas
                     Precio = c.CitasServicios?.FirstOrDefault()?.Servicio?.Precio ?? 0m,
                     Fecha = CitaFechas.ALocal(c.FechaInicio),
                     Estado = c.Estado.ToString(),
-                    Notas = c.Notas
+                    Notas = c.Notas,
+                    EstadoValor = (int)c.Estado,
+                    DuracionMinutos = c.CitasServicios?.FirstOrDefault()?.Servicio?.DuracionMinutos ?? 60
                 })
                 .ToList();
         }

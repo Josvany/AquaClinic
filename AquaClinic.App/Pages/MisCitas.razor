@@ -70,6 +70,31 @@
                                 <span class="ag-miscitas-estado ag-miscitas-estado-@cita.Estado.ToLower()">@TraducirEstado(cita.Estado)</span>
                             </Template>
                         </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="MiCitaViewModel" Title="@TextoUi.T("Acciones")" Width="230px" TextAlign="TextAlign.Center">
+                            <Template Context="cita">
+                                @if (cita.PermiteGestionar)
+                                {
+                                    <div class="ag-miscitas-acciones">
+                                        <button type="button" class="ag-miscitas-boton-mover"
+                                                title="@TextoUi.T("Cambiar la fecha y la hora de esta cita")"
+                                                @onclick="() => MoverCita(cita)">
+                                            <i class="fa-regular fa-calendar-clock" aria-hidden="true"></i>
+                                            @TextoUi.T("Cambiar cita")
+                                        </button>
+                                        <button type="button" class="ag-miscitas-boton-cancelar"
+                                                title="@TextoUi.T("Cancelar esta cita")"
+                                                @onclick="() => CancelarCita(cita)">
+                                            <i class="fa-solid fa-circle-xmark" aria-hidden="true"></i>
+                                            @TextoUi.T("Cancelar cita")
+                                        </button>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="ag-miscitas-sin-accion">&mdash;</span>
+                                }
+                            </Template>
+                        </RadzenDataGridColumn>
                     </Columns>
                 </RadzenDataGrid>
             </div>

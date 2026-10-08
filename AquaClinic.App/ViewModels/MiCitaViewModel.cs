@@ -12,5 +12,18 @@ namespace AquaClinic.App.ViewModels
         public DateTime Fecha { get; set; }
         public string Estado { get; set; } = string.Empty;
         public string? Notas { get; set; }
+
+        /// <summary>Valor numerico del estado (1=Pendiente, 2=Confirmada).</summary>
+        public int EstadoValor { get; set; }
+
+        /// <summary>Duracion del servicio contratado, en minutos.</summary>
+        public int DuracionMinutos { get; set; } = 60;
+
+        /// <summary>
+        /// True cuando la cita sigue vigente: no ha pasado la fecha de atencion
+        /// y su estado permite gestionarla (pendiente o confirmada). Las citas
+        /// completadas, canceladas o ya pasadas no admiten cambios.
+        /// </summary>
+        public bool PermiteGestionar => EstadoValor is 1 or 2 && Fecha > DateTime.Now;
     }
 }

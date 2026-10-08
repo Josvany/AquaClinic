@@ -37,5 +37,8 @@ namespace AquaClinic.Api.Authorization
 
         // ===== Citas propias del cliente =====
         public const string MisCitasVer = "miscitas:ver";
+
+        /// <summary>Permite al cliente reprogramar una cita propia desde /miscitas.</summary>
+        public const string MisCitasGestionar = "miscitas:gestionar";
     }
 }

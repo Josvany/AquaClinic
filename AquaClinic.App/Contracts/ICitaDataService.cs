@@ -22,7 +22,20 @@ namespace AquaClinic.App.Contracts
         /// <summary>Mueve la cita a otro horario; falla (409) si el horario ya fue tomado.</summary>
         Task<ApiResponse<Guid>> MoverCitaAsync(Guid citaId, DateTime nuevoInicioLocal, int duracionMinutos);
 
+        /// <summary>
+        /// Reprograma una cita propia desde "Mis citas"
+        /// (PUT api/citas/mias/{id}/mover). La API valida que la cita
+        /// pertenezca al usuario autenticado.
+        /// </summary>
+        Task<ApiResponse<Guid>> MoverMisCitaAsync(Guid citaId, DateTime nuevoInicioLocal, int duracionMinutos);
+
         /// <summary>Cancela la cita (solo pendientes o confirmadas).</summary>
         Task<ApiResponse<string>> CancelarCitaAsync(Guid citaId);
+
+        /// <summary>
+        /// Cancela una cita propia desde "Mis citas"
+        /// (POST api/citas/mias/{id}/cancelar).
+        /// </summary>
+        Task<ApiResponse<string>> CancelarMisCitaAsync(Guid citaId);
     }
 }

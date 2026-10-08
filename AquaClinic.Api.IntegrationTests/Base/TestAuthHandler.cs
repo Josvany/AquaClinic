@@ -20,11 +20,19 @@ namespace AquaClinic.Api.IntegrationTests.Base
 
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
+            // Rol por defecto Administrador para que los endpoints con
+            // [HasPermission] pasen la autorizacion. X-Test-Rol permite probar
+            // los permisos de otro rol (por ejemplo, Cliente en /api/citas/mias).
+            var rol = Request.Headers["X-Test-Rol"].FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(rol))
+            {
+                rol = "Administrador";
+            }
+
             var claims = new List<Claim>
             {
                 new(ClaimTypes.Name, "UsuarioDePrueba"),
-                // Rol Administrador para que los endpoints con [HasPermission] pasen la autorizacion
-                new(ClaimTypes.Role, "Administrador")
+                new(ClaimTypes.Role, rol)
             };
 
             // Permite simular el usuario autenticado actual en los endpoints [Authorize]

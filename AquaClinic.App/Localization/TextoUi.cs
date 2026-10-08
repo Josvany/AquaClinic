@@ -394,7 +394,34 @@ public static class TextoUi
         ["Inactivo"] = "Inactive",
         ["{0} de {1}"] = "{0} of {1}",
         ["No hay servicios inactivos en el catálogo."] = "There are no inactive services in the catalog.",
-        ["No hay servicios que coincidan con este filtro."] = "No services match this filter."
+        ["No hay servicios que coincidan con este filtro."] = "No services match this filter.",
+
+        // ===== Pie de pagina =====
+        ["Navegación del pie de página"] = "Footer navigation",
+        ["Clínica de estética facial"] = "Facial aesthetics clinic",
+        ["Tratamientos"] = "Treatments",
+        ["Contacto"] = "Contact",
+        ["Dirección:"] = "Address:",
+        ["Horario:"] = "Hours:",
+        ["Teléfono:"] = "Call:",
+        ["Síguenos:"] = "Follow us:",
+
+        // ===== Acciones de "Mis citas" =====
+        ["Acciones"] = "Actions",
+        ["Cambiar cita"] = "Reschedule",
+        ["Cambiar la fecha y la hora de esta cita"] = "Change the date and time of this appointment",
+        ["Tu cita"] = "Your appointment",
+        ["Cancelar cita"] = "Cancel appointment",
+        ["Cancelar esta cita"] = "Cancel this appointment",
+        ["Sí, cancelar"] = "Yes, cancel it",
+        ["No, conservar"] = "No, keep it",
+        ["Cita cancelada. El horario quedó disponible."] = "Appointment cancelled. The time slot is available again.",
+        ["No se pudo cancelar la cita."] = "The appointment could not be cancelled.",
+        ["Cómo llegar"] = "Get directions",
+        ["© {0} Aqua Skin & Glow Clinic."] = "© {0} Aqua Skin & Glow Clinic.",
+        ["Todos los derechos reservados."] = "All rights reserved.",
+        ["Aqua Skin & Glow® es una marca registrada de Aqua Skin & Glow Clinic."] = "Aqua Skin & Glow® is a registered trademark of Aqua Skin & Glow Clinic.",
+        ["Reconocemos que operamos en los territorios ancestrales de los pueblos Coast Salish, incluidos Stó:lō, Musqueam, Squamish y Tsleil-Waututh."] = "We acknowledge that we operate on the ancestral territories of the Coast Salish peoples, including the Stó:lō, Musqueam, Squamish and Tsleil-Waututh Nations."
     };
 
     public static string T(string? texto)

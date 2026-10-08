@@ -1678,35 +1678,195 @@ footer.ag-footer {
 .ag-footer {
     border-top: 1px solid rgba(197, 160, 90, 0.35);
     background: var(--color-white);
-    padding: 52px 24px;
+    padding: 52px 24px 40px;
 }
 
+/* Cuatro columnas (marca / navegacion / direccion / horario y legal) separadas
+   por reglas verticales, como en la referencia. La 1a columna lleva el wordmark
+   centrado; las otras alineadas a la izquierda. */
 .ag-footer-grid {
     max-width: 1200px;
     margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    gap: 32px;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr 1.5fr 1.3fr;
     font-size: 0.9rem;
     color: var(--ag-texto-mudo);
+    line-height: 1.65;
 }
 
-    .ag-footer-grid strong {
-        color: var(--color-teal-900);
-        font-weight: 600;
-        font-family: var(--font-serif);
-        font-size: 1.1rem;
-        letter-spacing: var(--tracking-wide);
+    .ag-footer-col {
+        padding: 4px 28px;
     }
+
+    /* Separadores verticales entre columnas (nunca en la primera ni en la
+       ultima, para que no queden reglas pegadas a los bordes). */
+    .ag-footer-col + .ag-footer-col {
+        border-left: 1px solid rgba(42, 107, 102, 0.16);
+    }
+
+    .ag-footer-marca-col {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+    }
+
+        .ag-footer-marca {
+            margin: 0;
+            font-family: var(--font-serif);
+            font-size: 1.9rem;
+            font-weight: 600;
+            letter-spacing: var(--tracking-wide);
+            color: var(--color-teal-900);
+            line-height: 1.1;
+        }
+
+        .ag-footer-lema {
+            margin: 8px 0 0;
+            font-family: var(--font-sans);
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: var(--tracking-caps);
+            text-transform: uppercase;
+            color: var(--color-bronze);
+        }
+
+    .ag-footer-titulo {
+        margin: 0 0 2px;
+        font-family: var(--font-serif);
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--color-teal-900);
+    }
+
+        /* El titulo de "Telefono" va algo mas separado del bloque de horario. */
+        .ag-footer-titulo + p + .ag-footer-titulo {
+            margin-top: 18px;
+        }
+
+    .ag-footer-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+        .ag-footer-nav a {
+            color: var(--color-teal-700);
+            font-weight: 600;
+        }
+
+    .ag-footer-direccion {
+        margin: 0;
+        font-style: normal;
+    }
+
+        .ag-footer-enlace-suave {
+            color: var(--color-teal-700);
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+    .ag-footer-reconocimiento {
+        margin: 26px 0 0;
+        color: var(--ag-texto-suave);
+        font-size: 0.82rem;
+        line-height: 1.7;
+    }
+
+    /* Iconos de redes sociales: circulos outlined, hover dorado. */
+    .ag-footer-redes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 4px 0 0;
+        padding: 0;
+        list-style: none;
+    }
+
+        .ag-footer-redes a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border: 1px solid rgba(42, 107, 102, 0.3);
+            border-radius: 50%;
+            color: var(--color-teal-700);
+            font-size: 0.95rem;
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+        }
+
+            .ag-footer-redes a:hover,
+            .ag-footer-redes a:focus-visible {
+                background-color: var(--color-teal-700);
+                border-color: var(--color-teal-700);
+                color: var(--color-white);
+            }
+
+    .ag-footer-legal {
+        margin: 22px 0 0;
+        font-size: 0.82rem;
+        line-height: 1.7;
+    }
+
+        .ag-footer-legal + .ag-footer-legal {
+            margin-top: 14px;
+        }
 
     .ag-footer-grid a {
         color: var(--ag-texto-mudo);
+        text-decoration: none;
     }
 
-        .ag-footer-grid a:hover {
+        .ag-footer-grid a:hover,
+        .ag-footer-grid a:focus-visible {
             color: var(--color-gold-700);
         }
+
+        .ag-footer-grid a:focus-visible {
+            outline: 2px solid var(--color-gold-700);
+            outline-offset: 3px;
+            border-radius: 3px;
+        }
+
+/* En movil las columnas se apilan y los separadores horizontales sustituyen a
+   los verticales. */
+@media (max-width: 900px) {
+    .ag-footer-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+        .ag-footer-col {
+            padding: 20px 18px;
+        }
+
+        .ag-footer-col:nth-child(odd) {
+            border-left: none;
+        }
+
+        .ag-footer-col:nth-child(n + 3) {
+            border-top: 1px solid rgba(42, 107, 102, 0.16);
+        }
+}
+
+@media (max-width: 560px) {
+    .ag-footer-grid {
+        grid-template-columns: 1fr;
+    }
+
+        .ag-footer-col + .ag-footer-col {
+            border-left: none;
+        }
+
+        .ag-footer-col:nth-child(n + 2) {
+            border-top: 1px solid rgba(42, 107, 102, 0.16);
+        }
+
+        .ag-footer-marca-col {
+            align-items: center;
+        }
+}
 
 .ag-whatsapp {
     position: fixed;
@@ -3201,6 +3361,119 @@ button.ag-tipo-cliente-opcion {
     background: rgba(197, 160, 90, 0.18);
     color: #8a6d2f;
 }
+
+/* Par de botones de la columna Acciones. */
+.ag-miscitas-acciones {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+/* Botones de la columna Acciones: mismo relleno que el CTA del nav
+   (.ag-nav-cta) y el boton primario del calendario
+   (.ag-reserva-acciones .rz-primary): degradado teal, texto blanco y
+   sombra de CTA. "Cancelar cita" usa el contorno dorado del boton
+   secundario del calendario para que la accion destructiva no compita
+   con la principal. */
+.ag-miscitas-boton-mover,
+.ag-miscitas-boton-cancelar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: 38px;
+    box-sizing: border-box;
+    padding: 0 16px;
+    border: none;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-serif);
+    font-size: 0.86rem;
+    font-weight: 600;
+    letter-spacing: var(--tracking-wide);
+    line-height: 1;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+    .ag-miscitas-boton-mover {
+        background-color: var(--color-teal-700);
+        background-image: var(--gradient-teal);
+        color: #fff;
+        box-shadow: var(--shadow-cta);
+        transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+
+        .ag-miscitas-boton-mover:hover,
+        .ag-miscitas-boton-mover:focus-visible {
+            background-color: var(--color-teal-900);
+            transform: translateY(-1px);
+        }
+
+        .ag-miscitas-boton-mover:focus-visible {
+            outline: 2px solid var(--color-gold-700);
+            outline-offset: 2px;
+        }
+
+    .ag-miscitas-boton-cancelar {
+        background: transparent;
+        background-image: none;
+        color: var(--color-teal-700);
+        border: 1.5px solid var(--color-gold-500);
+        transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    }
+
+        .ag-miscitas-boton-cancelar:hover,
+        .ag-miscitas-boton-cancelar:focus-visible {
+            background-color: rgba(197, 160, 90, 0.1);
+            color: var(--color-gold-700);
+            border-color: var(--color-gold-700);
+        }
+
+        .ag-miscitas-boton-cancelar:focus-visible {
+            outline: 2px solid var(--color-gold-700);
+            outline-offset: 2px;
+        }
+
+/* Citas ya pasadas o no gestionables: solo un guion. */
+.ag-miscitas-sin-accion {
+    color: var(--ag-texto-suave);
+}
+
+/* Dialogos de confirmacion de "Mis citas": los botones replican los botones
+   de navegacion del calendario (.rz-calendar-prev / .rz-calendar-next),
+   pastillas claras con texto teal, en lugar del tema material por defecto
+   (circulo verde oscuro). El tema aplica .rz-variant-text sobre .rz-button,
+   asi que se necesitan !important para ganarle. */
+.ag-confirm-calendario .rz-dialog-confirm-buttons .rz-button {
+    flex: 1 1 auto;
+    height: 50px;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+    padding: 0 18px;
+    background-image: none !important;
+    background-color: #eaf3f2 !important;
+    color: var(--color-teal-900) !important;
+    border: 1px solid var(--color-mist) !important;
+    border-radius: var(--radius-pill) !important;
+    box-shadow: none !important;
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: var(--tracking-wide);
+    line-height: 1;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+    .ag-confirm-calendario .rz-dialog-confirm-buttons .rz-primary:hover,
+    .ag-confirm-calendario .rz-dialog-confirm-buttons .rz-primary:focus-visible,
+    .ag-confirm-calendario .rz-dialog-confirm-buttons .rz-secondary:hover,
+    .ag-confirm-calendario .rz-dialog-confirm-buttons .rz-secondary:focus-visible {
+        background-color: #d8e9e7 !important;
+        border-color: rgba(42, 107, 102, 0.35) !important;
+        color: var(--color-teal-900) !important;
+    }
 
 .ag-miscitas-vacio {
     text-align: center;

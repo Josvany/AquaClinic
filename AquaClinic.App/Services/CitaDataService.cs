@@ -124,6 +124,33 @@ namespace AquaClinic.App.Services
             }
         }
 
+        /// <summary>
+        /// Reprograma una cita propia desde "Mis citas"
+        /// (PUT api/citas/mias/{id}/mover).
+        /// </summary>
+        public async Task<ApiResponse<Guid>> MoverMisCitaAsync(Guid citaId, DateTime nuevoInicioLocal, int duracionMinutos)
+        {
+            try
+            {
+                var body = new { NuevoInicioLocal = nuevoInicioLocal, DuracionMinutos = duracionMinutos };
+                var response = await _client.HttpClient
+                    .PutAsJsonAsync($"api/citas/mias/{citaId}/mover", body, _jsonOptions);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var id = await response.Content.ReadFromJsonAsync<Guid>(_jsonOptions);
+                    return new ApiResponse<Guid> { Data = id, Success = true };
+                }
+
+                var mensaje = await LeerMensajeErrorAsync(response);
+                return new ApiResponse<Guid> { Success = false, Message = mensaje };
+            }
+            catch (HttpRequestException)
+            {
+                return new ApiResponse<Guid> { Success = false, Message = "No se pudo conectar con la API." };
+            }
+        }
+
         /// <summary>Cancela la cita (POST api/citas/{id}/cancelar).</summary>
         public async Task<ApiResponse<string>> CancelarCitaAsync(Guid citaId)
         {
@@ -131,6 +158,31 @@ namespace AquaClinic.App.Services
             {
                 var response = await _client.HttpClient
                     .PostAsync($"api/citas/{citaId}/cancelar", null);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return new ApiResponse<string> { Data = citaId.ToString(), Success = true };
+                }
+
+                var mensaje = await LeerMensajeErrorAsync(response);
+                return new ApiResponse<string> { Success = false, Message = mensaje };
+            }
+            catch (HttpRequestException)
+            {
+                return new ApiResponse<string> { Success = false, Message = "No se pudo conectar con la API." };
+            }
+        }
+
+        /// <summary>
+        /// Cancela una cita propia desde "Mis citas"
+        /// (POST api/citas/mias/{id}/cancelar).
+        /// </summary>
+        public async Task<ApiResponse<string>> CancelarMisCitaAsync(Guid citaId)
+        {
+            try
+            {
+                var response = await _client.HttpClient
+                    .PostAsync($"api/citas/mias/{citaId}/cancelar", null);
 
                 if (response.IsSuccessStatusCode)
                 {

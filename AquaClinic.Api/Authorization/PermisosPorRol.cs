@@ -45,12 +45,13 @@ namespace AquaClinic.Api.Authorization
                 Permisos.EspecialidadesVer,
                 Permisos.CitasVer
             ],
-            [RolesClinica.Cliente] =
-            [
-                Permisos.ServiciosVer,
-                Permisos.EspecialidadesVer,
-                Permisos.MisCitasVer
-            ]
+[RolesClinica.Cliente] =
+    [
+        Permisos.ServiciosVer,
+        Permisos.EspecialidadesVer,
+        Permisos.MisCitasVer,
+        Permisos.MisCitasGestionar
+    ]
         };
 
         /// <summary>Devuelve la union de permisos de todos los roles indicados.</summary>

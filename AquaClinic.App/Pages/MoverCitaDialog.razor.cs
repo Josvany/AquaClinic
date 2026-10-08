@@ -35,6 +35,14 @@ namespace AquaClinic.App.Pages
         [Parameter]
         public EventCallback<bool> CitaMovida { get; set; }
 
+        /// <summary>
+        /// True cuando el movimiento lo pide el propio cliente desde
+        /// "Mis citas": usa el endpoint api/citas/mias/{id}/mover, que
+        /// valida que la cita le pertenezca.
+        /// </summary>
+        [Parameter]
+        public bool EsCitaPropia { get; set; }
+
         private List<OpcionHora> _horas = [];
         private List<OcupacionAgenda> _agendaSemana = [];
 
@@ -306,8 +314,11 @@ namespace AquaClinic.App.Pages
 
             try
             {
-                var resultado = await Citas.MoverCitaAsync(
-                    Cita.CitaId, inicioLocal, Cita.DuracionMinutos);
+                var resultado = EsCitaPropia
+                    ? await Citas.MoverMisCitaAsync(
+                        Cita.CitaId, inicioLocal, Cita.DuracionMinutos)
+                    : await Citas.MoverCitaAsync(
+                        Cita.CitaId, inicioLocal, Cita.DuracionMinutos);
 
                 if (resultado.Success)
                 {

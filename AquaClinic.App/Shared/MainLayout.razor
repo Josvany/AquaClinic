@@ -8,16 +8,79 @@
 
 <footer class="ag-footer">
     <div class="ag-footer-grid">
-        <div>
-            <strong>Aqua Skin &amp; Glow Clinic</strong><br />
-            <a href="https://maps.google.com/?q=Aqua+Skin+and+Glow+Clinic%2C+Langley%2C+BC"
-               target="_blank" rel="noopener noreferrer" aria-label="@TextoUi.T("Ubicación de la clínica")">
-                <i class="fa-solid fa-location-dot" aria-hidden="true"></i> @TextoUi.T("Langley, BC, Canadá")
-            </a>
+
+        <div class="ag-footer-col ag-footer-marca-col">
+            <p class="ag-footer-marca">Aqua Skin &amp; Glow</p>
+            <p class="ag-footer-lema">@TextoUi.T("Clínica de estética facial")</p>
         </div>
-        <div>@TextoUi.T("Lun–Vie, 9:00 a 18:00")<br />@TextoUi.T("Sábado, 10:00 a 16:00")</div>
-        <div>hola@aquaskinlangley.ca<br />+1 604 000 0000</div>
-        <div><a href="/login">@TextoUi.T("Acceso administración")</a></div>
+
+        <nav class="ag-footer-col ag-footer-nav" aria-label="@TextoUi.T("Navegación del pie de página")">
+            <a href="/">@TextoUi.T("Inicio")</a>
+            <a href="/#servicios">@TextoUi.T("Tratamientos")</a>
+            <a href="/acerca">@TextoUi.T("Acerca de")</a>
+            <a href="/reservar">@TextoUi.T("Reserva tu cita")</a>
+            <a href="mailto:hola@aquaskinlangley.ca">@TextoUi.T("Contacto")</a>
+        </nav>
+
+        <div class="ag-footer-col">
+            <h3 class="ag-footer-titulo">@TextoUi.T("Dirección:")</h3>
+            <address class="ag-footer-direccion">
+                @TextoUi.T("Langley, BC, Canadá")
+            </address>
+            <a class="ag-footer-enlace-suave"
+               href="https://maps.google.com/?q=Aqua+Skin+and+Glow+Clinic%2C+Langley%2C+BC"
+               target="_blank" rel="noopener noreferrer">
+                @TextoUi.T("Cómo llegar")
+            </a>
+
+            <p class="ag-footer-reconocimiento">
+                @TextoUi.T("Reconocemos que operamos en los territorios ancestrales de los pueblos Coast Salish, incluidos Stó:lō, Musqueam, Squamish y Tsleil-Waututh.")
+            </p>
+        </div>
+
+        <div class="ag-footer-col">
+            <h3 class="ag-footer-titulo">@TextoUi.T("Horario:")</h3>
+            <p>@TextoUi.T("Lun–Vie, 9:00 a 18:00")<br />@TextoUi.T("Sábado, 10:00 a 16:00")</p>
+
+            <h3 class="ag-footer-titulo">@TextoUi.T("Teléfono:")</h3>
+            <p><a href="tel:+16040000000">+1 604 000 0000</a></p>
+
+            <h3 class="ag-footer-titulo">@TextoUi.T("Síguenos:")</h3>
+            <ul class="ag-footer-redes">
+                @foreach (var red in RedesSociales)
+                {
+                    <li>
+                        <a href="@red.Url" target="_blank" rel="noopener noreferrer"
+                           aria-label="@red.Nombre" title="@red.Nombre">
+                            <i class="@red.Icono" aria-hidden="true"></i>
+</a>
+
+@code {
+    /// Redes sociales del pie de pagina. Los handles son provisionales:
+    /// editar solo esta lista para apuntar a las cuentas reales.
+    private static readonly (string Nombre, string Url, string Icono)[] RedesSociales =
+    [
+        ("Instagram", "https://www.instagram.com/aquaskinlangley", "fa-brands fa-instagram"),
+        ("Facebook", "https://www.facebook.com/aquaskinlangley", "fa-brands fa-facebook-f"),
+        ("TikTok", "https://www.tiktok.com/@aquaskinlangley", "fa-brands fa-tiktok"),
+        ("LinkedIn", "https://www.linkedin.com/company/aquaskinlangley", "fa-brands fa-linkedin-in")
+    ];
+}
+                    </li>
+                }
+            </ul>
+
+            <p class="ag-footer-legal">
+                @string.Format(TextoUi.T("© {0} Aqua Skin & Glow Clinic."), DateTime.Now.Year)<br />
+                @TextoUi.T("Todos los derechos reservados.")
+            </p>
+            <p class="ag-footer-legal">
+                @TextoUi.T("Aqua Skin & Glow® es una marca registrada de Aqua Skin & Glow Clinic.")
+            </p>
+            <p class="ag-footer-legal">
+                <a href="/login">@TextoUi.T("Acceso administración")</a>
+            </p>
+        </div>
     </div>
 </footer>
 

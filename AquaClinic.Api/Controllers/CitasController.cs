@@ -2,8 +2,10 @@ using AquaClinic.Api.Authorization;
 using AquaClinic.Api.Utility;
 using AquaClinic.Identity;
 using AquaClinic.Application.Features.Citas.Commands.CancelarCita;
+    using AquaClinic.Application.Features.Citas.Commands.CancelarMisCita;
 using AquaClinic.Application.Features.Citas.Commands.CreateCita;
 using AquaClinic.Application.Features.Citas.Commands.MoverCita;
+    using AquaClinic.Application.Features.Citas.Commands.MoverMisCita;
 using AquaClinic.Application.Features.Citas.Queries.GetAgendaSemana;
 using AquaClinic.Application.Features.Citas.Queries.GetCitaById;
 using AquaClinic.Application.Features.Citas.Queries.GetCitasExport;
@@ -117,6 +119,61 @@ namespace AquaClinic.Api.Controllers
             catch (Application.Exceptions.BadRequestException ex)
             {
                 // Horario tomado o clinica cerrada: conflicto
+                return Conflict(new { error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Reprograma una cita propia desde la pantalla "Mis citas"
+        /// (permiso miscitas:gestionar). A diferencia del endpoint interno,
+        /// solo puede mover citas que pertenezcan al usuario autenticado:
+        /// el handler valida la propiedad. Las citas ya pasadas no se pueden
+        /// cambiar.
+        /// </summary>
+        [HttpPut("mias/{id}/mover", Name = "MoverMisCita")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesDefaultResponseType]
+        [HasPermission(Permisos.MisCitasGestionar)]
+        public async Task<ActionResult<Guid>> MoverMisCita(Guid id, [FromBody] MoverMisCitaCommand command)
+        {
+            command.CitaId = id;
+
+            try
+            {
+                var citaId = await _mediator.Send(command);
+                return Ok(citaId);
+            }
+            catch (Application.Exceptions.BadRequestException ex)
+            {
+                // Horario tomado, clinica cerrada o cita ya pasada
+                return Conflict(new { error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Cancela una cita propia desde la pantalla "Mis citas"
+        /// (permiso miscitas:gestionar). El handler valida que la cita
+        /// pertenezca al usuario autenticado y que no haya pasado.
+        /// </summary>
+        [HttpPost("mias/{id}/cancelar", Name = "CancelarMisCita")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesDefaultResponseType]
+        [HasPermission(Permisos.MisCitasGestionar)]
+        public async Task<ActionResult> CancelarMisCita(Guid id)
+        {
+            try
+            {
+                await _mediator.Send(new CancelarMisCitaCommand { CitaId = id });
+                return Ok();
+            }
+            catch (Application.Exceptions.BadRequestException ex)
+            {
                 return Conflict(new { error = ex.Message });
             }
         }
