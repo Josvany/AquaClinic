@@ -1,58 +1,72 @@
 ﻿@page "/especialidadoverview"
 @attribute [Authorize]
 @rendermode InteractiveServer
+@inject IEspecialidadDataService EspecialidadDataService
+@inject DialogService Dialogs
+@inject NotificadorUi Notificador
 
-<div class="ag-contenedor" style="padding-top: 24px;">
-    <h1 class="page-title">@TextoUi.T("Especialidades")</h1>
+<PageTitle>@TextoUi.T("Especialidades") — @TextoUi.T("Administración")</PageTitle>
 
-    <p class="mt-3"><input class="custom-checkbox" type="checkbox" id="incluirHistorial" @onchange="OnIncluirHistorialChanged" /> <label for="incluirHistorial">@TextoUi.T("¿Incluir citas pasadas?")</label></p>
+<section class="ag-citas-seccion">
+    <div class="ag-contenedor">
+        <div class="ag-citas-encabezado">
+            <div>
+                <span class="ag-label-caps">@TextoUi.T("Catálogo")</span>
+                <h1 class="page-title">@TextoUi.T("Especialidades")</h1>
+                <p class="ag-citas-subtitulo">
+                    @TextoUi.T("Categorías de servicios. Una especialidad con servicios asignados no se puede eliminar: hay que reasignarlos antes.")
+                </p>
+            </div>
+            <div class="ag-citas-acciones">
+                <RadzenButton Text="@TextoUi.T("Nueva especialidad")" Icon="add_circle_outline"
+                              ButtonStyle="ButtonStyle.Primary" Click="@AbrirCrearAsync" />
+            </div>
+        </div>
 
-    @if (Especialidades == null)
-    {
-        <p><em>@TextoUi.T("Cargando...")</em></p>
-    }
-    else
-    {
-        <table>
-            <thead>
-                <tr>
-                    <th>@TextoUi.T("Especialidad")</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var cat in Especialidades)
+        @if (_errorCarga is not null)
+        {
+            <div class="alert alert-warning">@TextoUi.T(_errorCarga)</div>
+        }
+        else if (_cargando)
+        {
+            <p><em>@TextoUi.T("Cargando...")</em></p>
+        }
+        else
+        {
+            <div class="ag-panel">
+                @if (_especialidades.Count == 0)
                 {
-                    <tr>
-                        <td class="event-name">@TextoUi.T(cat.Nombre)</td>
-
-                    </tr>
-                    <tr>
-                        <td>
-                            <table class="nested-table ms-auto me-auto">
-                                <thead>
-                                    <tr>
-                                        <th>@TextoUi.T("Nombre")</th>
-                                        <th class="category-event-header">@TextoUi.T("Fecha")</th>
-                                        <th class="category-event-header">@TextoUi.T("Doctor")</th>
-                                        <th class="category-event-header">@TextoUi.T("Precio")</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var ev in cat.Citas)
-                                    {
-                                        <tr>
-                                            <td class="event-name">@TextoUi.T(ev.Nombre)</td>
-                                            <td class="event-date">@ev.Fecha.ToString("d", System.Globalization.CultureInfo.CurrentCulture)</td>
-                                            <td class="event-artist">@ev.Doctor</td>
-                                            <td class="event-price">@ev.Precio</td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </td>
-                    </tr>
+                    <p class="ag-panel-vacio">@TextoUi.T("No hay especialidades en el catálogo.")</p>
                 }
-            </tbody>
-        </table>
-    }
-</div>
+                else
+                {
+                    <RadzenDataGrid TItem="EspecialidadViewModel" Data="@_especialidades"
+                                    AllowPaging="true" PageSize="10" PagerPageSizeOptions="@(false)"
+                                    AllowSorting="true" Width="100%">
+                        <Columns>
+                            <RadzenDataGridColumn TItem="EspecialidadViewModel" Title="@TextoUi.T("Especialidad")">
+                                <Template Context="especialidad">
+                                    <strong>@TextoUi.T(especialidad.Nombre)</strong>
+                                </Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn TItem="EspecialidadViewModel" Title="@TextoUi.T("Servicios")" Width="140px">
+                                <Template Context="especialidad">
+                                    @string.Format(TextoUi.T("{0} servicio(s)"), especialidad.CantidadServicios)
+                                </Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn TItem="EspecialidadViewModel" Title="" Width="130px" Sortable="false">
+                                <Template Context="especialidad">
+                                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small"
+                                                  Click="@(() => AbrirEditarAsync(especialidad))" />
+                                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small"
+                                                  Click="@(() => ConfirmarEliminarAsync(especialidad))"
+                                                  Disabled="@(especialidad.CantidadServicios > 0)" />
+                                </Template>
+                            </RadzenDataGridColumn>
+                        </Columns>
+                    </RadzenDataGrid>
+                }
+            </div>
+        }
+    </div>
+</section>

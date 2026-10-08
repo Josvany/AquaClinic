@@ -19,6 +19,8 @@ namespace AquaClinic.Api.Authorization
                 Permisos.ServiciosEliminar,
                 Permisos.EspecialidadesVer,
                 Permisos.EspecialidadesCrear,
+                Permisos.EspecialidadesEditar,
+                Permisos.EspecialidadesEliminar,
                 Permisos.CitasVer,
                 Permisos.CitasGestionar,
                 Permisos.BloqueosVer,

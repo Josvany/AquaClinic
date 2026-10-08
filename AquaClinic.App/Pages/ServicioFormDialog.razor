@@ -88,7 +88,7 @@
     {
         try
         {
-            _especialidades = await EspecialidadDataService.GetAllEspecialidades();
+            _especialidades = await EspecialidadDataService.ObtenerTodasAsync();
 
             if (_esEditando)
             {

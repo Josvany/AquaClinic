@@ -1,5 +1,7 @@
 ﻿using AquaClinic.Api.Authorization;
 using AquaClinic.Application.Features.Especialidades.Commands.CreateEspecialidad;
+using AquaClinic.Application.Features.Especialidades.Commands.DeleteEspecialidad;
+using AquaClinic.Application.Features.Especialidades.Commands.UpdateEspecialidad;
 using AquaClinic.Application.Features.Especialidades.Queries.GetEspecialidadesList;
 using AquaClinic.Application.Features.Especialidades.Queries.GetEspecialidadesListWithServicios;
 using MediatR;
@@ -45,6 +47,33 @@ namespace AquaClinic.Api.Controllers
         {
             var response = await _mediator.Send(createEspecialidadCommand);
             return Ok(response);
+        }
+
+        [HttpPut(Name = "UpdateEspecialidad")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [HasPermission(Permisos.EspecialidadesEditar)]
+        public async Task<ActionResult<UpdateEspecialidadCommandResponse>> Update(
+            [FromBody] UpdateEspecialidadCommand updateEspecialidadCommand)
+        {
+            var response = await _mediator.Send(updateEspecialidadCommand);
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Elimina una especialidad. 400 si tiene servicios asignados: habria que
+        /// reasignarlos antes para no dejar servicios huerfanos.
+        /// </summary>
+        [HttpDelete("{id}", Name = "DeleteEspecialidad")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [HasPermission(Permisos.EspecialidadesEliminar)]
+        public async Task<ActionResult> Delete(Guid id)
+        {
+            await _mediator.Send(new DeleteEspecialidadCommand { EspecialidadId = id });
+            return NoContent();
         }
     }
 }

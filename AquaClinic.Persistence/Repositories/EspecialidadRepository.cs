@@ -16,5 +16,11 @@ namespace AquaClinic.Persistence.Repositories
                 .Include(e => e.Servicios)
                 .ToListAsync();
         }
+
+        public async Task<bool> TieneServiciosAsync(Guid especialidadId)
+        {
+            return await _dbContext.Servicios
+                .AnyAsync(s => s.EspecialidadId == especialidadId);
+        }
     }
 }

@@ -3,6 +3,7 @@ using AquaClinic.Application.Features.Bloqueos.Commands.CreateBloqueo;
 using AquaClinic.Application.Features.Bloqueos.Commands.UpdateBloqueo;
 using AquaClinic.Application.Features.Bloqueos.Queries.GetBloqueosList;
 using AquaClinic.Application.Features.Especialidades.Commands.CreateEspecialidad;
+using AquaClinic.Application.Features.Especialidades.Commands.UpdateEspecialidad;
 using AquaClinic.Application.Features.Especialidades.Queries.GetEspecialidadesList;
 using AquaClinic.Application.Features.Especialidades.Queries.GetEspecialidadesListWithServicios;
 using AquaClinic.Application.Features.Promociones.Commands.CreatePromocion;
@@ -32,6 +33,7 @@ namespace AquaClinic.Application.Profiles
             CreateMap<Especialidad, EspecialidadServicioListVm>().ReverseMap();
             CreateMap<Especialidad, CreateEspecialidadCommand>().ReverseMap();
             CreateMap<Especialidad, CreateEspecialidadDto>().ReverseMap();
+            CreateMap<Especialidad, UpdateEspecialidadCommand>().ReverseMap();
             CreateMap<Servicio, EspecialidadServicioDto>().ReverseMap();
             CreateMap<Servicio, ServicioExportDto>().ReverseMap();
 

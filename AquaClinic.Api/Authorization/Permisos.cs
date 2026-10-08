@@ -16,6 +16,8 @@ namespace AquaClinic.Api.Authorization
         // ===== Especialidades =====
         public const string EspecialidadesVer = "especialidades:ver";
         public const string EspecialidadesCrear = "especialidades:crear";
+        public const string EspecialidadesEditar = "especialidades:editar";
+        public const string EspecialidadesEliminar = "especialidades:eliminar";
 
         // ===== Citas (fase de agendado) =====
         public const string CitasVer = "citas:ver";

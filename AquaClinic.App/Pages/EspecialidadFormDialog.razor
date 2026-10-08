@@ -1,0 +1,127 @@
+@inject IEspecialidadDataService EspecialidadDataService
+@inject NotificadorUi Notificador
+@inject DialogService Dialogs
+
+<div class="ag-reserva-modal">
+    <div class="ag-reserva-form">
+        <div class="ag-field">
+            <label for="especialidad-nombre">@TextoUi.T("Nombre")</label>
+            <RadzenTextBox @bind-Value="_nombre" Name="nombre" InputId="especialidad-nombre" MaxLength="100"
+                           Placeholder="@TextoUi.T("Ej. Tratamientos Faciales...")" />
+        </div>
+
+        @if (_error is not null)
+        {
+            <div class="ag-nueva-cita-error" style="white-space: pre-line;">@TextoUi.T(_error)</div>
+        }
+
+        <div class="ag-reserva-acciones">
+            <RadzenButton Text="@(_esEditando ? TextoUi.T("Guardar cambios") : TextoUi.T("Crear especialidad"))"
+                          ButtonStyle="ButtonStyle.Primary" Disabled="_guardando"
+                          Click="@GuardarAsync" />
+            <RadzenButton Text="@TextoUi.T("Cancelar")" Click="@CancelarAsync"
+                          ButtonStyle="ButtonStyle.Secondary" Disabled="_guardando" />
+        </div>
+    </div>
+</div>
+
+@code {
+    /// <summary>Null = crear; con valor = editar esa especialidad.</summary>
+    [Parameter] public EspecialidadViewModel? Especialidad { get; set; }
+
+    /// <summary>La pagina lo invoca cuando el dialogo guardo cambios.</summary>
+    [Parameter] public EventCallback OnGuardado { get; set; }
+
+    private string _nombre = string.Empty;
+    private bool _guardando;
+    private string? _error;
+
+    private bool _esEditando => Especialidad is not null && Especialidad.EspecialidadId != Guid.Empty;
+    private Guid _especialidadOriginal;
+
+    protected override void OnInitialized()
+    {
+        if (_esEditando && Especialidad is not null)
+        {
+            _especialidadOriginal = Especialidad.EspecialidadId;
+            _nombre = Especialidad.Nombre;
+        }
+    }
+
+    private async Task GuardarAsync()
+    {
+        // Validacion explicita y visible: los mismos requisitos que aplica la API
+        var errores = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(_nombre))
+        {
+            errores.Add("El nombre es obligatorio.");
+        }
+        else if (_nombre.Trim().Length > 100)
+        {
+            errores.Add("El nombre no debe exceder 100 caracteres.");
+        }
+
+        if (errores.Count > 0)
+        {
+            _error = string.Join(Environment.NewLine, errores);
+            return;
+        }
+
+        _guardando = true;
+        _error = null;
+
+        try
+        {
+            var vm = new EspecialidadViewModel
+            {
+                EspecialidadId = _esEditando ? _especialidadOriginal : Guid.Empty,
+                Nombre = _nombre.Trim()
+            };
+
+            if (_esEditando)
+            {
+                var r = await EspecialidadDataService.ActualizarAsync(vm);
+
+                if (!r.Success)
+                {
+                    _error = CombinarError(r.Message, r.ValidationErrors);
+                    return;
+                }
+            }
+            else
+            {
+                var r = await EspecialidadDataService.CrearAsync(vm);
+
+                if (!r.Success)
+                {
+                    _error = CombinarError(r.Message, r.ValidationErrors);
+                    return;
+                }
+            }
+
+            await OnGuardado.InvokeAsync();
+            Dialogs.Close(true);
+        }
+        catch (HttpRequestException)
+        {
+            _error = "No se pudo conectar con la API. Verifica tu conexión.";
+        }
+        finally
+        {
+            _guardando = false;
+        }
+    }
+
+    private static string CombinarError(string? message, string? validationErrors)
+    {
+        return (message ?? "")
+            + (string.IsNullOrEmpty(validationErrors) ? "" : Environment.NewLine + validationErrors.TrimEnd());
+    }
+
+    private async Task CancelarAsync()
+    {
+        Dialogs.Close(false);
+        await Task.CompletedTask;
+    }
+}

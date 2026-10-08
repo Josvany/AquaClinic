@@ -1,22 +1,25 @@
 ﻿using AquaClinic.App.Contracts;
-using AquaClinic.App.Services;
-using AquaClinic.App.Services.Base;
+using AquaClinic.App.Localization;
 using AquaClinic.App.ViewModels;
 using Microsoft.AspNetCore.Components;
-using System.Threading.Tasks;
 
 namespace AquaClinic.App.Pages
 {
+    /// <summary>
+    /// Pagina de alta de especialidad (SSR + formulario simple). El CRUD completo
+    /// vive en /especialidadoverview; esta se conserva por si se enlaza directo.
+    /// </summary>
     public partial class AddEspecialidad
     {
         [Inject]
-        public IEspecialidadDataService EspecialidadDataService { get; set; }
+        public IEspecialidadDataService EspecialidadDataService { get; set; } = default!;
 
         [Inject]
-        public NavigationManager NavigationManager { get; set; }
+        public NavigationManager NavigationManager { get; set; } = default!;
 
-        public EspecialidadViewModel EspecialidadViewModel { get; set; }
-        public string Message { get; set; }
+        public EspecialidadViewModel EspecialidadViewModel { get; set; } = new();
+
+        public string? Message { get; set; }
 
         protected override void OnInitialized()
         {
@@ -25,21 +28,18 @@ namespace AquaClinic.App.Pages
 
         protected async Task HandleValidSubmit()
         {
-            var response = await EspecialidadDataService.CreateEspecialidad(EspecialidadViewModel);
-            HandleResponse(response);
-        }
+            var response = await EspecialidadDataService.CrearAsync(EspecialidadViewModel);
 
-        private void HandleResponse(ApiResponse<EspecialidadDto> response)
-        {
             if (response.Success)
             {
-                Message = "Especialidad agregada";
+                Message = TextoUi.T("Especialidad agregada");
             }
             else
             {
-                Message = response.Message;
-                if (!string.IsNullOrEmpty(response.ValidationErrors))
-                    Message += response.ValidationErrors;
+                Message = response.Message
+                    + (string.IsNullOrEmpty(response.ValidationErrors)
+                        ? ""
+                        : Environment.NewLine + response.ValidationErrors);
             }
         }
     }
