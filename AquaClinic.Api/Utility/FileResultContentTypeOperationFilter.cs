@@ -1,4 +1,4 @@
-﻿using Microsoft.OpenApi;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +15,7 @@ namespace AquaClinic.Api.Utility
 
             if (requestAttribute == null) return;
 
+            operation.Responses ??= new OpenApiResponses();
             operation.Responses.Clear();
             operation.Responses.Add("200", new OpenApiResponse
             {

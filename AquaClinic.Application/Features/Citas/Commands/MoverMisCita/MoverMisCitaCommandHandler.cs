@@ -57,7 +57,7 @@ namespace AquaClinic.Application.Features.Citas.Commands.MoverMisCita
             // Cita ya atendida: no tiene sentido reprogramarla. La comparacion
             // se hace contra la hora de la clinica, no la de la maquina.
             var inicioLocalActual = CitaFechas.ALocal(cita.FechaInicio);
-            if (inicioLocalActual <= AhoraClinica())
+            if (inicioLocalActual <= CitaFechas.AhoraLocal())
             {
                 throw new BadRequestException("No puedes cambiar una cita que ya paso.");
             }
@@ -70,28 +70,6 @@ namespace AquaClinic.Application.Features.Citas.Commands.MoverMisCita
                 NuevoInicioLocal = request.NuevoInicioLocal,
                 DuracionMinutos = request.DuracionMinutos
             }, cancellationToken);
-        }
-
-        /// <summary>
-        /// Instante actual en la zona horaria de la clinica
-        /// (America/Vancouver). Si el identificador de zona no existe en el
-        /// sistema operativo se cae a la hora local.
-        /// </summary>
-        private static DateTime AhoraClinica()
-        {
-            try
-            {
-                var tz = TimeZoneInfo.FindSystemTimeZoneById("America/Vancouver");
-                return TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz).DateTime;
-            }
-            catch (TimeZoneNotFoundException)
-            {
-                return DateTime.Now;
-            }
-            catch (InvalidTimeZoneException)
-            {
-                return DateTime.Now;
-            }
         }
     }
 }

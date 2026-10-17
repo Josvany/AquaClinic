@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +8,7 @@ namespace AquaClinic.Application.Contracts.Persistence
 {
     public interface IAsyncRepository<T> where T : class
     {
-        Task<T> GetByIdAsync(Guid id);
+        Task<T?> GetByIdAsync(Guid id);
         Task<IReadOnlyList<T>> ListAllAsync();
 
         /// <summary>IQueryable para componer consultas (filtrar/ordenar/incluir) antes de materializar.</summary>

@@ -1,4 +1,4 @@
-﻿using AquaClinic.Application.Contracts.Persistence;
+using AquaClinic.Application.Contracts.Persistence;
 using AquaClinic.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +13,7 @@ namespace AquaClinic.Persistence.Repositories
         public async Task<List<Especialidad>> GetEspecialidadesWithServicios()
         {
             return await _dbContext.Especialidades
+                .AsNoTracking()
                 .Include(e => e.Servicios)
                 .ToListAsync();
         }

@@ -223,8 +223,8 @@ namespace AquaClinic.Api.IntegrationTests.Controllers
 
             Assert.NotNull(citas);
 
-            var cita = Assert.Single(citas.Where(c =>
-                c.GetProperty("citaId").GetGuid() == citaId));
+            var cita = Assert.Single(citas, c =>
+                c.GetProperty("citaId").GetGuid() == citaId);
 
             // EstadoValor 1 = Pendiente; el cliente lo usa para decidir si admite cambio.
             Assert.Equal(1, cita.GetProperty("estadoValor").GetInt32());

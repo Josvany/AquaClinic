@@ -45,22 +45,16 @@ namespace AquaClinic.Application.Features.Citas.Queries.GetAgendaSemana
 
             var ocupaciones = new List<OcupacionVm>();
 
-            foreach (var cita in await _citaRepository.GetCitasWithServiciosAsync())
+            // Citas activas filtradas directamente en base de datos por rango UTC (no carga toda la tabla en memoria)
+            var citasActivas = await _agendaRepository.GetCitasActivasEntreAsync(inicioUtc, finUtc);
+            foreach (var cita in citasActivas)
             {
-                if (cita.Estado == Domain.Enums.EstadoCita.Cancelada)
+                ocupaciones.Add(new OcupacionVm
                 {
-                    continue;
-                }
-
-                if (cita.FechaFin > inicioUtc && cita.FechaInicio < finUtc)
-                {
-                    ocupaciones.Add(new OcupacionVm
-                    {
-                        FechaInicio = cita.FechaInicio,
-                        FechaFin = cita.FechaFin,
-                        Estado = nameof(EstadoSlot.Ocupado)
-                    });
-                }
+                    FechaInicio = cita.FechaInicio,
+                    FechaFin = cita.FechaFin,
+                    Estado = nameof(EstadoSlot.Ocupado)
+                });
             }
 
             foreach (var reserva in _reservasSuaves.ObtenerVigentes())

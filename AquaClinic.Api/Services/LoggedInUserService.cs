@@ -1,4 +1,4 @@
-﻿using AquaClinic.Application.Contracts;
+using AquaClinic.Application.Contracts;
 using System.Security.Claims;
 
 namespace AquaClinic.Api.Services
@@ -11,7 +11,7 @@ namespace AquaClinic.Api.Services
             _contextAccessor = httpContextAccessor;
         }
 
-        public string UserId
+        public string? UserId
         {
             get
             {

@@ -10,15 +10,17 @@ namespace AquaClinic.Persistence.Repositories
         {
         }
 
-        public Task<bool> IsNombreUnico(string nombre)
+        public async Task<bool> IsNombreUnico(string nombre)
         {
-            var existe = _dbContext.Servicios.Any(s => s.Nombre == nombre);
-            return Task.FromResult(existe);
+            return await _dbContext.Servicios
+                .AsNoTracking()
+                .AnyAsync(s => s.Nombre == nombre);
         }
 
         public async Task<IReadOnlyList<Servicio>> GetActivosConEspecialidadAsync()
         {
             return await _dbContext.Servicios
+                .AsNoTracking()
                 .Include(s => s.Especialidad)
                 .Where(s => s.Activo)
                 .ToListAsync();
@@ -27,6 +29,7 @@ namespace AquaClinic.Persistence.Repositories
         public async Task<IReadOnlyList<Servicio>> GetTodosConEspecialidadAsync()
         {
             return await _dbContext.Servicios
+                .AsNoTracking()
                 .Include(s => s.Especialidad)
                 .ToListAsync();
         }

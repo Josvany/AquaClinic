@@ -1,7 +1,7 @@
-﻿namespace AquaClinic.Application.Contracts
+namespace AquaClinic.Application.Contracts
 {
     public interface ILoggedInUserService
     {
-        public string UserId { get; }
+        public string? UserId { get; }
     }
 }

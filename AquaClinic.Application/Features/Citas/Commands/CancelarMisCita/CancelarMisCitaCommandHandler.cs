@@ -48,34 +48,12 @@ namespace AquaClinic.Application.Features.Citas.Commands.CancelarMisCita
             }
 
             // Cita ya atendida: no tiene sentido cancelarla.
-            if (CitaFechas.ALocal(cita.FechaInicio) <= AhoraClinica())
+            if (CitaFechas.ALocal(cita.FechaInicio) <= CitaFechas.AhoraLocal())
             {
                 throw new BadRequestException("No puedes cancelar una cita que ya paso.");
             }
 
             await _sender.Send(new CancelarCitaCommand { CitaId = request.CitaId }, cancellationToken);
-        }
-
-        /// <summary>
-        /// Instante actual en la zona horaria de la clinica
-        /// (America/Vancouver). Si el identificador de zona no existe en el
-        /// sistema operativo se cae a la hora local.
-        /// </summary>
-        private static DateTime AhoraClinica()
-        {
-            try
-            {
-                var tz = TimeZoneInfo.FindSystemTimeZoneById("America/Vancouver");
-                return TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz).DateTime;
-            }
-            catch (TimeZoneNotFoundException)
-            {
-                return DateTime.Now;
-            }
-            catch (InvalidTimeZoneException)
-            {
-                return DateTime.Now;
-            }
         }
     }
 }

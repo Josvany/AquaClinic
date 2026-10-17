@@ -93,6 +93,12 @@ namespace AquaClinic.Application.UnitTests.Citas.Queries
                     CrearCita(EstadoCita.Confirmada, new DateTime(2026, 10, 15, 9, 0, 0), new DateTime(2026, 10, 15, 10, 0, 0))
                 });
 
+            _mockAgendaRepository.Setup(r => r.GetCitasActivasEntreAsync(It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>()))
+                .ReturnsAsync(new List<Cita>
+                {
+                    CrearCita(EstadoCita.Confirmada, new DateTime(2026, 10, 6, 11, 0, 0), new DateTime(2026, 10, 6, 12, 0, 0))
+                });
+
             // Reserva suave vigente dentro de la semana
             _mockReservasSuaves.Setup(r => r.ObtenerVigentes())
                 .Returns(new List<ReservaSuaveDto>

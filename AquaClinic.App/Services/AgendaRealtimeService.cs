@@ -86,50 +86,16 @@ namespace AquaClinic.App.Services
         /// Fecha (dia) actual en la zona de la clinica. No usar DateTime.Today: la
         /// maquina puede estar en otra zona y el "hoy" no coincidiria con el del API.
         /// </summary>
-        public static DateTime HoyClinica
-        {
-            get
-            {
-                try
-                {
-                    var tz = TimeZoneInfo.FindSystemTimeZoneById("America/Vancouver");
-                    return TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz).Date;
-                }
-                catch (TimeZoneNotFoundException)
-                {
-                    return DateTime.Today;
-                }
-                catch (InvalidTimeZoneException)
-                {
-                    return DateTime.Today;
-                }
-            }
-        }
+        public static DateTime HoyClinica =>
+            TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, ZonaClinica).Date;
 
         /// <summary>
         /// Momento actual en la zona de la clinica (America/Vancouver). Igual que
         /// HoyClinica: la maquina puede estar en otra zona y el "ahora" no coincidiria
         /// con el del API ni con los slots del scheduler.
         /// </summary>
-        public static DateTime AhoraClinica
-        {
-            get
-            {
-                try
-                {
-                    var tz = TimeZoneInfo.FindSystemTimeZoneById("America/Vancouver");
-                    return TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz).DateTime;
-                }
-                catch (TimeZoneNotFoundException)
-                {
-                    return DateTime.Now;
-                }
-                catch (InvalidTimeZoneException)
-                {
-                    return DateTime.Now;
-                }
-            }
-        }
+        public static DateTime AhoraClinica =>
+            TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, ZonaClinica).DateTime;
 
         // ---------- Conversiones de zona ----------
         // La API habla UTC y los calendarios de la App trabajan en hora local de la

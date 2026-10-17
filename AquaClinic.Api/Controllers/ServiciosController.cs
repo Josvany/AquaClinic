@@ -19,7 +19,7 @@ namespace AquaClinic.Api.Controllers
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
-    public class ServiciosController : Controller
+    public class ServiciosController : ControllerBase
     {
         private readonly IMediator _mediator;
 

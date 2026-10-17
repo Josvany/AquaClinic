@@ -1,4 +1,4 @@
-﻿using AquaClinic.Application.Contracts.Persistence;
+using AquaClinic.Application.Contracts.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace AquaClinic.Persistence.Repositories
@@ -12,7 +12,7 @@ namespace AquaClinic.Persistence.Repositories
             _dbContext = dbContext;
         }
 
-        public virtual async Task<T> GetByIdAsync(Guid id)
+        public virtual async Task<T?> GetByIdAsync(Guid id)
         {
             return await _dbContext.Set<T>().FindAsync(id);
         }

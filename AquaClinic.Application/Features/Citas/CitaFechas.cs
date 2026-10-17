@@ -6,38 +6,37 @@ namespace AquaClinic.Application.Features.Citas
     /// </summary>
     public static class CitaFechas
     {
-        public static DateTime ALocal(DateTimeOffset fechaUtc)
+        public const string TimeZoneId = "America/Vancouver";
+
+        private static readonly TimeZoneInfo ZonaClinica = ObtenerZonaClinica();
+
+        private static TimeZoneInfo ObtenerZonaClinica()
         {
             try
             {
-                return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(fechaUtc, "America/Vancouver").DateTime;
+                return TimeZoneInfo.FindSystemTimeZoneById(TimeZoneId);
             }
-            catch (TimeZoneNotFoundException)
+            catch (Exception)
             {
-                return fechaUtc.DateTime;
+                return TimeZoneInfo.Local;
             }
-            catch (InvalidTimeZoneException)
-            {
-                return fechaUtc.DateTime;
-            }
+        }
+
+        /// <summary>Instante actual en la hora local de la clinica.</summary>
+        public static DateTime AhoraLocal()
+        {
+            return TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, ZonaClinica).DateTime;
+        }
+
+        public static DateTime ALocal(DateTimeOffset fechaUtc)
+        {
+            return TimeZoneInfo.ConvertTime(fechaUtc, ZonaClinica).DateTime;
         }
 
         /// <summary>Offset (PST/PDT) vigente en la fecha local dada.</summary>
         public static TimeSpan OffsetLocal(DateTime fechaLocal)
         {
-            try
-            {
-                var tz = TimeZoneInfo.FindSystemTimeZoneById("America/Vancouver");
-                return tz.GetUtcOffset(fechaLocal);
-            }
-            catch (TimeZoneNotFoundException)
-            {
-                return TimeSpan.Zero;
-            }
-            catch (InvalidTimeZoneException)
-            {
-                return TimeSpan.Zero;
-            }
+            return ZonaClinica.GetUtcOffset(fechaLocal);
         }
 
         /// <summary>Convierte una fecha/hora local de la clinica a DateTimeOffset UTC.

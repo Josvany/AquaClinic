@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using AquaClinic.App.Contracts;
@@ -148,68 +148,11 @@ namespace AquaClinic.App.Services
 
         // ---------- Helpers ----------
 
-        /// <summary>
-        /// Convierte las respuestas de error de la API en ApiResponse: el
-        /// ExceptionHandlerMiddleware responde un array de mensajes
-        /// (ValidationException) o { error: "..." } (BadRequestException); el
-        /// GlobalExceptionHandler responde ProblemDetails.
-        /// </summary>
-        private static async Task<ApiResponse<T>> MapearErrorAsync<T>(HttpResponseMessage response)
-        {
-            var api = new ApiResponse<T> { Success = false };
+        private static Task<ApiResponse<T>> MapearErrorAsync<T>(HttpResponseMessage response) =>
+            ApiResponseHelper.MapearErrorAsync<T>(response);
 
-            try
-            {
-                var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-
-                if (doc.RootElement.ValueKind == JsonValueKind.Array)
-                {
-                    foreach (var mensaje in doc.RootElement.EnumerateArray())
-                    {
-                        api.ValidationErrors += mensaje.GetString() + Environment.NewLine;
-                    }
-                }
-                else if (doc.RootElement.TryGetProperty("error", out var error))
-                {
-                    api.Message = error.GetString() ?? string.Empty;
-                }
-                else if (doc.RootElement.TryGetProperty("detail", out var detail))
-                {
-                    api.Message = detail.GetString() ?? string.Empty;
-                }
-                else if (doc.RootElement.TryGetProperty("title", out var title))
-                {
-                    api.Message = title.GetString() ?? string.Empty;
-                }
-            }
-            catch (JsonException)
-            {
-                // Cuerpo vacio o no JSON (p. ej. un 404 sin cuerpo): mensaje generico
-            }
-
-            if (response.StatusCode == HttpStatusCode.Forbidden && string.IsNullOrEmpty(api.Message))
-            {
-                api.Message = "No tienes permisos para esta acción.";
-            }
-
-            if (string.IsNullOrEmpty(api.Message) && string.IsNullOrEmpty(api.ValidationErrors))
-            {
-                api.Message = $"Ocurrió un error ({(int)response.StatusCode}). Intenta nuevamente.";
-            }
-
-            return api;
-        }
-
-        private static async Task<ApiResponse> MapearErrorAsync(HttpResponseMessage response)
-        {
-            var conDatos = await MapearErrorAsync<object>(response);
-            return new ApiResponse
-            {
-                Message = conDatos.Message,
-                ValidationErrors = conDatos.ValidationErrors,
-                Success = false
-            };
-        }
+        private static Task<ApiResponse> MapearErrorAsync(HttpResponseMessage response) =>
+            ApiResponseHelper.MapearErrorAsync(response);
 
         // ---------- DTOs de la API (JsonSerializerDefaults.Web: camelCase) ----------
 
