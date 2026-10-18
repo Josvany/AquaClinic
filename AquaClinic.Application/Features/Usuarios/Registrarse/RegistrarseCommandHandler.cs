@@ -26,7 +26,7 @@ namespace AquaClinic.Application.Features.Usuarios.Registrarse
                 throw new ValidationException(validationResult);
 
             var resultado = await _identityService.RegistrarAsync(
-                request.Email, request.Password, request.Nombre, request.Apellidos, request.Telefono, request.AceptaComunicaciones);
+                request.Email, request.Password, request.Nombre, request.Apellidos, request.Telefono, request.FechaNacimiento, request.AceptaComunicaciones);
 
             if (!resultado.Exito || resultado.UsuarioId is null)
                 throw new BadRequestException(string.Join(" ", resultado.Errores));

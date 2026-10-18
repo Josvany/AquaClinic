@@ -941,6 +941,28 @@ footer.ag-footer {
     margin-top: 1.75rem;
 }
 
+    .ag-panel h3 {
+        font-family: var(--font-display);
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--color-teal-900);
+        margin: 1.5rem 0 0.5rem;
+    }
+
+    .ag-panel h3:first-child {
+        margin-top: 0;
+    }
+
+    .ag-panel p {
+        margin: 0 0 1rem;
+        line-height: 1.7;
+    }
+
+    .ag-panel a {
+        color: var(--color-teal-700);
+        text-decoration: underline;
+    }
+
     .ag-panel .form-control {
         border: 1px solid var(--color-mist);
         border-radius: var(--radius-md);
@@ -1473,12 +1495,29 @@ footer.ag-footer {
 
 .ag-auth-card {
     width: 100%;
-    max-width: 520px;
+    max-width: min(80vw, 960px);
     background: var(--color-white);
     border: 1.5px solid var(--color-gold-500);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-card);
     padding: clamp(1.75rem, 4vw, 2.75rem);
+}
+
+/* Formulario de registro en dos columnas para que no sea tan vertical */
+.ag-registro-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 1.25rem;
+}
+
+    .ag-registro-grid .ag-field--full {
+        grid-column: 1 / -1;
+    }
+
+@media (max-width: 640px) {
+    .ag-registro-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
     .ag-auth-card h1 {
@@ -1657,6 +1696,45 @@ footer.ag-footer {
     max-width: 80%;
     margin-left: auto;
     margin-right: auto;
+}
+
+/* Modal de registro: formulario mas ancho y botones bien distribuidos */
+.ag-registro-dialog form {
+    max-width: 92%;
+}
+
+/* Checkboxes del modal de registro: pequenos y alineados */
+.ag-registro-dialog input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    margin: 2px 0 0;
+    accent-color: var(--color-teal-700);
+    flex-shrink: 0;
+}
+
+.ag-registro-dialog .ag-field[style*="flex-direction:row"] {
+    align-items: flex-start;
+}
+
+.ag-registro-dialog .ag-field[style*="flex-direction:row"] label {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: 400;
+    color: var(--ag-texto-suave);
+}
+
+.ag-registro-dialog .ag-auth-submit {
+    margin-top: 1.25rem;
+    padding: 0.85rem 1rem;
+    font-size: 1rem;
+}
+
+.ag-registro-dialog .ag-login-alt {
+    max-width: 92%;
+    margin-top: 1.25rem;
 }
 
 /* Sin overflow horizontal en el modal */

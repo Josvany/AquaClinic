@@ -15,27 +15,48 @@
         <!-- Formulario HTML estandar: POST a /auth/register (minimal API). -->
         <form method="post" action="/auth/register" class="mt-3">
             <AntiforgeryToken />
-            <div class="ag-field">
-                <label for="email">@TextoUi.T("Correo")</label>
-                <input type="email" id="email" name="email" class="form-control login-field"
-                       required placeholder="@TextoUi.T("tu@correo.com")" />
-            </div>
-            <div class="ag-field">
-                <label for="password">@TextoUi.T("Contraseña")</label>
-                <input type="password" id="password" name="password" class="form-control login-field"
-                       required minlength="8" placeholder="@TextoUi.T("Mínimo 8 caracteres")" />
-            </div>
-            <div class="ag-field" style="flex-direction:row; align-items:flex-start; gap:8px;">
-                <input type="checkbox" id="consentimiento" name="consentimiento" value="si" required style="margin-top:4px;" />
-                <label for="consentimiento" style="font-size:0.85rem; line-height:1.4;">
-                    @TextoUi.T("Acepto recibir comunicaciones promocionales por correo electrónico.")
-                </label>
-            </div>
-            <div class="ag-field" style="flex-direction:row; align-items:flex-start; gap:8px;">
-                <input type="checkbox" id="mayoria" name="mayoria" value="si" required style="margin-top:4px;" />
-                <label for="mayoria" style="font-size:0.85rem; line-height:1.4;">
-                    @TextoUi.T("Confirmo que soy mayor de 19 años o cuento con consentimiento de mi tutor legal.")
-                </label>
+            <div class="ag-registro-grid">
+                <div class="ag-field">
+                    <label for="nombre">@TextoUi.T("Nombre")</label>
+                    <input type="text" id="nombre" name="nombre" class="form-control login-field"
+                           placeholder="@TextoUi.T("Tu nombre")" />
+                </div>
+                <div class="ag-field">
+                    <label for="apellidos">@TextoUi.T("Apellidos")</label>
+                    <input type="text" id="apellidos" name="apellidos" class="form-control login-field"
+                           placeholder="@TextoUi.T("Tus apellidos")" />
+                </div>
+                <div class="ag-field">
+                    <label for="email">@TextoUi.T("Correo")</label>
+                    <input type="email" id="email" name="email" class="form-control login-field"
+                           required placeholder="@TextoUi.T("tu@correo.com")" />
+                </div>
+                <div class="ag-field">
+                    <label for="telefono">@TextoUi.T("Teléfono (opcional)")</label>
+                    <input type="tel" id="telefono" name="telefono" class="form-control login-field"
+                           placeholder="@TextoUi.T("Tu teléfono")" />
+                </div>
+                <div class="ag-field">
+                    <label for="fechaNacimiento">@TextoUi.T("Fecha de nacimiento")</label>
+                    <input type="date" id="fechaNacimiento" name="fechaNacimiento" class="form-control login-field" />
+                </div>
+                <div class="ag-field">
+                    <label for="password">@TextoUi.T("Contraseña")</label>
+                    <input type="password" id="password" name="password" class="form-control login-field"
+                           required minlength="8" placeholder="@TextoUi.T("Mínimo 8 caracteres")" />
+                </div>
+                <div class="ag-field ag-field--full" style="flex-direction:row; align-items:flex-start; gap:8px;">
+                    <input type="checkbox" id="consentimiento" name="consentimiento" value="si" style="margin-top:4px;" />
+                    <label for="consentimiento" style="font-size:0.85rem; line-height:1.4;">
+                        @TextoUi.T("Acepto recibir comunicaciones promocionales por correo electrónico.")
+                    </label>
+                </div>
+                <div class="ag-field ag-field--full" style="flex-direction:row; align-items:flex-start; gap:8px;">
+                    <input type="checkbox" id="mayoria" name="mayoria" value="si" required style="margin-top:4px;" />
+                    <label for="mayoria" style="font-size:0.85rem; line-height:1.4;">
+                        @TextoUi.T("Confirmo que soy mayor de 19 años o cuento con consentimiento de mi tutor legal.")
+                    </label>
+                </div>
             </div>
             <button class="ag-btn ag-auth-submit" type="submit">@TextoUi.T("Registrarse")</button>
         </form>

@@ -1162,6 +1162,9 @@ namespace AquaClinic.Persistence.Migrations
                     b.Property<DateTimeOffset?>("FechaConsentimientoUtc")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<DateTime?>("FechaNacimiento")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
@@ -1189,6 +1192,9 @@ namespace AquaClinic.Persistence.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Telefono")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("TwoFactorEnabled")

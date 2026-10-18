@@ -46,6 +46,9 @@
     private void IrARegistro()
     {
         DialogService.Close();
-        NavigationManager.NavigateTo("/register");
+        DialogService.OpenAsync<RegisterDialog>(
+            TextoUi.T("Registrarse"),
+            new Dictionary<string, object?>(),
+            new DialogOptions { Width = "50vw", Height = "auto", Resizable = false, Draggable = false });
     }
 }

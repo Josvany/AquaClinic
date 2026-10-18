@@ -11,7 +11,7 @@ namespace AquaClinic.Identity
     /// </summary>
     public class IdentityService(UserManager<ApplicationUser> userManager) : IIdentityService
     {
-        public async Task<ResultadoRegistro> RegistrarAsync(string email, string password, string? nombre, string? apellidos, string? telefono, bool aceptaComunicaciones = false)
+        public async Task<ResultadoRegistro> RegistrarAsync(string email, string password, string? nombre, string? apellidos, string? telefono, DateTime? fechaNacimiento = null, bool aceptaComunicaciones = false)
         {
             var existente = await userManager.FindByEmailAsync(email);
             if (existente is not null)
@@ -25,6 +25,8 @@ namespace AquaClinic.Identity
                 Email = email,
                 Nombre = nombre,
                 Apellidos = apellidos,
+                Telefono = telefono,
+                FechaNacimiento = fechaNacimiento,
                 AceptaComunicaciones = aceptaComunicaciones,
                 FechaConsentimientoUtc = aceptaComunicaciones ? DateTimeOffset.UtcNow : null
             };

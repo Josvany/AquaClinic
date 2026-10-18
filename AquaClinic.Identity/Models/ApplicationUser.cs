@@ -17,6 +17,10 @@ namespace AquaClinic.Identity.Models
 
         public string? Apellidos { get; set; }
 
+        public string? Telefono { get; set; }
+
+        public DateTime? FechaNacimiento { get; set; }
+
         /// <summary>Consentimiento expreso CASL para comunicaciones promocionales.</summary>
         public bool AceptaComunicaciones { get; set; }
 

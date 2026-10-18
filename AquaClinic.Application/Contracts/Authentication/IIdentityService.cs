@@ -28,7 +28,7 @@ namespace AquaClinic.Application.Contracts.Authentication
     public interface IIdentityService
     {
         /// <summary>Registra un cliente nuevo (rol Cliente). Devuelve el UsuarioId.</summary>
-        Task<ResultadoRegistro> RegistrarAsync(string email, string password, string? nombre, string? apellidos, string? telefono, bool aceptaComunicaciones = false);
+        Task<ResultadoRegistro> RegistrarAsync(string email, string password, string? nombre, string? apellidos, string? telefono, DateTime? fechaNacimiento = null, bool aceptaComunicaciones = false);
 
         /// <summary>Valida credenciales. Devuelve el usuario con roles, o null si son inv&#225;lidas.</summary>
         Task<Usuario?> ValidarCredencialesAsync(string email, string password);

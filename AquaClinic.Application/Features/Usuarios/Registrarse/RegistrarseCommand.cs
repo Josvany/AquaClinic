@@ -10,6 +10,8 @@ namespace AquaClinic.Application.Features.Usuarios.Registrarse
         public string? Apellidos { get; set; }
         public string? Telefono { get; set; }
 
+        public DateTime? FechaNacimiento { get; set; }
+
         public bool AceptaComunicaciones { get; set; }
     }
 }
