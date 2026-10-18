@@ -4253,3 +4253,450 @@ button.ag-tipo-cliente-opcion {
     color: var(--ag-texto-mudo);
     text-align: center;
 }
+
+/* ============================================================
+   Inicio editorial
+   Portada de fotos, mosaico de tratamientos, banda editorial y
+   franja de resultados. Replica la estructura del inicio de
+   SalonBelleza con la paleta y las tipografías de la clínica.
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   1 — Portada de fotos
+   La lámina ocupa la pantalla entera. El titular va en blanco
+   sobre el velo teal para sostener el contraste.
+   ------------------------------------------------------------ */
+.ag-portada {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: calc(100svh - 72px);
+    padding: clamp(5rem, 13vh, 9rem) clamp(1.25rem, 6vw, 5rem) 6.5rem;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.ag-portada-fondo {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background: var(--color-teal-900);
+}
+
+.ag-lamina {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    background-position: center;
+    background-size: cover;
+    animation: ag-lamina-fade 30s linear infinite;
+}
+
+/* Cada lámina ocupa 6 de los 30s: aparece, aguanta y se va. */
+.ag-lamina-1 { background-image: url('/img/hero-clinica.jpg'); animation-delay: 0s; }
+.ag-lamina-2 { background-image: url('/img/hero-facial.jpg'); animation-delay: 6s; }
+.ag-lamina-3 { background-image: url('/img/hero-aparatologia.jpg'); animation-delay: 12s; }
+.ag-lamina-4 { background-image: url('/img/hero-consulta.jpg'); animation-delay: 18s; }
+.ag-lamina-5 { background-image: url('/img/hero-cejas.jpg'); animation-delay: 24s; }
+
+@keyframes ag-lamina-fade {
+    0% { opacity: 0; transform: scale(1); }
+    2% { opacity: 1; }
+    16% { opacity: 1; }
+    18% { opacity: 0; }
+    100% { opacity: 0; transform: scale(1.08); }
+}
+
+.ag-portada-velo {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+        linear-gradient(90deg, rgba(20, 72, 69, 0.74) 0%, rgba(20, 72, 69, 0.4) 55%, rgba(20, 72, 69, 0.18) 100%),
+        linear-gradient(180deg, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.34));
+}
+
+.ag-portada-contenido {
+    max-width: 40rem;
+}
+
+.ag-portada-antetitulo {
+    margin: 0 0 1.25rem;
+    color: var(--color-gold-300);
+    font-family: var(--font-sans);
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+}
+
+.ag-portada-titular {
+    margin: 0;
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: var(--text-display);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: 0.01em;
+    text-wrap: balance;
+}
+
+    .ag-portada-titular em {
+        font-family: var(--font-script);
+        font-style: normal;
+        font-weight: 400;
+        font-size: 0.72em;
+        display: inline-block;
+        background-image: var(--gradient-gold);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        transform: translateY(-0.06em);
+    }
+
+.ag-portada-intro {
+    max-width: 34rem;
+    margin: 1.6rem 0 2.1rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.02rem;
+    line-height: 1.7;
+}
+
+.ag-portada-boton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    padding: 0 2.2rem;
+    border-radius: var(--radius-pill);
+    background-image: var(--gradient-gold);
+    color: var(--color-teal-900);
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: var(--tracking-wide);
+    text-decoration: none;
+    box-shadow: var(--shadow-gold);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .ag-portada-boton:hover,
+    .ag-portada-boton:focus-visible {
+        transform: translateY(-2px);
+        box-shadow: 0 16px 34px rgba(154, 123, 58, 0.42);
+        color: var(--color-teal-900);
+    }
+
+.ag-portada-bajada {
+    position: absolute;
+    bottom: 1.9rem;
+    left: 50%;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-decoration: none;
+    text-transform: uppercase;
+    transform: translateX(-50%);
+}
+
+    .ag-portada-bajada svg {
+        width: 22px;
+        height: 22px;
+        animation: ag-baja-sube 2.4s ease-in-out infinite;
+    }
+
+@keyframes ag-baja-sube {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(6px); }
+}
+
+    .ag-portada-bajada:hover {
+        color: var(--color-gold-300);
+    }
+
+/* ------------------------------------------------------------
+   2 — Cabecera de sección y mosaico
+   ------------------------------------------------------------ */
+.ag-mosaico-seccion,
+.ag-obras-seccion {
+    padding: clamp(4rem, 9vw, 7rem) clamp(1.25rem, 6vw, 6rem);
+}
+
+.ag-seccion-cabecera {
+    max-width: 46rem;
+    margin: 0 auto clamp(2.4rem, 5vw, 3.6rem);
+    text-align: center;
+}
+
+    .ag-seccion-cabecera h2 {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: var(--text-h1);
+        font-weight: 600;
+        line-height: 1.15;
+        text-wrap: balance;
+    }
+
+    .ag-seccion-cabecera .ag-cota {
+        display: inline-block;
+        margin: 1rem 0 0;
+        color: var(--color-gold-700);
+        font-family: var(--font-sans);
+        font-size: 0.74rem;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+    }
+
+.ag-mosaico {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+    max-width: 1140px;
+    margin: 0 auto;
+}
+
+.ag-mosaico-pieza {
+    position: relative;
+    display: block;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--color-mist);
+    text-decoration: none;
+}
+
+    .ag-mosaico-pieza img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 620ms var(--ag-ease);
+    }
+
+    .ag-mosaico-pieza:hover img,
+    .ag-mosaico-pieza:focus-visible img {
+        transform: scale(1.06);
+    }
+
+.ag-mosaico-velo {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(20, 72, 69, 0.78) 0%, rgba(20, 72, 69, 0.16) 55%, transparent 100%);
+}
+
+.ag-mosaico-texto {
+    position: absolute;
+    inset: auto 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 1.5rem 1.35rem;
+}
+
+.ag-mosaico-titular {
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.15;
+}
+
+.ag-mosaico-detalle {
+    color: var(--color-gold-300);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+/* ------------------------------------------------------------
+   3 — Banda editorial
+   ------------------------------------------------------------ */
+.ag-editorial-banda {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    align-items: center;
+    gap: clamp(2rem, 6vw, 5rem);
+    padding: clamp(3rem, 7vw, 6rem) clamp(1.25rem, 6vw, 6rem);
+    background: var(--color-mist);
+}
+
+.ag-editorial-foto {
+    margin: 0;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+}
+
+    .ag-editorial-foto img {
+        display: block;
+        width: 100%;
+        /* height: auto es obligatorio: sin él, el atributo height del
+           <img> gana y la caja sale alta en vez de apaisada. */
+        height: auto;
+        aspect-ratio: 4 / 3;
+        object-fit: cover;
+    }
+
+.ag-editorial-texto h2 {
+    margin: 0.75rem 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 3.4vw, 2.7rem);
+    font-weight: 600;
+    line-height: 1.16;
+    text-wrap: balance;
+}
+
+.ag-editorial-texto p {
+    max-width: 42ch;
+    margin: 1.4rem 0 2rem;
+    color: var(--ag-texto-suave);
+    line-height: 1.75;
+}
+
+.ag-editorial-boton {
+    background-image: var(--gradient-teal);
+}
+
+.ag-editorial-boton:hover,
+.ag-editorial-boton:focus-visible {
+    background-image: var(--gradient-teal);
+    background-color: var(--color-teal-900);
+    color: #fff;
+}
+
+/* ------------------------------------------------------------
+   4 — Franja de resultados
+   ------------------------------------------------------------ */
+.ag-obras-seccion {
+    background: var(--color-ivory);
+}
+
+.ag-obras-franja {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    max-width: 1140px;
+    margin: 0 auto;
+}
+
+.ag-obra {
+    margin: 0;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--color-white);
+    box-shadow: var(--shadow-card);
+}
+
+    .ag-obra img {
+        display: block;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 4 / 3;
+        object-fit: cover;
+        transition: transform 620ms var(--ag-ease);
+    }
+
+    .ag-obra:hover img {
+        transform: scale(1.05);
+    }
+
+    .ag-obra figcaption {
+        padding: 0.95rem 1.15rem;
+        color: var(--color-teal-900);
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+    }
+
+.ag-obras-pie {
+    margin: 2.4rem 0 0;
+    text-align: center;
+}
+
+.ag-text-link {
+    color: var(--color-gold-700);
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 1.5px solid rgba(197, 160, 90, 0.55);
+    padding-bottom: 2px;
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+    .ag-text-link:hover,
+    .ag-text-link:focus-visible {
+        color: var(--color-teal-700);
+        border-color: var(--color-teal-700);
+    }
+
+/* ------------------------------------------------------------
+   5 — Pantallas estrechas
+   ------------------------------------------------------------ */
+@media (max-width: 980px) {
+    .ag-mosaico {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .ag-editorial-banda {
+        grid-template-columns: 1fr;
+    }
+
+    .ag-obras-franja {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .ag-portada {
+        min-height: 82svh;
+        padding-bottom: 6rem;
+    }
+
+    .ag-mosaico,
+    .ag-obras-franja {
+        grid-template-columns: 1fr;
+    }
+
+    /* En una sola columna la pieza vertical deja de leerse: la foto se
+       recorta a apaisada y el rótulo conserva el alto. */
+    .ag-mosaico-pieza {
+        aspect-ratio: 4 / 3;
+    }
+}
+
+/* ------------------------------------------------------------
+   6 — Movimiento reducido
+   Sin láminas ni flecha: la primera foto se queda puesta.
+   ------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+    .ag-lamina {
+        animation: none;
+    }
+
+    .ag-lamina-1 {
+        opacity: 1;
+        transform: none;
+    }
+
+    .ag-lamina-2,
+    .ag-lamina-3,
+    .ag-lamina-4,
+    .ag-lamina-5 {
+        display: none;
+    }
+
+    .ag-portada-bajada svg,
+    .ag-mosaico-pieza img,
+    .ag-obra img {
+        animation: none;
+        transition: none;
+    }
+}

@@ -1,32 +1,98 @@
 ﻿@page "/"
 @inject IServiciosPublicosDataService Reservas
 
-<PageTitle>Aqua Skin & Glow Clinic</PageTitle>
+<HeadContent>
+    <meta name="description" content="Clínica de estética facial en Langley, BC. Análisis digital de la piel y tratamientos faciales, avanzados, inyectables y de cejas aplicados por profesionales certificados." />
+    <meta property="og:title" content="Aqua Skin & Glow Clinic | Tu piel, leída con ciencia" />
+    <meta property="og:description" content="Agenda tu análisis de piel y elige el tratamiento sobre la agenda real de la clínica." />
+    <meta property="og:type" content="website" />
+</HeadContent>
 
-<section class="ag-hero">
-    <div class="ag-hero-grid">
-        <div>
-            <span class="ag-label-caps" style="display:block; margin-bottom: 14px;">Aqua Skin &amp; Glow Clinic &middot; Langley, BC, Canada</span>
-            <h1>@((MarkupString)TextoUi.T("Tu piel, leída con ciencia y tratada con <em>calma</em>"))</h1>
-            <p class="ag-hero-lead">
-                @TextoUi.T("Diagnóstico facial con análisis digital, tratamientos aplicados por profesionales certificados y un plan de cuidado que se adapta a tu piel, no al revés.")
-            </p>
-            <div class="ag-acciones">
-                <a class="ag-btn" href="/reservar">@TextoUi.T("Agenda tu análisis de piel")</a>
-                <a class="ag-btn ag-btn-contorno" href="/reservar">@TextoUi.T("Encuentra un horario")</a>
-            </div>
-        </div>
-        <div class="ag-hero-media" aria-hidden="true">@TextoUi.T("Fotografía del consultorio")</div>
+<PageTitle>@TextoUi.T("Aqua Skin & Glow Clinic | Estética facial en Langley, BC")</PageTitle>
+
+@* Portada: la lámina de fotos ocupa la pantalla entera y va cambiando
+   sola. El titular va en blanco sobre el velo teal, como en la plana. *@
+<section class="ag-portada" aria-labelledby="ag-portada-titular">
+    <div class="ag-portada-fondo" aria-hidden="true">
+        <span class="ag-lamina ag-lamina-1"></span>
+        <span class="ag-lamina ag-lamina-2"></span>
+        <span class="ag-lamina ag-lamina-3"></span>
+        <span class="ag-lamina ag-lamina-4"></span>
+        <span class="ag-lamina ag-lamina-5"></span>
     </div>
-    <div class="ag-ola" aria-hidden="true"></div>
+    <div class="ag-portada-velo" aria-hidden="true"></div>
+
+    <div class="ag-portada-contenido">
+        <p class="ag-portada-antetitulo">@TextoUi.T("Aqua Skin & Glow Clinic · Langley, BC")</p>
+        <h1 class="ag-portada-titular" id="ag-portada-titular">@((MarkupString)TextoUi.T("Tu piel, leída con ciencia y tratada con <em>calma</em>"))</h1>
+        <p class="ag-portada-intro">
+            @TextoUi.T("Diagnóstico facial con análisis digital, tratamientos aplicados por profesionales certificados y un plan de cuidado que se adapta a tu piel, no al revés.")
+        </p>
+        <a class="ag-portada-boton" href="/reservar">@TextoUi.T("Agenda tu análisis de piel")</a>
+    </div>
+
+    <a class="ag-portada-bajada" href="#tratamientos">
+        <span>@TextoUi.T("Ver tratamientos")</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor"
+             stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 4v15" />
+            <path d="M6 13l6 6 6-6" />
+        </svg>
+    </a>
 </section>
 
+@* Mosaico de tratamientos: cada familia es una foto con el rótulo encima
+   y baja al catálogo real. *@
+<section class="ag-mosaico-seccion" id="tratamientos" aria-labelledby="ag-mosaico-titular">
+    <div class="ag-seccion-cabecera" data-ag-reveal>
+        <h2 id="ag-mosaico-titular">@TextoUi.T("Cuatro tratamientos, una misma piel")</h2>
+        <p class="ag-cota">@TextoUi.T("faciales · avanzado · inyectables · cejas")</p>
+    </div>
+
+    <div class="ag-mosaico">
+        <a class="ag-mosaico-pieza" href="#servicios" data-ag-reveal>
+            <img src="/img/serv-faciales.jpg" alt="@TextoUi.T("Limpieza facial en cabina")" width="1200" height="800" loading="lazy" decoding="async" />
+            <span class="ag-mosaico-velo" aria-hidden="true"></span>
+            <span class="ag-mosaico-texto">
+                <span class="ag-mosaico-titular">@TextoUi.T("Faciales")</span>
+                <span class="ag-mosaico-detalle">@TextoUi.T("limpieza · hidratación · glow")</span>
+            </span>
+        </a>
+        <a class="ag-mosaico-pieza" href="#servicios" data-ag-reveal>
+            <img src="/img/serv-avanzado.jpg" alt="@TextoUi.T("Tratamiento facial con cabezal ultrasónico")" width="1200" height="800" loading="lazy" decoding="async" />
+            <span class="ag-mosaico-velo" aria-hidden="true"></span>
+            <span class="ag-mosaico-texto">
+                <span class="ag-mosaico-titular">@TextoUi.T("Cuidado avanzado")</span>
+                <span class="ag-mosaico-detalle">@TextoUi.T("radiofrecuencia · protocolos")</span>
+            </span>
+        </a>
+        <a class="ag-mosaico-pieza" href="#servicios" data-ag-reveal>
+            <img src="/img/serv-inyectables.jpg" alt="@TextoUi.T("Aplicación de tratamiento inyectable en el rostro")" width="1200" height="800" loading="lazy" decoding="async" />
+            <span class="ag-mosaico-velo" aria-hidden="true"></span>
+            <span class="ag-mosaico-texto">
+                <span class="ag-mosaico-titular">@TextoUi.T("Inyectables")</span>
+                <span class="ag-mosaico-detalle">@TextoUi.T("toxina · rellenos · mesoterapia")</span>
+            </span>
+        </a>
+        <a class="ag-mosaico-pieza" href="#servicios" data-ag-reveal>
+            <img src="/img/serv-cejas.jpg" alt="@TextoUi.T("Perfilado de cejas con la especialista")" width="1200" height="800" loading="lazy" decoding="async" />
+            <span class="ag-mosaico-velo" aria-hidden="true"></span>
+            <span class="ag-mosaico-texto">
+                <span class="ag-mosaico-titular">@TextoUi.T("Cejas")</span>
+                <span class="ag-mosaico-detalle">@TextoUi.T("perfilado · laminado · tinte")</span>
+            </span>
+        </a>
+    </div>
+</section>
+
+@* Catálogo real de la clínica, agrupado por especialidad. El pie y la
+   navegación enlazan aquí con /#servicios. *@
 <section id="servicios" class="ag-section">
     <div class="ag-contenedor">
         <div class="ag-seccion-intro" data-ag-reveal>
             <div>
                 <span class="ag-label-caps" style="display:block; margin-bottom: 10px;">@TextoUi.T("Nuestros tratamientos")</span>
-                <h2 class="ag-seccion-titulo">@TextoUi.T("Cuatro tratamientos, una misma piel")</h2>
+                <h2 class="ag-seccion-titulo">@TextoUi.T("Elige por dónde empezar")</h2>
             </div>
             <p>@TextoUi.T("Cada plan comienza con el análisis digital de tu piel. A partir de ahí elegimos juntos el tratamiento correcto, en el orden correcto.")</p>
         </div>
@@ -40,7 +106,6 @@
                         @foreach (var servicio in grupo)
                         {
                             <a class="ag-banner-servicio" href="/reservar?servicio=@servicio.ServicioId">
-                                @* <span class="ag-banner-marca" aria-hidden="true">@PalabraMarca(servicio.Nombre)</span> *@
                                 <h3>@TextoUi.T(servicio.Nombre)</h3>
                                 @if (!string.IsNullOrWhiteSpace(servicio.Descripcion))
                                 {
@@ -79,37 +144,44 @@
     </div>
 </section>
 
-<section class="ag-banda" data-ag-reveal>
-    <div class="ag-banda-grid">
-        <div><strong data-cuenta="2400">2400</strong><span>@TextoUi.T("análisis de piel realizados")</span></div>
-        <div><strong data-cuenta="97">97</strong><span>@TextoUi.T("% de pacientes que repiten")</span></div>
-        <div><strong data-cuenta="14">14</strong><span>@TextoUi.T("años de experiencia")</span></div>
+@* Banda editorial: la foto a un lado y la promesa al otro. *@
+<section class="ag-editorial-banda">
+    <figure class="ag-editorial-foto" data-ag-reveal>
+        <img src="/img/editorial-clinica.jpg" alt="@TextoUi.T("Clienta revisando su piel frente al espejo junto a la especialista")" width="1600" height="1067" loading="lazy" decoding="async" />
+    </figure>
+    <div class="ag-editorial-texto" data-ag-reveal>
+        <span class="ag-label-caps">@TextoUi.T("Cómo funciona")</span>
+        <h2>@TextoUi.T("Elige el tratamiento. Nosotras nos encargamos del resto.")</h2>
+        <p>
+            @TextoUi.T("El análisis digital define tu protocolo y tú solo eliges el día. Te confirmamos por WhatsApp y te recordamos antes de tu cita, sin llamadas ni anticipos.")
+        </p>
+        <a class="ag-btn ag-editorial-boton" href="/reservar">@TextoUi.T("Encuentra un horario")</a>
     </div>
 </section>
 
-<section class="ag-section">
-    <div class="ag-contenedor">
-        <div class="ag-seccion-intro" style="margin-bottom:0;" data-ag-reveal>
-            <div>
-                <span class="ag-label-caps" style="display:block; margin-bottom: 10px;">@TextoUi.T("Testimonios reales")</span>
-                <h2 class="ag-seccion-titulo" style="margin-bottom: 48px;">@TextoUi.T("Lo que dicen quienes ya vinieron")</h2>
-            </div>
-        </div>
-        <div class="ag-testimonios-grid" data-ag-reveal-escalon>
-            <figure class="ag-testimonio">
-                <p>“@TextoUi.T("El análisis me mostró cosas que ningún espejo me había enseñado. El tratamiento facial fue distinto a todo lo que había probado.")”</p>
-                <footer>@TextoUi.T("Mariana R. — tratamiento facial mensual")</footer>
-            </figure>
-            <figure class="ag-testimonio">
-                <p>“@TextoUi.T("Me daba miedo la toxina botulínica. Aplicaron tan poco y tan bien que nadie notó nada… excepto que me veía descansada.")”</p>
-                <footer>@TextoUi.T("Carla V. — inyectables")</footer>
-            </figure>
-            <figure class="ag-testimonio">
-                <p>“@TextoUi.T("Reservé desde el celular en dos minutos, me recordaron por WhatsApp y llegué sin esperar. Así debería ser siempre.")”</p>
-                <footer>@TextoUi.T("Lucía M. — cuidado avanzado de la piel")</footer>
-            </figure>
-        </div>
+@* Franja de resultados recientes. *@
+<section class="ag-obras-seccion" aria-labelledby="ag-obras-titular">
+    <div class="ag-seccion-cabecera" data-ag-reveal>
+        <h2 id="ag-obras-titular">@TextoUi.T("Resultados recientes")</h2>
+        <p class="ag-cota">@TextoUi.T("cejas · hidratación · radiofrecuencia")</p>
     </div>
+
+    <div class="ag-obras-franja" data-ag-reveal-escalon>
+        <figure class="ag-obra">
+            <img src="/img/obra-cejas.jpg" alt="@TextoUi.T("Diseño y perfilado de cejas")" width="1200" height="900" loading="lazy" decoding="async" />
+            <figcaption>@TextoUi.T("Cejas")</figcaption>
+        </figure>
+        <figure class="ag-obra">
+            <img src="/img/obra-hidro.jpg" alt="@TextoUi.T("Cabina con equipo de hidratación facial")" width="1200" height="900" loading="lazy" decoding="async" />
+            <figcaption>@TextoUi.T("Hidratación")</figcaption>
+        </figure>
+        <figure class="ag-obra">
+            <img src="/img/obra-radiofrecuencia.jpg" alt="@TextoUi.T("Aplicación de radiofrecuencia sobre la piel")" width="1200" height="900" loading="lazy" decoding="async" />
+            <figcaption>@TextoUi.T("Radiofrecuencia")</figcaption>
+        </figure>
+    </div>
+
+    <p class="ag-obras-pie"><a class="ag-text-link" href="#servicios">@TextoUi.T("Ver todos los tratamientos")</a></p>
 </section>
 
 <section class="ag-cta-final" data-ag-reveal>
@@ -140,17 +212,5 @@
         {
             // Sin API: la portada muestra el aviso de catalogo no disponible
         }
-    }
-
-    /// <summary>
-    /// Palabra script de la marca de agua del banner. Derivada del nombre del
-    /// servicio (1-2 palabras); si no hay nombre queda la inicial.
-    /// </summary>
-    private static string PalabraMarca(string nombre)
-    {
-        if (string.IsNullOrWhiteSpace(nombre)) return "aqua";
-
-        var partes = nombre.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        return partes.Length >= 2 ? $"{partes[0]} {partes[1]}".ToLowerInvariant() : partes[0].ToLowerInvariant();
     }
 }

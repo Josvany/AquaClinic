@@ -25,6 +25,12 @@
                 <input type="password" id="password" name="password" class="form-control login-field"
                        required minlength="8" placeholder="@TextoUi.T("Mínimo 8 caracteres")" />
             </div>
+            <div class="ag-field" style="flex-direction:row; align-items:flex-start; gap:8px;">
+                <input type="checkbox" id="consentimiento" name="consentimiento" value="si" required style="margin-top:4px;" />
+                <label for="consentimiento" style="font-size:0.85rem; line-height:1.4;">
+                    @TextoUi.T("Acepto recibir comunicaciones promocionales por correo electrónico.")
+                </label>
+            </div>
             <button class="ag-btn ag-auth-submit" type="submit">@TextoUi.T("Registrarse")</button>
         </form>
 

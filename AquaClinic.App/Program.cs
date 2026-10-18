@@ -195,6 +195,13 @@ app.MapPost("/auth/register", async (HttpContext ctx, IHttpClientFactory httpCli
     var form = await ctx.Request.ReadFormAsync();
     var email = form["email"].ToString();
     var password = form["password"].ToString();
+    var consentimiento = form["consentimiento"].ToString();
+
+    // CASL: el consentimiento expreso es obligatorio para crear la cuenta.
+    if (!string.Equals(consentimiento, "si", StringComparison.OrdinalIgnoreCase))
+    {
+        return Results.Redirect("/register?error=consentimiento");
+    }
 
     using var client = httpClientFactory.CreateClient("ApiAuth");
 

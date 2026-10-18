@@ -1,0 +1,39 @@
+@page "/contacto"
+@attribute [AllowAnonymous]
+
+<PageTitle>@TextoUi.T("Contacto") — Aqua Skin & Glow</PageTitle>
+
+<article class="ag-section">
+    <div class="ag-contenedor">
+        <div class="ag-seccion-intro" style="margin-bottom:24px;">
+            <div>
+                <span class="ag-label-caps" style="display:block; margin-bottom: 10px;">@TextoUi.T("Contacto")</span>
+                <h2 class="ag-seccion-titulo">@TextoUi.T("Contacto")</h2>
+            </div>
+            <p>Los datos que la clínica tiene publicados y su horario.</p>
+        </div>
+
+        <div class="ag-panel" style="max-width:760px; line-height:1.7; color:var(--ag-texto-suave);">
+            <h3>Dirección</h3>
+            <p>@TextoUi.T("Langley, BC, Canadá")</p>
+            <p><a href="https://maps.google.com/?q=Aqua+Skin+and+Glow+Clinic%2C+Langley%2C+BC" target="_blank" rel="noopener noreferrer">@TextoUi.T("Cómo llegar")</a></p>
+
+            <h3>Teléfono</h3>
+            <p><a href="tel:+16040000000">+1 604 000 0000</a></p>
+
+            <h3>Correo</h3>
+            <p><a href="mailto:hola@aquaskinlangley.ca">hola@aquaskinlangley.ca</a></p>
+
+            <h3>WhatsApp</h3>
+            <p><a href="https://wa.me/16040000000" target="_blank" rel="noopener noreferrer">@TextoUi.T("Escríbenos por WhatsApp")</a></p>
+
+            <h3>Horario</h3>
+            <p>@TextoUi.T("Lun–Vie, 9:00 a 18:00")<br />@TextoUi.T("Sábado, 10:00 a 16:00")</p>
+
+            <h3>Responsable del tratamiento de datos</h3>
+            <p>Aqua Skin &amp; Glow Clinic — para consultas sobre privacidad y protección de datos personales, escríbenos a <a href="mailto:hola@aquaskinlangley.ca">hola@aquaskinlangley.ca</a>.</p>
+
+            <p style="margin-top:24px;"><a class="ag-btn" href="/reservar">@TextoUi.T("Reservar cita ahora")</a></p>
+        </div>
+    </div>
+</article>

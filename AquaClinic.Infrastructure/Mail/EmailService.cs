@@ -30,12 +30,21 @@ namespace AquaClinic.Infrastructure.Mail
             {
                 var client = new MailjetClient(_emailSettings.ApiKey, _emailSettings.SecretKey);
 
+                // Pie de baja (CASL): identificacion del remitente y mecanismo de baja.
+                var pieBaja = $"<hr style=\"border:none;border-top:1px solid #ddd;margin:24px 0 12px;\"/>" +
+                              $"<p style=\"font-size:11px;color:#666;margin:0;\">" +
+                              $"Aqua Skin &amp; Glow Clinic · hola@aquaskinlangley.ca · Langley, BC, Canadá.<br/>" +
+                              $"Si no deseas recibir más comunicaciones, responde a este correo con el asunto \"BAJA\".</p>";
+
+                var cuerpoHtml = email.Body + pieBaja;
+                var cuerpoTexto = email.Body + "\n\n---\nAqua Skin & Glow Clinic · hola@aquaskinlangley.ca · Langley, BC, Canadá.\nPara darte de baja responde a este correo con el asunto \"BAJA\".";
+
                 var mensaje = new TransactionalEmailBuilder()
                     .WithFrom(new SendContact(_emailSettings.FromAddress, _emailSettings.FromName))
                     .WithTo(new SendContact(email.To))
                     .WithSubject(email.Subject)
-                    .WithHtmlPart(email.Body)
-                    .WithTextPart(email.Body)
+                    .WithHtmlPart(cuerpoHtml)
+                    .WithTextPart(cuerpoTexto)
                     .Build();
 
                 var response = await client.SendTransactionalEmailAsync(mensaje);

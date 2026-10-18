@@ -421,7 +421,42 @@ public static class TextoUi
         ["© {0} Aqua Skin & Glow Clinic."] = "© {0} Aqua Skin & Glow Clinic.",
         ["Todos los derechos reservados."] = "All rights reserved.",
         ["Aqua Skin & Glow® es una marca registrada de Aqua Skin & Glow Clinic."] = "Aqua Skin & Glow® is a registered trademark of Aqua Skin & Glow Clinic.",
-        ["Reconocemos que operamos en los territorios ancestrales de los pueblos Coast Salish, incluidos Stó:lō, Musqueam, Squamish y Tsleil-Waututh."] = "We acknowledge that we operate on the ancestral territories of the Coast Salish peoples, including the Stó:lō, Musqueam, Squamish and Tsleil-Waututh Nations."
+        ["Reconocemos que operamos en los territorios ancestrales de los pueblos Coast Salish, incluidos Stó:lō, Musqueam, Squamish y Tsleil-Waututh."] = "We acknowledge that we operate on the ancestral territories of the Coast Salish peoples, including the Stó:lō, Musqueam, Squamish and Tsleil-Waututh Nations.",
+
+        // ===== Paginas legales =====
+        ["Privacidad"] = "Privacy",
+        ["Aviso de privacidad"] = "Privacy notice",
+        ["Términos"] = "Terms",
+        ["Términos de servicio"] = "Terms of service",
+        ["Política de citas"] = "Appointment policy",
+        ["Ver contacto"] = "See contact",
+        ["Acepto recibir comunicaciones promocionales por correo electrónico."] = "I agree to receive promotional communications by email.",
+
+        // ===== Inicio editorial (portada, mosaico, banda, resultados) =====
+        ["Aqua Skin & Glow Clinic · Langley, BC"] = "Aqua Skin & Glow Clinic · Langley, BC",
+        ["faciales · avanzado · inyectables · cejas"] = "facials · advanced · injectables · brows",
+        ["Faciales"] = "Facials",
+        ["limpieza · hidratación · glow"] = "cleansing · hydration · glow",
+        ["Cuidado avanzado"] = "Advanced care",
+        ["radiofrecuencia · protocolos"] = "radiofrequency · protocols",
+        ["Inyectables"] = "Injectables",
+        ["toxina · rellenos · mesoterapia"] = "toxin · fillers · mesotherapy",
+        ["perfilado · laminado · tinte"] = "shaping · lamination · tint",
+        ["Elige por dónde empezar"] = "Choose where to start",
+        ["Cómo funciona"] = "How it works",
+        ["Elige el tratamiento. Nosotras nos encargamos del resto."] = "Choose the treatment. We take care of the rest.",
+        ["El análisis digital define tu protocolo y tú solo eliges el día. Te confirmamos por WhatsApp y te recordamos antes de tu cita, sin llamadas ni anticipos."] = "Your digital analysis defines the protocol and you simply choose the day. We confirm by WhatsApp and remind you before your appointment — no calls, no deposits.",
+        ["Resultados recientes"] = "Recent results",
+        ["cejas · hidratación · radiofrecuencia"] = "brows · hydration · radiofrequency",
+        ["Ver todos los tratamientos"] = "See all treatments",
+        ["Limpieza facial en cabina"] = "Facial cleansing in the treatment room",
+        ["Tratamiento facial con cabezal ultrasónico"] = "Facial treatment with an ultrasonic handpiece",
+        ["Aplicación de tratamiento inyectable en el rostro"] = "Injectable treatment applied to the face",
+        ["Perfilado de cejas con la especialista"] = "Brow shaping with the specialist",
+        ["Clienta revisando su piel frente al espejo junto a la especialista"] = "Client checking her skin in the mirror with the specialist",
+        ["Hidratación"] = "Hydration",
+        ["Cabina con equipo de hidratación facial"] = "Treatment room with facial hydration equipment",
+        ["Aplicación de radiofrecuencia sobre la piel"] = "Radiofrequency applied to the skin"
     };
 
     public static string T(string? texto)

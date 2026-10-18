@@ -17,7 +17,8 @@ namespace AquaClinic.App.Pages
             "duplicado" => "El correo ya est\u00e1 registrado.",
             "password" => "La contrase\u00f1a no cumple los requisitos (m\u00ednimo 8 caracteres).",
             "ratelimit" => "Demasiados intentos. Espera un momento.",
-            "api" => "No se pudo conectar con la API. Verifica que est\u00e9 corriendo.",
+            "api" => "No se pudo conectar con la API. Verifica que esté corriendo.",
+            "consentimiento" => "Debes aceptar recibir comunicaciones para crear la cuenta.",
             _ => null
         };
     }
