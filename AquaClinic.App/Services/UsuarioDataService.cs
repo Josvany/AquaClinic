@@ -190,6 +190,45 @@ namespace AquaClinic.App.Services
             };
         }
 
+        public async Task<ApiResponse> EliminarCuentaAsync()
+        {
+            try
+            {
+                var response = await _httpClient.DeleteAsync("api/usuarios/actual");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return new ApiResponse { Success = true };
+                }
+
+                return await ConvertirError(response);
+            }
+            catch (HttpRequestException ex)
+            {
+                return new ApiResponse { Success = false, Message = "No se pudo conectar con la API.", ValidationErrors = ex.Message };
+            }
+        }
+
+        public async Task<ApiResponse<string>> ExportarDatosAsync()
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync("api/usuarios/actual/exportar");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var body = await response.Content.ReadAsStringAsync();
+                    return new ApiResponse<string> { Success = true, Data = body };
+                }
+
+                return await ConvertirError<string>(response);
+            }
+            catch (HttpRequestException ex)
+            {
+                return new ApiResponse<string> { Success = false, Message = "No se pudo conectar con la API.", ValidationErrors = ex.Message };
+            }
+        }
+
         private record OlvidePasswordResponse(bool SolicitudAceptada, string? Token);
     }
 }

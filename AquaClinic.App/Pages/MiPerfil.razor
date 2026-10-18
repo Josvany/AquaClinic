@@ -67,8 +67,23 @@
 
                 <div class="ag-perfil-acciones">
                     <button type="submit" class="submit-button">@TextoUi.T("Guardar cambios")</button>
-                    <a href="/cambiarpassword" class="ag-perfil-btn-secundario">@TextoUi.T("Cambiar contraseña")</a>
+                    <a href="/cambiarpassword" class="ag-perfil-btn-secundario">@TextoUi.T("Cambiar contrase��a")</a>
                 </div>
+
+        <div class="ag-panel" style="max-width:720px; margin-top:24px; border:1px solid #f1c0c0;">
+            <h3 style="color:#a63a3a;">@TextoUi.T("Privacidad y datos")</h3>
+            <p style="font-size:0.9rem; color:var(--ag-texto-suave);">
+                @TextoUi.T("Puedes descargar una copia de tus datos o eliminar tu cuenta. La eliminación es permanente y no se puede deshacer.")
+            </p>
+            <div class="ag-perfil-acciones">
+                <button class="ag-perfil-btn-secundario" @onclick="ExportarDatos">@TextoUi.T("Exportar mis datos")</button>
+                <button class="ag-perfil-btn-secundario" style="color:#a63a3a; border-color:#a63a3a;" @onclick="EliminarCuenta">@TextoUi.T("Eliminar mi cuenta")</button>
+            </div>
+            @if (!string.IsNullOrEmpty(MensajeDatos))
+            {
+                <div class="alert alert-info mt-2">@MensajeDatos</div>
+            }
+        </div>
             </EditForm>
         </div>
     }

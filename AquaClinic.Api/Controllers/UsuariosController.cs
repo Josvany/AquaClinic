@@ -141,6 +141,53 @@ namespace AquaClinic.Api.Controllers
             return NoContent();
         }
 
+        /// <summary>Elimina la cuenta del usuario autenticado (derecho de eliminacion PIPA).</summary>
+        [HttpDelete("actual", Name = "EliminarCuenta")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesDefaultResponseType]
+        [Authorize]
+        public async Task<ActionResult> EliminarCuenta()
+        {
+            var usuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(usuarioId))
+            {
+                return Unauthorized();
+            }
+
+            await _tokenService.RevocarRefreshTokensAsync(usuarioId);
+
+            var resultado = await _identityService.EliminarCuentaAsync(usuarioId);
+
+            if (!resultado.Exito)
+            {
+                return BadRequest(string.Join(" ", resultado.Errores));
+            }
+
+            return NoContent();
+        }
+
+        /// <summary>Exporta los datos del usuario autenticado (derecho de acceso PIPA).</summary>
+        [HttpGet("actual/exportar", Name = "ExportarDatos")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesDefaultResponseType]
+        [Authorize]
+        public async Task<ActionResult> ExportarDatos()
+        {
+            var usuario = await _mediator.Send(new GetUsuarioActualQuery());
+
+            if (usuario is null)
+            {
+                return Unauthorized();
+            }
+
+            var citas = await _mediator.Send(new AquaClinic.Application.Features.Citas.Queries.GetMisCitas.GetMisCitasQuery());
+
+            return Ok(new { perfil = usuario, citas });
+        }
+
         /// <summary>
         /// Emite la sesion completa (access token JWT + refresh token persistido).
         /// Antes era sincrona y usaba GetAwaiter().GetResult() sobre el JWT; con el

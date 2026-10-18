@@ -18,5 +18,7 @@ namespace AquaClinic.App.Contracts
         Task<ApiResponse> CambiarPasswordAsync(string passwordActual, string passwordNueva);
         Task<ApiResponse<string>> OlvidePasswordAsync(string email);
         Task<ApiResponse> RestablecerPasswordAsync(string email, string token, string passwordNueva);
+        Task<ApiResponse> EliminarCuentaAsync();
+        Task<ApiResponse<string>> ExportarDatosAsync();
     }
 }

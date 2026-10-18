@@ -28,7 +28,7 @@ namespace AquaClinic.Application.Contracts.Authentication
     public interface IIdentityService
     {
         /// <summary>Registra un cliente nuevo (rol Cliente). Devuelve el UsuarioId.</summary>
-        Task<ResultadoRegistro> RegistrarAsync(string email, string password, string? nombre, string? apellidos, string? telefono);
+        Task<ResultadoRegistro> RegistrarAsync(string email, string password, string? nombre, string? apellidos, string? telefono, bool aceptaComunicaciones = false);
 
         /// <summary>Valida credenciales. Devuelve el usuario con roles, o null si son inv&#225;lidas.</summary>
         Task<Usuario?> ValidarCredencialesAsync(string email, string password);
@@ -53,5 +53,8 @@ namespace AquaClinic.Application.Contracts.Authentication
 
         /// <summary>Restablece la contrase&#241;a con el token de un solo uso.</summary>
         Task<ResultadoIdentity> RestablecerPasswordAsync(string email, string token, string passwordNueva);
+
+        /// <summary>Elimina la cuenta del usuario (derecho de eliminacion PIPA).</summary>
+        Task<ResultadoIdentity> EliminarCuentaAsync(string usuarioId);
     }
 }

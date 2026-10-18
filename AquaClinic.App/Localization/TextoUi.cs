@@ -431,6 +431,9 @@ public static class TextoUi
         ["Política de citas"] = "Appointment policy",
         ["Ver contacto"] = "See contact",
         ["Acepto recibir comunicaciones promocionales por correo electrónico."] = "I agree to receive promotional communications by email.",
+        ["Confirmo que soy mayor de 19 años o cuento con consentimiento de mi tutor legal."] = "I confirm that I am over 19 or have my legal guardian's consent.",
+        ["Debes aceptar recibir comunicaciones para crear la cuenta."] = "You must agree to receive communications to create an account.",
+        ["Debes confirmar que eres mayor de 19 años o cuentas con consentimiento de tu tutor legal."] = "You must confirm that you are over 19 or have your legal guardian's consent.",
 
         // ===== Inicio editorial (portada, mosaico, banda, resultados) =====
         ["Aqua Skin & Glow Clinic · Langley, BC"] = "Aqua Skin & Glow Clinic · Langley, BC",

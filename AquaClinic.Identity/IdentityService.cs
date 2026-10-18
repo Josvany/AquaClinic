@@ -11,7 +11,7 @@ namespace AquaClinic.Identity
     /// </summary>
     public class IdentityService(UserManager<ApplicationUser> userManager) : IIdentityService
     {
-        public async Task<ResultadoRegistro> RegistrarAsync(string email, string password, string? nombre, string? apellidos, string? telefono)
+        public async Task<ResultadoRegistro> RegistrarAsync(string email, string password, string? nombre, string? apellidos, string? telefono, bool aceptaComunicaciones = false)
         {
             var existente = await userManager.FindByEmailAsync(email);
             if (existente is not null)
@@ -24,7 +24,9 @@ namespace AquaClinic.Identity
                 UserName = email,
                 Email = email,
                 Nombre = nombre,
-                Apellidos = apellidos
+                Apellidos = apellidos,
+                AceptaComunicaciones = aceptaComunicaciones,
+                FechaConsentimientoUtc = aceptaComunicaciones ? DateTimeOffset.UtcNow : null
             };
 
             var resultado = await userManager.CreateAsync(usuario, password);
@@ -149,6 +151,22 @@ namespace AquaClinic.Identity
             }
 
             var resultado = await userManager.ResetPasswordAsync(usuario, token, passwordNueva);
+
+            return resultado.Succeeded
+                ? ResultadoIdentity.Ok()
+                : ResultadoIdentity.Fallo(Traducir(resultado));
+        }
+
+        public async Task<ResultadoIdentity> EliminarCuentaAsync(string usuarioId)
+        {
+            var usuario = await userManager.FindByIdAsync(usuarioId);
+
+            if (usuario is null)
+            {
+                return ResultadoIdentity.Fallo("Usuario no encontrado.");
+            }
+
+            var resultado = await userManager.DeleteAsync(usuario);
 
             return resultado.Succeeded
                 ? ResultadoIdentity.Ok()

@@ -17,7 +17,7 @@ namespace AquaClinic.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.12")
+                .HasAnnotation("ProductVersion", "10.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -1142,6 +1142,9 @@ namespace AquaClinic.Persistence.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
+                    b.Property<bool>("AceptaComunicaciones")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Apellidos")
                         .HasColumnType("nvarchar(max)");
 
@@ -1155,6 +1158,9 @@ namespace AquaClinic.Persistence.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("FechaConsentimientoUtc")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");

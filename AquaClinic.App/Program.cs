@@ -196,6 +196,7 @@ app.MapPost("/auth/register", async (HttpContext ctx, IHttpClientFactory httpCli
     var email = form["email"].ToString();
     var password = form["password"].ToString();
     var consentimiento = form["consentimiento"].ToString();
+    var mayoria = form["mayoria"].ToString();
 
     // CASL: el consentimiento expreso es obligatorio para crear la cuenta.
     if (!string.Equals(consentimiento, "si", StringComparison.OrdinalIgnoreCase))
@@ -203,12 +204,18 @@ app.MapPost("/auth/register", async (HttpContext ctx, IHttpClientFactory httpCli
         return Results.Redirect("/register?error=consentimiento");
     }
 
+    // Edad minima (BC): 19 anos o consentimiento parental.
+    if (!string.Equals(mayoria, "si", StringComparison.OrdinalIgnoreCase))
+    {
+        return Results.Redirect("/register?error=edad");
+    }
+
     using var client = httpClientFactory.CreateClient("ApiAuth");
 
     // 1) Registrar
     var registro = await client.PostAsJsonAsync(
         "api/usuarios/registro",
-        new { email, password });
+        new { email, password, aceptaComunicaciones = true });
 
     if (!registro.IsSuccessStatusCode)
     {

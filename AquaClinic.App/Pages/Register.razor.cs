@@ -19,6 +19,7 @@ namespace AquaClinic.App.Pages
             "ratelimit" => "Demasiados intentos. Espera un momento.",
             "api" => "No se pudo conectar con la API. Verifica que esté corriendo.",
             "consentimiento" => "Debes aceptar recibir comunicaciones para crear la cuenta.",
+            "edad" => "Debes confirmar que eres mayor de 19 años o cuentas con consentimiento de tu tutor legal.",
             _ => null
         };
     }
