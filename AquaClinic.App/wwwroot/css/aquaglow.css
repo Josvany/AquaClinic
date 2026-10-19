@@ -1581,7 +1581,10 @@ footer.ag-footer {
     }
 
 /* ============================================================
-   Modal de login (Radzen Dialog)
+   Modales de acceso (Radzen Dialog)
+   Diseño editorial en dos paneles: formulario sobre un degradado
+   marfil y foto con tarjetas flotantes. La X de Radzen se posiciona
+   sobre la esquina superior derecha del panel visual.
    ============================================================ */
 
 .rz-dialog {
@@ -1590,67 +1593,276 @@ footer.ag-footer {
     box-shadow: none !important;
 }
 
-.rz-dialog-titlebar .rz-dialog-title,
-.rz-dialog-title {
-    font-family: var(--font-display) !important;
-    font-weight: 600 !important;
-    color: var(--color-teal-900) !important;
+/* Tarjeta del modal de acceso */
+.ag-auth-dialog.rz-dialog {
+    position: relative;
+    padding: 0 !important;
+    border: 1px solid rgba(197, 160, 90, 0.55) !important;
+    border-radius: 28px !important;
+    background: var(--color-white);
+    box-shadow: 0 40px 90px rgba(20, 72, 69, 0.22) !important;
+    overflow: hidden;
 }
 
-.ag-login-dialog {
-    padding-top: 6px;
+.ag-auth-dialog .rz-dialog-titlebar {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 6;
+    width: auto;
+    padding: 0;
+    background: transparent;
+    border: none;
+}
+
+.ag-auth-dialog .rz-dialog-title {
+    display: none;
+}
+
+.ag-auth-dialog .rz-dialog-close,
+.ag-auth-dialog .rz-dialog-titlebar-close {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 38px !important;
+    height: 38px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    border: 1px solid rgba(20, 72, 69, 0.12) !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    color: var(--color-teal-900) !important;
+    box-shadow: 0 8px 18px rgba(20, 72, 69, 0.18) !important;
+}
+
+    .ag-auth-dialog .rz-dialog-close:hover,
+    .ag-auth-dialog .rz-dialog-titlebar-close:hover {
+        background: #ffffff !important;
+        color: var(--color-teal-700) !important;
+    }
+
+    .ag-auth-dialog .rz-dialog-titlebar-close .rzi {
+        font-size: 14px;
+    }
+
+.ag-auth-dialog .rz-dialog-content {
+    padding: 0;
+    overflow: hidden;
+}
+
+/* Estructura: panel del formulario + panel visual */
+.ag-auth-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1.04fr) minmax(0, 0.96fr);
+    min-height: 600px;
+    background: var(--color-white);
+}
+
+.ag-auth-panel {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    max-height: min(88vh, 820px);
+    overflow-y: auto;
+    padding: clamp(22px, 3vw, 38px) clamp(24px, 3.4vw, 52px) clamp(20px, 2.4vw, 30px);
+}
+
+.ag-auth-marca {
+    align-self: flex-start;
+    padding: 8px 20px;
+    border: 1px solid rgba(20, 72, 69, 0.32);
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.5);
+    font-family: var(--font-display);
+    font-size: 0.92rem;
+    letter-spacing: 0.02em;
+    color: var(--color-teal-900);
+}
+
+.ag-auth-head {
+    margin: clamp(18px, 2.6vw, 32px) 0 clamp(16px, 2.2vw, 24px);
     text-align: center;
 }
 
-    .ag-login-dialog .ag-saludo {
-        display: block;
-        font-family: var(--font-script);
-        font-size: 1.4rem;
-        color: var(--color-gold-500);
-        margin-bottom: 2px;
-    }
-
-    .ag-login-dialog h2 {
+    .ag-auth-head h1 {
+        margin: 0 0 8px;
         font-family: var(--font-display);
-        font-size: 1.45rem;
+        font-size: clamp(1.6rem, 2.3vw, 2.05rem);
         font-weight: 600;
-        margin: 0 0 18px;
         color: var(--color-teal-900);
     }
 
-    /* Todo el contenido del modal centrado, sin overflow horizontal */
-    .ag-login-dialog form {
-        max-width: 80%;
-        margin: 0 auto;
-        width: 100%;
-        box-sizing: border-box;
+    .ag-auth-head p {
+        margin: 0;
+        font-size: 0.88rem;
+        line-height: 1.5;
+        color: var(--ag-texto-mudo);
     }
 
-    .ag-login-dialog .ag-field {
-        width: 100%;
-        min-width: 0;
-        box-sizing: border-box;
+/* Campos del formulario */
+.ag-auth-panel .ag-field {
+    margin-bottom: 14px;
+}
+
+.ag-auth-panel .ag-field > label {
+    padding-left: 4px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-bronze);
+}
+
+.ag-auth-panel .ag-field input:not([type="checkbox"]),
+.ag-auth-panel .rz-datepicker .rz-inputtext {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    min-height: 50px;
+    padding: 0.7rem 1.05rem;
+    border: 1px solid rgba(20, 72, 69, 0.16);
+    border-radius: 14px;
+    background: var(--color-white);
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    color: var(--color-teal-900);
+    box-shadow: 0 4px 12px rgba(20, 72, 69, 0.05);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .ag-auth-panel .ag-field input:not([type="checkbox"]):focus,
+    .ag-auth-panel .rz-datepicker .rz-inputtext:focus {
+        outline: none;
+        border-color: var(--color-gold-500);
+        box-shadow: 0 0 0 3px rgba(197, 160, 90, 0.2);
     }
 
-    .ag-login-dialog input {
-        width: 100%;
-        max-width: 100%;
+/* Selector de fecha de nacimiento (Radzen) alineado con los inputs */
+.ag-auth-panel .rz-datepicker {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+    .ag-auth-panel .rz-datepicker .rz-inputtext {
+        border-radius: 14px;
+    }
+
+/* Casillas de consentimiento */
+.ag-auth-panel .ag-field--check {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+    .ag-auth-panel .ag-field--check input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        min-width: 16px;
+        margin: 4px 0 0;
+        accent-color: var(--color-teal-700);
+        flex-shrink: 0;
+    }
+
+    .ag-auth-panel .ag-field--check > label {
+        margin: 0;
+        padding: 0;
+        font-size: 0.8rem;
+        font-weight: 400;
+        line-height: 1.45;
+        letter-spacing: normal;
+        text-transform: none;
+        color: var(--ag-texto-suave);
+        cursor: pointer;
+    }
+
+/* Botón principal del modal */    .ag-auth-panel .ag-auth-submit {
+    width: 100%;
+    min-height: 52px;
+    margin: 8px 0 0;
+    padding: 0 24px;
+    border: none;
+    border-radius: 14px;
+    background-image: linear-gradient(135deg, #eccd8e 0%, #c5a05a 52%, #b48f4a 100%);
+    color: var(--color-teal-900);
+    font-family: var(--font-sans);
+    font-size: 0.98rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: none;
+    box-shadow: 0 16px 30px rgba(154, 123, 58, 0.28);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+    .ag-auth-panel .ag-auth-submit:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 20px 36px rgba(154, 123, 58, 0.34);
+        filter: saturate(1.05);
+    }
+
+    .ag-auth-panel .ag-auth-submit:disabled {
+        opacity: 0.65;
+        cursor: progress;
+        transform: none;
+    }
+
+/* Enlace de cambio de formulario, anclado al pie del panel */
+.ag-auth-panel .ag-auth-alt {
+    margin: auto 0 0;
+    padding-top: 18px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--ag-texto-mudo);
+}
+
+    .ag-auth-panel .ag-auth-alt .ag-link {
+        display: inline;
+        width: auto;
         min-width: 0;
-        box-sizing: border-box;
-        padding: 0.7rem 0.9rem;
-        border: 1px solid var(--color-mist);
-        border-radius: var(--radius-md);
+        height: auto;
+        margin: 0;
+        padding: 0;
+        border: none;
+        border-bottom: 1px solid rgba(30, 95, 92, 0.35);
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
         font-family: var(--font-sans);
-        color: var(--color-teal-900);
-        background: var(--color-white);
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: normal;
+        line-height: 1.5;
+        color: var(--color-teal-700);
+        text-decoration: none;
+        cursor: pointer;
+        transform: none;
     }
 
-        .ag-login-dialog input:focus {
-            outline: none;
-            border-color: var(--color-gold-500);
-            box-shadow: 0 0 0 3px rgba(197, 160, 90, 0.18);
+        .ag-auth-panel .ag-auth-alt .ag-link:hover {
+            color: var(--color-gold-700);
+            border-bottom-color: rgba(154, 123, 58, 0.45);
         }
 
+/* Aviso de credenciales invalidas: el modal permanece abierto */
+.ag-login-error {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 14px;
+    padding: 10px 14px;
+    border-left: 3px solid #b4232c;
+    border-radius: var(--radius-md);
+    background: rgba(180, 35, 44, 0.08);
+    color: #8c1a22;
+    font-size: 0.88rem;
+    text-align: left;
+    animation: ag-alerta-entra 0.3s var(--ag-ease) both;
+}
+
+    .ag-login-error[hidden] {
+        display: none;
+    }
+
+/* Enlace de texto reutilizable */
 .ag-link {
     border: none;
     background: transparent;
@@ -1665,59 +1877,104 @@ footer.ag-footer {
     text-transform: none;
 }
 
-/* Caja de error del modal de login (credenciales invalidas): el modal
-   permanece abierto y este aviso aparece sobre los campos */
-.ag-login-error {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(180, 35, 44, 0.08);
-    border-left: 3px solid #b4232c;
-    border-radius: var(--radius-md);
-    color: #8c1a22;
-    font-size: 0.88rem;
-    padding: 10px 14px;
-    margin: 0 0 14px;
-    text-align: left;
-    animation: ag-alerta-entra 0.3s var(--ag-ease) both;
-}
-
-    .ag-login-error[hidden] {
-        display: none;
-    }
-
     .ag-link:hover {
         color: var(--color-gold-700);
     }
 
-.ag-login-dialog .ag-login-alt {
-    text-align: center;
-    margin: 16px 0 0;
-    max-width: 80%;
-    margin-left: auto;
-    margin-right: auto;
+/* Rejilla del registro dentro del nuevo panel: las columnas pueden
+   encogerse para que los inputs no desborden el ancho del panel. */
+.ag-auth-panel .ag-registro-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 16px;
 }
 
-/* Modal de registro: formulario mas ancho y botones bien distribuidos */
-.ag-registro-dialog form {
-    max-width: 92%;
+@media (max-width: 640px) {
+    .ag-auth-panel .ag-registro-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }
 
-/* Checkboxes del modal de registro: pequenos y alineados */
-.ag-registro-dialog input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    min-width: 16px;
-    margin: 2px 0 0;
-    accent-color: var(--color-teal-700);
-    flex-shrink: 0;
+/* Panel visual: foto con tarjetas flotantes decorativas */
+.ag-auth-visual {
+    position: relative;
+    margin: 12px 12px 12px 0;
+    overflow: hidden;
+    border-radius: 20px;
+    background: var(--color-teal-900);
 }
 
-.ag-registro-dialog .ag-field[style*="flex-direction:row"] {
-    align-items: flex-start;
+    .ag-auth-visual img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: 50% 40%;
+    }
+
+    .ag-auth-visual::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(20, 72, 69, 0.05) 0%, rgba(20, 72, 69, 0) 40%, rgba(20, 72, 69, 0.45) 100%);
+    }
+
+.ag-auth-visual-card {
+    position: absolute;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 18px;
+    border-radius: 16px;
 }
 
-.ag-registro-dialog .ag-field[style*="flex-direction:row"] label {
+    .ag-auth-visual-card strong {
+        font-family: var(--font-display);
+        font-size: 0.98rem;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+
+.ag-auth-visual-etiqueta {
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.72;
+}
+
+.ag-auth-visual-meta {
+    font-size: 0.76rem;
+    opacity: 0.8;
+}
+
+.ag-auth-visual-card--gold {
+    top: 30px;
+    left: 26px;
+    min-width: 215px;
+    background: linear-gradient(140deg, rgba(242, 205, 133, 0.96), rgba(197, 160, 90, 0.96));
+    color: var(--color-teal-900);
+    box-shadow: 0 18px 34px rgba(20, 72, 69, 0.22);
+}
+
+.ag-auth-visual-card--light {
+    right: 22px;
+    bottom: 24px;
+    left: 22px;
+    max-width: 300px;
+    background: rgba(255, 255, 255, 0.94);
+    color: var(--color-teal-900);
+    box-shadow: 0 20px 40px rgba(20, 72, 69, 0.24);
+}
+
+    .ag-auth-visual-card--light .ag-auth-visual-etiqueta {
+        color: var(--color-bronze);
+        opacity: 1;
+    }
+
+/* Casillas con etiqueta al lado en la pagina /register (estilos en linea) */
+.ag-registro-grid .ag-field[style*="flex-direction:row"] label {
     font-size: 0.85rem;
     line-height: 1.4;
     text-transform: none;
@@ -1726,15 +1983,46 @@ footer.ag-footer {
     color: var(--ag-texto-suave);
 }
 
-.ag-registro-dialog .ag-auth-submit {
-    margin-top: 1.25rem;
-    padding: 0.85rem 1rem;
-    font-size: 1rem;
-}
+@media (max-width: 900px) {
+    .ag-auth-shell {
+        grid-template-columns: 1fr;
+        min-height: 0;
+    }
 
-.ag-registro-dialog .ag-login-alt {
-    max-width: 92%;
-    margin-top: 1.25rem;
+    .ag-auth-visual {
+        display: none;
+    }
+
+    /* Sin foto lateral: la X ocupa su propia fila sobre el formulario y el
+       contenido del panel es lo que hace scroll. */
+    .ag-auth-dialog .rz-dialog-titlebar {
+        position: static;
+        display: flex;
+        justify-content: flex-end;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 14px 14px 0;
+    }
+
+    .ag-auth-dialog .rz-dialog-content {
+        max-height: calc(100dvh - 150px);
+        overflow-y: auto;
+    }
+
+    .ag-auth-panel {
+        max-height: none;
+        overflow-y: visible;
+    }
+
+    .ag-auth-dialog .rz-dialog-close,
+    .ag-auth-dialog .rz-dialog-titlebar-close {
+        width: 34px !important;
+        height: 34px !important;
+        border-color: rgba(20, 72, 69, 0.14) !important;
+        background: rgba(20, 72, 69, 0.06) !important;
+        box-shadow: none !important;
+    }
+
 }
 
 /* Sin overflow horizontal en el modal */
@@ -2045,31 +2333,103 @@ footer.ag-footer {
     font-size: 0.78rem;
 }
 
-/* Botones de navegación ‹ › del panel del DatePicker: mismas pastillas
-   claras que los botones del calendario de citas (‹ › Hoy), no el
-   círculo oscuro que trae el tema de Radzen. */
+/* Botones de navegación ‹ › del panel del DatePicker: icon-only como el
+   original de Radzen (sin pastilla ni borde, caja de 2rem), en el tono
+   teal de la paleta y con hover suave. */
 .rz-calendar .rz-calendar-prev,
 .rz-calendar .rz-calendar-next {
     background-image: none !important;
-    background-color: #eaf3f2 !important;
-    color: var(--color-teal-900) !important;
-    border: 1px solid var(--color-mist) !important;
-    border-radius: var(--radius-pill) !important;
+    background-color: transparent !important;
+    color: var(--color-teal-700) !important;
+    border: none !important;
+    border-radius: 50% !important;
     box-shadow: none !important;
-    width: auto !important;
-    height: auto !important;
-    padding: 6px 12px !important;
+    width: 2rem !important;
+    height: 2rem !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
     line-height: 1 !important;
 }
 
-    .rz-calendar .rz-calendar-prev:hover,
-    .rz-calendar .rz-calendar-prev:focus,
-    .rz-calendar .rz-calendar-next:hover,
-    .rz-calendar .rz-calendar-next:focus {
-        background-color: #d8e9e7 !important;
-        border-color: rgba(42, 107, 102, 0.35) !important;
-        color: var(--color-teal-900) !important;
+    .rz-calendar .rz-calendar-prev .rzi,
+    .rz-calendar .rz-calendar-next .rzi {
+        font-size: 1.5rem;
+        color: var(--color-teal-700) !important;
     }
+
+    .rz-calendar .rz-calendar-prev:hover:not(:disabled),
+    .rz-calendar .rz-calendar-prev:focus,
+    .rz-calendar .rz-calendar-next:hover:not(:disabled),
+    .rz-calendar .rz-calendar-next:focus {
+        background-color: #eaf3f2 !important;
+        color: var(--color-teal-900) !important;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+
+/* Los <button> pelados del panel del DatePicker (celdas de mes/año y el
+   botón del título "2026") NO reciben el reset de Radzen para
+   background-image, min-width, margin-left, box-shadow ni font-family,
+   así que heredan el botón global de main.css: degradado teal, 170px de
+   ancho y serif. Se devuelve el aspecto original de Radzen (celda plana
+   con texto) usando los tonos claros de la paleta. */
+.rz-calendar-title-button,
+.rz-calendar-month-cell,
+.rz-calendar-year-cell {
+    background-image: none !important;
+    background-color: transparent !important;
+    border: none !important;
+    border-radius: var(--radius-md, 12px);
+    box-shadow: none !important;
+    min-width: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0.625rem 0.25rem !important;
+    font-family: var(--font-sans) !important;
+    font-size: 0.875rem !important;
+    font-weight: 500;
+    letter-spacing: normal !important;
+    line-height: 1.3 !important;
+    text-transform: none !important;
+    color: var(--color-teal-900) !important;
+    transform: none !important;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.rz-calendar-title-button {
+    padding: 0.5rem 0.75rem !important;
+}
+
+    .rz-calendar-title-button:hover:not(:disabled),
+    .rz-calendar-month-cell:hover:not(:disabled),
+    .rz-calendar-year-cell:hover:not(:disabled) {
+        background-image: none !important;
+        background-color: #eaf3f2 !important;
+        color: var(--color-teal-900) !important;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+
+/* Celda del mes/año en curso: mismo dorado del resto de la paleta */
+.rz-calendar-month-cell.rz-state-active,
+.rz-calendar-year-cell.rz-state-active {
+    background-color: var(--color-gold-500) !important;
+    color: #fff !important;
+}
+
+    .rz-calendar-month-cell.rz-state-active:hover:not(:disabled),
+    .rz-calendar-year-cell.rz-state-active:hover:not(:disabled) {
+        background-color: var(--color-gold-700) !important;
+        color: #fff !important;
+    }
+
+/* Días del panel: hover en el mismo tono claro que los botones ‹ › */
+.rz-calendar .rz-state-default:hover:not(:disabled) {
+    background-color: #eaf3f2 !important;
+    color: var(--color-teal-900) !important;
+}
 
 /* Scheduler (calendario de citas) */
 .rz-scheduler {

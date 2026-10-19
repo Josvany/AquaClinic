@@ -12,12 +12,13 @@
     {
         await DialogService.OpenAsync<LoginDialog>(" ", options: new DialogOptions
         {
-            Width = "600px",
+            Width = "1000px",
+            Height = "auto",
             ShowClose = true,
             CloseDialogOnEsc = true,
             CloseDialogOnOverlayClick = true,
             Draggable = false,
-            CssClass = "ag-dialog"
+            CssClass = "ag-dialog ag-auth-dialog"
         });
     }
 }

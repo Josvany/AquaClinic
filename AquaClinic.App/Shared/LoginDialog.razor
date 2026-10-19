@@ -1,29 +1,52 @@
 <div class="ag-login-dialog">
-    <span class="ag-saludo">@TextoUi.T("Bienvenido de nuevo")</span>
+    <div class="ag-auth-shell">
+        <section class="ag-auth-panel">
+            <span class="ag-auth-marca">Aqua Skin &amp; Glow</span>
 
-    <!-- El submit se intercepta con fetch (js/aqua.js -> agLoginModal):
-         si las credenciales fallan el modal NO se cierra, muestra el
-         mensaje de error y permite reintentar; si acierta, navega a la
-         URL que el servidor indica en la redireccion. -->
-    <form action="/auth/login" method="post" @ref="_form" @onsubmit="EnviarAsync" @onsubmit:preventDefault="true">
-        <AntiforgeryToken />
-        <div class="ag-login-error" hidden>
-            <span class="ag-login-error-texto"></span>
-        </div>
-        <div class="ag-field">
-            <label for="dialogUserName">@TextoUi.T("Correo")</label>
-            <input type="email" id="dialogUserName" name="email" required placeholder="@TextoUi.T("tu@correo.com")" />
-        </div>
-        <div class="ag-field">
-            <label for="dialogPassword">@TextoUi.T("Contraseña")</label>
-            <input type="password" id="dialogPassword" name="password" required minlength="8" />
-        </div>
-        <button type="submit">@TextoUi.T("Iniciar sesión")</button>
-    </form>
+            <div class="ag-auth-head">
+                <h1>@TextoUi.T("Iniciar sesión")</h1>
+                <p>@TextoUi.T("Accede a tu cuenta para gestionar tus citas y tu perfil.")</p>
+            </div>
 
-    <p class="ag-login-alt">
-        <button type="button" class="ag-link" @onclick="IrARegistro">@TextoUi.T("¿No tienes cuenta? Regístrate")</button>
-    </p>
+            <!-- El submit se intercepta con fetch (js/aqua.js -> agLoginModal):
+                 si las credenciales fallan el modal NO se cierra, muestra el
+                 mensaje de error y permite reintentar; si acierta, navega a la
+                 URL que el servidor indica en la redireccion. -->
+            <form action="/auth/login" method="post" @ref="_form" @onsubmit="EnviarAsync" @onsubmit:preventDefault="true">
+                <AntiforgeryToken />
+                <div class="ag-login-error" hidden>
+                    <span class="ag-login-error-texto"></span>
+                </div>
+                <div class="ag-field">
+                    <label for="dialogUserName">@TextoUi.T("Correo")</label>
+                    <input type="email" id="dialogUserName" name="email" required placeholder="@TextoUi.T("tu@correo.com")" />
+                </div>
+                <div class="ag-field">
+                    <label for="dialogPassword">@TextoUi.T("Contraseña")</label>
+                    <input type="password" id="dialogPassword" name="password" required minlength="8" />
+                </div>
+                <button type="submit" class="ag-auth-submit">@TextoUi.T("Iniciar sesión")</button>
+            </form>
+
+            <p class="ag-auth-alt">
+                <button type="button" class="ag-link" @onclick="IrARegistro">@TextoUi.T("¿No tienes cuenta? Regístrate")</button>
+            </p>
+        </section>
+
+        <aside class="ag-auth-visual" aria-hidden="true">
+            <img src="img/hero-facial.jpg" alt="" />
+            <div class="ag-auth-visual-card ag-auth-visual-card--gold">
+                <span class="ag-auth-visual-etiqueta">@TextoUi.T("Cita confirmada")</span>
+                <strong>@TextoUi.T("Hidrodermoabrasión")</strong>
+                <span class="ag-auth-visual-meta">10:30 – 11:15</span>
+            </div>
+            <div class="ag-auth-visual-card ag-auth-visual-card--light">
+                <span class="ag-auth-visual-etiqueta">@TextoUi.T("Tu próxima visita")</span>
+                <strong>@TextoUi.T("Análisis de piel")</strong>
+                <span class="ag-auth-visual-meta">45 min · Langley, BC</span>
+            </div>
+        </aside>
+    </div>
 </div>
 
 @code {
@@ -49,6 +72,14 @@
         DialogService.OpenAsync<RegisterDialog>(
             TextoUi.T("Registrarse"),
             new Dictionary<string, object?>(),
-            new DialogOptions { Width = "50vw", Height = "auto", Resizable = false, Draggable = false });
+            new DialogOptions
+            {
+                Width = "1000px",
+                Height = "auto",
+                ShowClose = true,
+                Resizable = false,
+                Draggable = false,
+                CssClass = "ag-auth-dialog"
+            });
     }
 }
