@@ -2,7 +2,6 @@
 
 Sistema de gestión de citas clínicas para **Aqua Skin and Glow Clinic** (clínica de estética y cuidado de la piel, Langley, Columbia Británica), construido con **.NET 10** sobre una arquitectura limpia (Clean Architecture + CQRS): API REST + aplicación web **Blazor Web App**.
 
-> **Origen del proyecto:** clon modernizado de [GloboTicket.TicketManagement](https://github.com/PacktPublishing/Ultimate-ASP.NET-Core-Web-API-Second-Edition) — migrado a .NET 10 y rediseñado para el negocio real de la clínica.
 
 ---
 
@@ -113,12 +112,8 @@ dotnet run --project AquaClinic.App
 - La App lee la URL de la API desde `AquaClinic.App/appsettings.json` (`ApiSettings:BaseUrl`)
 
 ### 4. Cuentas demo
-
-- **Administrador (dueño):** `josvanyg@mail.com` / `JosvanyG#2026` — rol Administrador
 - **Admin demo:** `admin@aquaclinic.com` / `AquaClinic#2026` — rol Administrador
-- Configurables vía `AdminInicial:Email`/`Password` y `UsuarioJosvany:Email`/`Password`
 - Cualquier usuario nuevo que se registra recibe el rol `Cliente`
-- Los usuarios registrados se **pierden al reiniciar la API** (la BD se recrea en cada arranque en este modo demo)
 
 ## Roles y permisos
 
@@ -144,30 +139,9 @@ Login y Registro son SSR estático: el formulario hace `POST /auth/login` en la 
 - Reiniciar el App o la API **no** expulsa al usuario; recargar o reabrir el navegador tampoco
 - Trade-off del logout: al no haber estado de sesión en servidor, cerrar sesión solo borra la cookie del navegador. Una copia del valor cifrado podría reusarse hasta que venza el access token (60 min); el logout sí revoca el refresh token en la API, así que pasado ese plazo la sesión ya no se renueva
 
-## Endpoints de la API
-
-| Método | Ruta | Auth | Descripción |
-|---|---|---|---|
-| GET | `/api/servicios` | — | Todos los servicios (catálogo público) |
-| GET | `/api/servicios/{id}` | — | Detalle de un servicio |
-| POST/PUT/DELETE | `/api/servicios` | `[HasPermission]` | Crear (`servicios:crear`) / actualizar (`servicios:editar`) / eliminar (`servicios:eliminar`) |
-| GET | `/api/servicios/export` | — | Exportar servicios a CSV |
-| GET | `/api/especialidades/all` | `especialidades:ver` | Todas las especialidades |
-| GET | `/api/especialidades/allwithservicios` | `especialidades:ver` | Especialidades con sus servicios |
-| POST | `/api/especialidades` | `especialidades:crear` | Crear especialidad |
-| GET | `/health` | — | Health check de la base de datos |
-| POST | `/api/usuarios/registro` | — | Registrar cliente (rol Cliente, rate limited) |
-| POST | `/api/usuarios/login` | — | Login + perfil con roles (rate limited) |
-| GET | `/api/usuarios/actual` | `[Authorize]` | Perfil del usuario autenticado |
-| PUT | `/api/usuarios/actual` | `[Authorize]` | Actualizar perfil (nombre, apellidos, teléfono) |
-| POST | `/api/usuarios/cambiar-password` | `[Authorize]` | Cambiar contraseña (rate limited) |
-| POST | `/api/usuarios/olvide-password` | — | Solicitar restablecimiento (rate limited; token visible fuera de Production) |
-| POST | `/api/usuarios/restablecer-password` | — | Restablecer con token (rate limited) |
-| POST | `/register`, `/login`, `/logout` | — | Identity (`MapIdentityApi`) |
-
 ## Seguridad
 
-La API incorpora las siguientes medidas (inspiradas en el template [clean-architecture](https://github.com/amantinband/clean-architecture)):
+La API incorpora las siguientes medidas
 
 | Medida | Descripción |
 |---|---|
