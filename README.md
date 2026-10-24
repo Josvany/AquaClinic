@@ -58,8 +58,6 @@ AquaClinic.sln
 
 **Flujo de la UI:** la App consume la API vía REST con un cliente tipado generado por NSwag (`Services/Base/ServiceClient.cs`). Login y Registro usan SSR estático (ver la sección Autenticación más abajo).
 
-> **Nota:** las páginas del catálogo de la App aún referencian los endpoints anteriores (`/api/citas`); su adaptación a `/api/servicios` es la siguiente fase del desarrollo.
-
 ## Tecnologías
 
 | Tecnología | Versión | Uso |
