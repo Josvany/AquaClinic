@@ -124,18 +124,6 @@ dotnet run --project AquaClinic.App
 
 Los endpoints declaran el permiso con `[HasPermission(Permisos.ServiciosCrear)]`; los roles viajan como claims en el JWT.
 
-## Autenticación
-
-Login y Registro son SSR estático: el formulario hace `POST /auth/login` en la App, que pide el JWT a la API y lo guarda **cifrado en una cookie `httpOnly`** (`aqua_sesion`, 7 días) mediante Data Protection.
-
-- **No hay estado de sesión en el servidor.** La cookie *es* la sesión: sobrevive a recargas, al cierre del navegador y a reinicios del proceso de la App
-- Los tokens viajan en la cookie cifrados con `SesionCookieStore` (`App/Auth/`); el correo y los roles se leen de los claims del propio access token
-- La App los copia al `TokenStore` del circuito (`AuthHeaderHandler` los inyecta como `Authorization: Bearer`); al abrir un circuito nuevo, `TokenStoreInitializer` los recupera de la cookie
-- Al vencer el access token (60 min) hay refresh automático en ambos caminos (SSR y circuito); el refresh token vive 7 días y es de un solo uso, así que al rotarlo se reescribe la cookie
-- **Los refresh tokens se guardan hasheados en la tabla `RefreshTokens`** (SHA-256, nunca en claro). Antes vivían en memoria y reiniciar la API cerraba todas las sesiones; ahora sobreviven
-- **Las claves de Data Protection deben persistir en disco.** Por defecto van al perfil del usuario (`%LOCALAPPDATA%\ASP.NET\DataProtection-Keys`); en un contenedor hay que montar ese directorio en un volumen o la cookie dejaría de descifrarse al reiniciar
-- Reiniciar el App o la API **no** expulsa al usuario; recargar o reabrir el navegador tampoco
-- Trade-off del logout: al no haber estado de sesión en servidor, cerrar sesión solo borra la cookie del navegador. Una copia del valor cifrado podría reusarse hasta que venza el access token (60 min); el logout sí revoca el refresh token en la API, así que pasado ese plazo la sesión ya no se renueva
 
 ## Seguridad
 
