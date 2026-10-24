@@ -38,7 +38,6 @@ Sistema de gestión de citas clínicas para **Aqua Skin and Glow Clinic** (clín
 - **UUID v7** en todos los Ids (`Guid.CreateVersion7()` en constructores) — index-friendly en SQL Server; `ApplicationUser.Id` es el v7 en string
 - **Zona horaria**: fechas en UTC con `datetimeoffset`; la clínica opera en `America/Vancouver` (PST/PDT) — el cambio de horario no afecta el almacenamiento
 - **Formato regional**: fechas y horas siguen el idioma seleccionado; los precios se muestran siempre en dólares canadienses (CAD)
-- **Una sola base de datos** (`AquaClinicDb`): el esquema de Identity (AspNet*) vive junto al negocio
 
 ## Arquitectura
 
