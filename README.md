@@ -198,9 +198,3 @@ La App usa un cliente tipado generado con NSwag a partir del swagger de la API. 
 dotnet tool install --global Nswag.ConsoleCore   # si no está instalado
 nswag run nswagsettings.nswag
 ```
-
-## Notas
-
-- **Licencias:** AutoMapper 16 y MediatR 14 se distribuyen bajo licencia comercial (de pago para uso empresarial). Para uso personal/evaluación funcionan con una advertencia de compilación.
-- **Advertencias:** el código conserva las advertencias de nulabilidad del proyecto original (propiedades sin inicializar en DTOs heredadas de la plantilla base).
-- **Datos de ejemplo:** imágenes con [picsum.photos](https://picsum.photos) (requieren internet para verse).
