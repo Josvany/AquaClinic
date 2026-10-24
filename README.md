@@ -112,17 +112,11 @@ dotnet run --project AquaClinic.App
 - **Admin demo:** `admin@aquaclinic.com` / `AquaClinic#2026` — rol Administrador
 - Cualquier usuario nuevo que se registra recibe el rol `Cliente`
 
-## Roles y permisos
+## Publicado
 
-| Rol | Permisos (derivados en `Api/Authorization/PermisosPorRol.cs`) |
-|---|---|
-| `Administrador` | Todos (`servicios:crear/editar/eliminar`, `especialidades:crear`, `citas:*`...) |
-| `Recepcion` | `servicios:ver`, `especialidades:ver`, `citas:ver`, `citas:gestionar` |
-| `Esteticista` | `servicios:ver`, `especialidades:ver`, `citas:ver` |
-| `Cliente` | `servicios:ver`, `especialidades:ver` |
-
-Los endpoints declaran el permiso con `[HasPermission(Permisos.ServiciosCrear)]`; los roles viajan como claims en el JWT.
-
+```bash
+https://aquaclinic2-acfxd8bqdvf4abdb.westus3-01.azurewebsites.net/
+```
 
 ## Seguridad
 
